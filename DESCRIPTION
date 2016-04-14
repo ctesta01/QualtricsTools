@@ -1,9 +1,14 @@
 Package: qualtrics
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Automating Qualtrics Data Reshaping
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
+Author: Christian Testa
+Maintainer: Christian Testa <christian.testa@tufts.edu>
+Description: 
+License: BSD
 LazyData: TRUE
+Imports:
+    rjson,
+    gdata,
+    installr
+RoxygenNote: 5.0.1
