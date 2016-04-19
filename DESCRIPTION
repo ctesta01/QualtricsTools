@@ -4,11 +4,12 @@ Title: Automating Qualtrics Data Reshaping
 Version: 0.1.0
 Author: Christian Testa
 Maintainer: Christian Testa <christian.testa@tufts.edu>
-Description: 
+Description:
 License: BSD
 LazyData: TRUE
 Imports:
     rjson,
     gdata,
-    installr
+    installr,
+    shiny
 RoxygenNote: 5.0.1
