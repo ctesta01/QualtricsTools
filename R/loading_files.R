@@ -1,10 +1,11 @@
 #' Ask the user for the Qualtrics Survey file
 #'
 #' @return The survey file the user uploads, as a list
-ask_user_for_qsf <- function() {
-
-  print("Select Qualtrics Survey File:")
-  surveyfile = file.choose()
+ask_user_for_qsf <- function(surveyfile) {
+  if (missing(surveyfile)) {
+    print("Select Qualtrics Survey File:")
+    surveyfile = file.choose()
+  }
   survey = fromJSON(file=surveyfile)
 
   return(survey)
@@ -17,9 +18,11 @@ ask_user_for_qsf <- function() {
 #' it removes the first row after turning its entries into attributes.
 #'
 #' @return The csv file the user uploads, as a data frame
-ask_user_for_csv <- function() {
-  print("Select CSV Response File:")
-  responsesfile = file.choose()
+ask_user_for_csv <- function(responsesfile) {
+  if (missing(responsesfile)) {
+    print("Select CSV Response File:")
+    responsesfile = file.choose()
+  }
   responses = read.csv(responsesfile)
 
 

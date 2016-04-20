@@ -1,20 +1,21 @@
+library(shiny)
+library(knitr)
+
 shinyServer(
   function(input, output) {
-    output$contents <- renderTable({
 
-      # input$file1 will be NULL initially. After the user selects
-      # and uploads a file, it will be a data frame with 'name',
-      # 'size', 'type', and 'datapath' columns. The 'datapath'
-      # column will contain the local filenames where the data can
-      # be found.
+    load_csv_data <- function(file1, sampledata) {
+      if (sampledata == TRUE) {
+        responses <- sample_responses
+      } else {
+        responses <- ask_user_for_csv(file1)
+      }
+      return(responses)
+    }
 
-      inFile <- input$file1
+    responses <- reactive({ load_csv_data(input$file1, input$sampledata) })
 
-      if (is.null(inFile))
-        return(NULL)
+    output$contents <- renderText({"Sample Text"})
 
-      read.csv(inFile$datapath, header=input$header, sep=input$sep,
-               quote=input$quote)
-    })
   }
 )

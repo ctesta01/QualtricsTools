@@ -6,7 +6,7 @@ Author: Christian Testa
 Maintainer: Christian Testa <christian.testa@tufts.edu>
 Description:
 License: BSD
-LazyData: TRUE
+LazyData: true
 Imports:
     rjson,
     gdata,
