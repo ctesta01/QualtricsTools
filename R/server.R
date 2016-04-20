@@ -4,18 +4,11 @@ library(knitr)
 shinyServer(
   function(input, output) {
 
-    load_csv_data <- function(file1, sampledata) {
-      if (sampledata == TRUE) {
-        responses <- sample_responses
-      } else {
-        responses <- ask_user_for_csv(file1)
-      }
-      return(responses)
-    }
 
-    responses <- reactive({ load_csv_data(input$file1, input$sampledata) })
+   responses <- reactive({ load_csv_data(input$file1) })
+   survey <- reactive({ load_qsf_data(input$file2) })
 
-    output$contents <- renderText({"Sample Text"})
+    output$contents <- renderText({ sapply(blocks_from_survey(survey()), function(x) x$Description) })
 
   }
 )

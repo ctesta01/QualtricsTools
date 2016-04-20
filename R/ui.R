@@ -5,7 +5,6 @@ shinyUI(fluidPage(
   sidebarLayout(
 
     sidebarPanel(
-      checkboxInput('sampledata', 'Use Sample Data', TRUE),
       fileInput('file1', 'Choose CSV Response Set File', accept=c('text/csv',
                                                      'text/comma-separated-values,text/plain',
                                                      '.csv')),

@@ -1,3 +1,41 @@
+#' Set Response Data to Sample Data or User Data
+#'
+#' load_csv_data returns the sample response set or the user's response set depending
+#' on whether or not the user has uploaded data.
+#'
+#' @param file1 This should be a CSV received from a file upload made in the Shiny UI,
+#' which includes a file1$datapath where the data can be located.
+#'
+#'
+#' @return The return value is the responses data frame
+load_csv_data <- function(file1) {
+  if (is.null(file1)) {
+    responses <- sample_responses
+  } else {
+    responses <- ask_user_for_csv(file1$datapath)
+  }
+  return(responses)
+}
+
+#' Set Survey to Sample Survey or User Survey
+#'
+#' load_qsf_data returns the sample survey or the user's survey depending
+#' on whether or not the user has uploaded data.
+#'
+#' @param file2 This should be a QSF file received from a file upload made in the Shiny UI,
+#' which includes a file1$datapath where the data can be located.
+#'
+#' @return The return value is the survey list object
+
+load_qsf_data <- function(file2) {
+  if (is.null(file2)) {
+    survey <- sample_survey
+  } else {
+    survey <- ask_user_for_qsf(file2$datapath)
+  }
+}
+
+
 #' Ask the user for the Qualtrics Survey file
 #'
 #' @return The survey file the user uploads, as a list
