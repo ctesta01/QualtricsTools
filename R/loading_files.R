@@ -151,3 +151,14 @@ remove_trash_blocks <- function(blocks) {
   blocks[which(sapply(blocks, function(x) x$Type == "Trash"))] = NULL
   return(blocks)
 }
+
+#' Validate Data Export Tag Uniqueness
+#'
+validate_data_export_tags <- function(questions) {
+  dataexporttags <- sapply(questions, function(x) x$Payload$DataExportTag)
+  if (any(duplicated(dataexporttags))) {
+    FALSE
+  } else {
+    TRUE
+  }
+}
