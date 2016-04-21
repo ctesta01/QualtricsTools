@@ -42,11 +42,11 @@ load_qsf_data <- function(file2) {
 ask_user_for_qsf <- function(surveyfile) {
   if (missing(surveyfile)) {
     print("Select Qualtrics Survey File:")
-    surveyfile = file.choose()
+      surveyfile = file.choose()
   }
   survey = fromJSON(file=surveyfile)
 
-  return(survey)
+    return(survey)
 }
 
 #' Ask the user for the Qualtrics Response Set
@@ -59,18 +59,18 @@ ask_user_for_qsf <- function(surveyfile) {
 ask_user_for_csv <- function(responsesfile) {
   if (missing(responsesfile)) {
     print("Select CSV Response File:")
-    responsesfile = file.choose()
+      responsesfile = file.choose()
   }
   responses = read.csv(responsesfile)
 
 
-  for (i in 1:length(colnames(responses))) {
-    column <- colnames(responses)[i]
-    attr(responses[[column]], "text") <- responses[1, i]
-  }
+    for (i in 1:length(colnames(responses))) {
+      column <- colnames(responses)[i]
+        attr(responses[[column]], "text") <- responses[1, i]
+    }
 
   responses <- responses[-1, ]
-  return(responses)
+    return(responses)
 }
 
 #' Generate a List of Survey Blocks
@@ -88,8 +88,8 @@ ask_user_for_csv <- function(responsesfile) {
 #' list of questions included in a given block).
 blocks_from_survey <- function(survey) {
   blocks <- Filter(function(x) x$Element == "BL", survey$SurveyElements)
-  blocks <- blocks[[1]]$Payload
-  return(blocks)
+    blocks <- blocks[[1]]$Payload
+    return(blocks)
 }
 
 #' Generate a List of Questions
@@ -106,11 +106,11 @@ blocks_from_survey <- function(survey) {
 #' @return A list of questions from the uploaded QSF file
 questions_from_survey <- function(survey) {
   questions <- survey$SurveyElements
-  for (i in length(questions):1) {
-    if (questions[[i]]$Element != "SQ") {
-      questions[[i]] <- NULL
+    for (i in length(questions):1) {
+      if (questions[[i]]$Element != "SQ") {
+        questions[[i]] <- NULL
+      }
     }
-  }
   return(questions)
 }
 
@@ -126,10 +126,10 @@ questions_from_survey <- function(survey) {
 #' block of the blocks list provided.
 remove_trash_questions <- function(questions, blocks) {
   trash <- Filter(function(x) x$Type == "Trash", blocks)
-  trash_questions <- list()
-  for (i in trash[[1]]$BlockElements) {
-    trash_questions <- c(i$QuestionID, trash_questions)
-  }
+    trash_questions <- list()
+    for (i in trash[[1]]$BlockElements) {
+      trash_questions <- c(i$QuestionID, trash_questions)
+    }
 
   delete_if_in_trash <- function(x) {
     if (x$Payload$QuestionID %in% trash_questions) {
@@ -139,8 +139,8 @@ remove_trash_questions <- function(questions, blocks) {
     }
   }
   questions <- lapply(questions, delete_if_in_trash)
-  questions <- Filter(Negate(function(x) is.null(unlist(x))), questions)
-  return(questions)
+    questions <- Filter(Negate(function(x) is.null(unlist(x))), questions)
+    return(questions)
 }
 
 #' Remove the Trash Block from the list of Blocks
@@ -149,16 +149,32 @@ remove_trash_questions <- function(questions, blocks) {
 #' @return The list of blocks is returned without any Trash blocks
 remove_trash_blocks <- function(blocks) {
   blocks[which(sapply(blocks, function(x) x$Type == "Trash"))] = NULL
-  return(blocks)
+    return(blocks)
 }
 
 #' Validate Data Export Tag Uniqueness
 #'
+#' @param questions A list of questions from a Qualtrics survey
 validate_data_export_tags <- function(questions) {
   dataexporttags <- sapply(questions, function(x) x$Payload$DataExportTag)
-  if (any(duplicated(dataexporttags))) {
-    FALSE
-  } else {
-    TRUE
-  }
+    if (any(duplicated(dataexporttags))) {
+      FALSE
+    } else {
+      TRUE
+    }
 }
+
+#' Link Responses to Questions
+link_responses_to_questions <- function (questions, responses) {
+  for (i in 1:length(questions)) {
+    question_tag <- paste0( questions[[i]]$Payload$DataExportTag, "_" )
+      matching_responses <- which(
+          startsWith(names(responses), question_tag) |
+          names(responses) == questions[[i]]$Payload$DataExportTag
+          )
+      questions[[i]]$Responses <- as.data.frame(responses[matching_responses])
+  }
+  questions
+}
+
+
