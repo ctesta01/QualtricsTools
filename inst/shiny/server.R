@@ -1,5 +1,6 @@
-library(shiny)
+library(shinydashboard)
 library(rjson)
+library(qualtrics)
 
 shinyServer(
   function(input, output) {
@@ -14,7 +15,8 @@ shinyServer(
      "Please submit a survey with no duplicate question IDs"))
     load_qsf_data(input$file2) })
 
-  output$contents <- renderText({ sapply(questions_from_survey(survey()), function(x) x$Payload$QuestionText) })
+  output$contents <- renderText({ "test" })
+  output$responses <- renderTable(responses())
 
   }
 )
