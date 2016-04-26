@@ -30,7 +30,7 @@ body <- dashboardBody(
     )),
     column(width = 8,
       box(width = NULL,
-        tableOutput('responses'),
+        textOutput('blocks'),
         collapsible = TRUE,
         title = "Output",
         status = "primary",
