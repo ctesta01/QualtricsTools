@@ -1,7 +1,3 @@
-library(shinydashboard)
-library(rjson)
-library(qualtrics)
-
 shinyServer(
   function(input, output) {
 

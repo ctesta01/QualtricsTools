@@ -1,5 +1,3 @@
-library(gdata)
-
 #' Set Response Data to Sample Data or User Data
 #'
 #' load_csv_data returns the sample response set or the user's response set depending
@@ -11,12 +9,12 @@ library(gdata)
 #'
 #' @return The return value is the responses data frame
 load_csv_data <- function(file1) {
-  if (is.null(file1)) {
-    responses <- sample_responses
-  } else {
-    responses <- ask_user_for_csv(file1$datapath)
-  }
-  return(responses)
+    if (is.null(file1)) {
+        responses <- sample_responses
+    } else {
+        responses <- ask_user_for_csv(file1$datapath)
+    }
+    return(responses)
 }
 
 #' Set Survey to Sample Survey or User Survey
@@ -30,23 +28,28 @@ load_csv_data <- function(file1) {
 #' @return The return value is the survey list object
 
 load_qsf_data <- function(file2) {
-  if (is.null(file2)) {
-    survey <- sample_survey
-  } else {
-    survey <- ask_user_for_qsf(file2$datapath)
-  }
+    if (is.null(file2)) {
+        survey <- sample_survey
+    } else {
+        survey <- ask_user_for_qsf(file2$datapath)
+    }
 }
 
 
 #' Ask the user for the Qualtrics Survey file
+#' 
+#' This function can be provided the path to a Qualtrics survey as its parameter, or 
+#' the function will prompt the user to specify the path to the file. 
+#'
+#' @param The file path to a Qualtrics survey file 
 #'
 #' @return The survey file the user uploads, as a list
 ask_user_for_qsf <- function(surveyfile) {
-  if (missing(surveyfile)) {
-    print("Select Qualtrics Survey File:")
-      surveyfile = file.choose()
-  }
-  survey = fromJSON(file=surveyfile)
+    if (missing(surveyfile)) {
+        print("Select Qualtrics Survey File:")
+        surveyfile = file.choose()
+    }
+    survey = fromJSON(file=surveyfile)
 
     return(survey)
 }
@@ -59,19 +62,19 @@ ask_user_for_qsf <- function(surveyfile) {
 #'
 #' @return The csv file the user uploads, as a data frame
 ask_user_for_csv <- function(responsesfile) {
-  if (missing(responsesfile)) {
-    print("Select CSV Response File:")
-      responsesfile = file.choose()
-  }
-  responses = read.csv(responsesfile)
+    if (missing(responsesfile)) {
+        print("Select CSV Response File:")
+        responsesfile = file.choose()
+    }
+    responses = read.csv(responsesfile)
 
 
     for (i in 1:length(colnames(responses))) {
-      column <- colnames(responses)[i]
+        column <- colnames(responses)[i]
         attr(responses[[column]], "text") <- responses[1, i]
     }
 
-  responses <- responses[-1, ]
+    responses <- responses[-1, ]
     return(responses)
 }
 
@@ -89,7 +92,7 @@ ask_user_for_csv <- function(responsesfile) {
 #' each a type, description, ID, and BlockElements (which contains the
 #' list of questions included in a given block).
 blocks_from_survey <- function(survey) {
-  blocks <- Filter(function(x) x$Element == "BL", survey$SurveyElements)
+    blocks <- Filter(function(x) x$Element == "BL", survey$SurveyElements)
     blocks <- blocks[[1]]$Payload
     return(blocks)
 }
@@ -107,13 +110,13 @@ blocks_from_survey <- function(survey) {
 #' @inheritParam blocks_from_survey
 #' @return A list of questions from the uploaded QSF file
 questions_from_survey <- function(survey) {
-  questions <- survey$SurveyElements
+    questions <- survey$SurveyElements
     for (i in length(questions):1) {
-      if (questions[[i]]$Element != "SQ") {
-        questions[[i]] <- NULL
-      }
+        if (questions[[i]]$Element != "SQ") {
+            questions[[i]] <- NULL
+        }
     }
-  return(questions)
+    return(questions)
 }
 
 #' Remove Questions from the Trash Block
@@ -127,20 +130,20 @@ questions_from_survey <- function(survey) {
 #' provided except without any questions listed in the Trash
 #' block of the blocks list provided.
 remove_trash_questions <- function(questions, blocks) {
-  trash <- Filter(function(x) x$Type == "Trash", blocks)
+    trash <- Filter(function(x) x$Type == "Trash", blocks)
     trash_questions <- list()
     for (i in trash[[1]]$BlockElements) {
-      trash_questions <- c(i$QuestionID, trash_questions)
+        trash_questions <- c(i$QuestionID, trash_questions)
     }
 
-  delete_if_in_trash <- function(x) {
-    if (x$Payload$QuestionID %in% trash_questions) {
-      return(NULL)
-    } else {
-      return(x)
+    delete_if_in_trash <- function(x) {
+        if (x$Payload$QuestionID %in% trash_questions) {
+            return(NULL)
+        } else {
+            return(x)
+        }
     }
-  }
-  questions <- lapply(questions, delete_if_in_trash)
+    questions <- lapply(questions, delete_if_in_trash)
     questions <- Filter(Negate(function(x) is.null(unlist(x))), questions)
     return(questions)
 }
@@ -153,7 +156,7 @@ remove_trash_questions <- function(questions, blocks) {
 #' @inheritParams remove_trash_questions
 #' @return The list of blocks is returned without any Trash blocks
 remove_trash_blocks <- function(blocks) {
-  blocks[which(sapply(blocks, function(x) x$Type == "Trash"))] = NULL
+    blocks[which(sapply(blocks, function(x) x$Type == "Trash"))] = NULL
     return(blocks)
 }
 
@@ -167,11 +170,11 @@ remove_trash_blocks <- function(blocks) {
 #'
 #' @param questions A list of questions from a Qualtrics survey
 validate_data_export_tags <- function(questions) {
-  dataexporttags <- sapply(questions, function(x) x$Payload$DataExportTag)
+    dataexporttags <- sapply(questions, function(x) x$Payload$DataExportTag)
     if (any(duplicated(dataexporttags))) {
-      FALSE
+        FALSE
     } else {
-      TRUE
+        TRUE
     }
 }
 
@@ -184,11 +187,11 @@ validate_data_export_tags <- function(questions) {
 #'
 #' @param responses A data frame of responses from a Qualtrics survey
 validate_response_columns <- function(responses) {
-  if (any(duplicated(names(responses)))) {
-    FALSE
-  } else {
-    TRUE
-  }
+    if (any(duplicated(names(responses)))) {
+        FALSE
+    } else {
+        TRUE
+    }
 }
 
 #' Link Responses to Questions
@@ -218,24 +221,25 @@ validate_response_columns <- function(responses) {
 #' @return The updated list of questions, each including its relevant response columns
 #' as a data frame stored in $Responses.
 link_responses_to_questions <- function (questions, responses) {
-  prepend_x <- function(x) {
-    if (length(x) == 0) {
-      x
-    } else if (substring(x, 1, 1) %in% c("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")) {
-      paste0("X", x)
-    } else {
-      x
+    prepend_x <- function(x) {
+        if (length(x) == 0) {
+            x
+        } else if (substring(x, 1, 1) %in% 
+                   c("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")) {
+            paste0("X", x)
+        } else {
+            x
+        }
     }
-  }
 
-  for (i in 1:length(questions)) {
-    question_tag <- paste0( questions[[i]]$Payload$DataExportTag, "_" )
-      matching_responses <- which(
-          gdata::startsWith(names(responses), question_tag) |
-          names(responses) == questions[[i]]$Payload$DataExportTag |
-          names(responses) %in% sapply(questions[[i]]$Payload$ChoiceDataExportTags, prepend_x)
-          )
-      questions[[i]]$Responses <- as.data.frame(responses[matching_responses])
-  }
-  questions
+    for (i in 1:length(questions)) {
+        question_tag <- paste0( questions[[i]]$Payload$DataExportTag, "_" )
+        matching_responses <- which(
+                                    gdata::startsWith(names(responses), question_tag) |
+                                    names(responses) == questions[[i]]$Payload$DataExportTag |
+                                    names(responses) %in% sapply(questions[[i]]$Payload$ChoiceDataExportTags, prepend_x)
+                                    )
+        questions[[i]]$Responses <- as.data.frame(responses[matching_responses])
+    }
+    questions
 }
