@@ -15,7 +15,6 @@ shinyServer(
     questions_with_responses <- link_responses_to_questions(questions_without_trash, responses)
   })
 
-
   output$table <- renderText({
     unlist(main_process())
       })
