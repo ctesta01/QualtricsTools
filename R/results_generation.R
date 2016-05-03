@@ -14,7 +14,7 @@ percent0 <- function(x, digits = 1, format = "f", ...) {
 #' Create the Results Table for a Multiple Choice Single Answer Question
 #'
 #' The mc_single_answer_results function uses the definition of the choices in the QSF file
-#' and their potentially recoded values to determine how to table the results paired to that question
+#' and their potentially recoded values to determine how to table the results paired to that question.
 #'
 #' @param question The question must have a paired response column placed into the question
 #' under `$Responses`
@@ -27,7 +27,7 @@ mc_single_answer_results <- function(question) {
     if ("RecodeValues" %in% names(question$Payload)) {
         factors <- unlist(question$Payload$RecodeValues)
     } else {
-        factors <- names(questions[[3]]$Payload$Choices)
+        factors <- names(question$Payload$Choices)
     }
 
     # the responses to single answer questions are only one column, so they are always the first column.
@@ -66,7 +66,7 @@ mc_single_answer_results <- function(question) {
 #' Create the Results Table for a Multiple Choice Single Answer Question
 #'
 #' The mc_multiple_answer_results function uses the definition of the choices in the QSF file
-#' and their potentially recoded values to determine how to table the results paired to that question
+#' and their potentially recoded values to determine how to table the results paired to that question.
 #'
 #' @inheritParams mc_single_answer_results
 #' @return a table with an N, Percent, and choice column, detailing the number of responses for each
@@ -98,4 +98,52 @@ mc_multiple_answer_results <- function(question) {
   results_table <- data.frame(N, Percent, choices)
   colnames(results_table)[3] <- ""
   results_table
+}
+
+
+#' Create the Results Table for a Multiple Choice Single Answer Question
+#'
+#' The matrix_single_answer_results function uses the definition of the choices and answers in the
+#' QSF file and their potentially recoded values to determine how to table the results paired
+#' to that question.
+#'
+#' @inheritParams mc_single_answer_results
+#' @return a table with the matrix-sub-questions listed in the first column, the percentages for each
+#' choice for each sub-question listed in a table, and then another column with the total respondents
+#' for each subquestion.
+matrix_single_answer_results <- function(question) {
+  # the factors are the variable codes that users could choose between
+  # if a question has been recoded, the variable names are in $Payload$RecodeValues
+  # and if not, they are in $Payload$Choices
+  if ("RecodeValues" %in% names(question$Payload)) {
+    factors <- unlist(question$Payload$RecodeValues)
+  } else {
+    factors <- unlist(question$Payload$AnswerOrder)
+  }
+
+  responses <- sapply(question$Responses, function(x) table(factor(x, factors)))
+  N <- sapply(question$Responses, function(x) strtoi(length(which(x != -99))))
+  for (i in 1:nrow(responses)) {
+    for (j in 1:ncol(responses)) {
+      responses[i,j] <- percent0(strtoi(responses[i,j]) /
+                              N[1])
+    }
+  }
+
+  responses <- t(responses)
+  if ("RecodeValues" %in% names(question$Payload)) {
+    answers_uncoded <- sapply(colnames(responses), function(x) which(question$Payload$RecodeValue == x))
+    answers <- sapply(answers_uncoded, function(x) question$Payload$Answers[[x]])
+    answers <- unlist(answers, use.names = FALSE)
+  } else {
+    answers <- sapply(colnames(responses), function(x) question$Payload$Answers[[x]])
+  }
+  colnames(responses) <- answers
+  export_tag_with_underscore <- paste0(question$Payload$DataExportTag, "_")
+  choices <- sapply(rownames(responses), function(x) question$Payload$Choices[[gsub(export_tag_with_underscore, "", x)]])
+  choices <- unlist(choices, use.names = FALSE)
+  responses <- data.frame(choices, responses, N, check.names=F)
+  colnames(responses)[1] <- ""
+  rownames(responses) <- NULL
+  return(responses)
 }
