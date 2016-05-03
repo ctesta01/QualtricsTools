@@ -5,7 +5,6 @@
 #' The function uses formatC from the R base package and
 #' defaults to formatting the number with 1 digit and with the "f" format
 #' in the formatC argument.
-
 percent0 <- function(x, digits = 1, format = "f", ...) {
   paste0(formatC(100 * x, format = format, digits = digits, ...), "%")
 }
@@ -105,7 +104,8 @@ mc_multiple_answer_results <- function(question) {
 #'
 #' The matrix_single_answer_results function uses the definition of the choices and answers in the
 #' QSF file and their potentially recoded values to determine how to table the results paired
-#' to that question.
+#' to that question. If you look at the source code, keep in mind that a matrix question's sub-questions
+#' are called "Choices" and that the choices for each sub-question are called "Answers"
 #'
 #' @inheritParams mc_single_answer_results
 #' @return a table with the matrix-sub-questions listed in the first column, the percentages for each
@@ -121,6 +121,12 @@ matrix_single_answer_results <- function(question) {
     factors <- unlist(question$Payload$AnswerOrder)
   }
 
+  # create the responses table, a table detailing the
+  # number of times each choice was chosen for each sub-question.
+  # N is a list with as many elements as there are questions, with the number
+  # of respondents for each matrix sub-question in each entry.
+  # the responses table is iterated over and turned into percents according to the
+  # original values in the responses table and the respondents counts in the N variable.
   responses <- sapply(question$Responses, function(x) table(factor(x, factors)))
   N <- sapply(question$Responses, function(x) strtoi(length(which(x != -99))))
   for (i in 1:nrow(responses)) {
@@ -130,6 +136,16 @@ matrix_single_answer_results <- function(question) {
     }
   }
 
+  # flip the responses such that the sub-questions are the rows, and the choices
+  # appear on top as columns.
+  # if the choices have been recoded, go through the $Payload$RecodeValues to get the original
+  # choice texts.
+  # if the choices haven't been recoded, use the $Payload$Answers to retrieve the original
+  # choice texts.
+  # replace the column names with the choice text.
+  # the sub-question tags are formed as the $Payload$DataExportTag with an underscore, then an integer
+  # starting from 1. Strip the DataExportTag and underscore from the sub-question tag, and then
+  # use the $Payload$Choices list to retrieve the original sub-question text.
   responses <- t(responses)
   if ("RecodeValues" %in% names(question$Payload)) {
     answers_uncoded <- sapply(colnames(responses), function(x) which(question$Payload$RecodeValue == x))
@@ -142,8 +158,13 @@ matrix_single_answer_results <- function(question) {
   export_tag_with_underscore <- paste0(question$Payload$DataExportTag, "_")
   choices <- sapply(rownames(responses), function(x) question$Payload$Choices[[gsub(export_tag_with_underscore, "", x)]])
   choices <- unlist(choices, use.names = FALSE)
+
+  # form a data frame with the first column listing the sub-question text, then
+  # include the table of percents for each answer choice for each sub-question,
+  # then include as the last column the number of respondents to each sub-question.
   responses <- data.frame(choices, responses, N, check.names=F)
   colnames(responses)[1] <- ""
   rownames(responses) <- NULL
   return(responses)
 }
+
