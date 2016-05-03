@@ -66,8 +66,9 @@ ask_user_for_csv <- function(responsesfile) {
         print("Select CSV Response File:")
         responsesfile = file.choose()
     }
-    responses = read.csv(responsesfile)
+    responses = read.csv(responsesfile, check.names=F)
 
+    responses[which(colnames(testing) == "")] <- NULL
 
     for (i in 1:length(colnames(responses))) {
         column <- colnames(responses)[i]
@@ -221,24 +222,22 @@ validate_response_columns <- function(responses) {
 #' @return The updated list of questions, each including its relevant response columns
 #' as a data frame stored in $Responses.
 link_responses_to_questions <- function (questions, responses) {
-    prepend_x <- function(x) {
-        if (length(x) == 0) {
-            x
-        } else if (substring(x, 1, 1) %in%
-                   c("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")) {
-            paste0("X", x)
-        } else {
-            x
-        }
-    }
-
     for (i in 1:length(questions)) {
         export_tag_with_underscore <- paste0( questions[[i]]$Payload$DataExportTag, "_" )
         export_tag_with_period <- paste0( questions[[i]]$Payload$DataExportTag, "." )
+
+        starts_with_choice_export_tags <- vector('integer')
+        if ("ChoiceDataExportTags" %in% names(questions[[i]]$Payload)) {
+          choice_export_tags <- unlist(questions[[i]]$Payload$ChoiceDataExportTags)
+          for (j in choice_export_tags) {
+            starts_with_choice_export_tags <- c(starts_with_choice_export_tags,
+                                                which(gdata::startsWith(names(responses), j)))
+          }
+        }
         matching_responses <- c(which(gdata::startsWith(names(responses), export_tag_with_underscore)),
                                 which(gdata::startsWith(names(responses), export_tag_with_period)),
                               which(names(responses) == questions[[i]]$Payload$DataExportTag),
-                              which(names(responses) %in% sapply(questions[[i]]$Payload$ChoiceDataExportTags, prepend_x)))
+                              starts_with_choice_export_tags)
         questions[[i]]$Responses <- as.data.frame(responses[matching_responses])
     }
     questions

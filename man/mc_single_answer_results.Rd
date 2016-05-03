@@ -16,6 +16,6 @@ choice.
 }
 \description{
 The mc_single_answer_results function uses the definition of the choices in the QSF file
-and their potentially recoded values to determine how to table the results paired to that question
+and their potentially recoded values to determine how to table the results paired to that question.
 }
 
