@@ -16,7 +16,6 @@ percent0 <- function(x, digits = 1, format = "f", ...) {
 #' The mc_single_answer_results function uses the definition of the choices in the QSF file
 #' and their potentially recoded values to determine how to table the results paired to that question
 #'
-#'
 #' @param question The question must have a paired response column placed into the question
 #' under `$Responses`
 #' @return a table with an N, Percent, and choice column, detailing the number of responses for each
@@ -61,4 +60,42 @@ mc_single_answer_results <- function(question) {
     results_table <- data.frame(N, Percent, choices)
     colnames(results_table)[3] <- ""
     results_table
+}
+
+
+#' Create the Results Table for a Multiple Choice Single Answer Question
+#'
+#' The mc_multiple_answer_results function uses the definition of the choices in the QSF file
+#' and their potentially recoded values to determine how to table the results paired to that question
+#'
+#' @inheritParams mc_single_answer_results
+#' @return a table with an N, Percent, and choice column, detailing the number of responses for each
+#' choice.
+mc_multiple_answer_results <- function(question) {
+  # take each response column and sum all the 1s in it together to get the
+  # number of responses for a given choice.
+  # since if a respondent did not respond to a question, their response
+  # appears as -99 in all columns of the responses, we can use any column (in this case
+  # we will use the first) to determine the total number of valid responses.
+  # to get the respondent_count, we determine how many responses were not -99 in the
+  # first response column.
+  # the response column names are simply the data export tag appended with an underscore
+  # and then the choice number as it is recorded in $Payload$Choices.
+  # from the choice numbers in the column, we construct a list of the corresponding choice
+  # texts, and then flatten it.
+  # lastly, flatten the Ns list and calculate the Percents.
+  N <- sapply(question$Responses, function(x) sum(x == 1))
+  respondents_count <- length(question$Responses[[1]] != -99)
+  data_export_tag <- question$Payload$DataExportTag
+  names(N) <- gsub(paste0(data_export_tag, "_"), "", names(question$Responses))
+  choices <- sapply(names(N), function(x) question$Payload$Choices[[x]])
+  choices <- unlist(choices, use.names = FALSE)
+  N <- unlist(N, use.names = FALSE)
+  Percent <- percent0(N / respondents_count)
+
+  # construct the results table with a column for N, Percent, and choices,
+  # but make sure that the choices column doesn't have a header when it prints.
+  results_table <- data.frame(N, Percent, choices)
+  colnames(results_table)[3] <- ""
+  results_table
 }

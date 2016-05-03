@@ -37,11 +37,11 @@ load_qsf_data <- function(file2) {
 
 
 #' Ask the user for the Qualtrics Survey file
-#' 
-#' This function can be provided the path to a Qualtrics survey as its parameter, or 
-#' the function will prompt the user to specify the path to the file. 
 #'
-#' @param The file path to a Qualtrics survey file 
+#' This function can be provided the path to a Qualtrics survey as its parameter, or
+#' the function will prompt the user to specify the path to the file.
+#'
+#' @param The file path to a Qualtrics survey file
 #'
 #' @return The survey file the user uploads, as a list
 ask_user_for_qsf <- function(surveyfile) {
@@ -224,7 +224,7 @@ link_responses_to_questions <- function (questions, responses) {
     prepend_x <- function(x) {
         if (length(x) == 0) {
             x
-        } else if (substring(x, 1, 1) %in% 
+        } else if (substring(x, 1, 1) %in%
                    c("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")) {
             paste0("X", x)
         } else {
@@ -233,12 +233,12 @@ link_responses_to_questions <- function (questions, responses) {
     }
 
     for (i in 1:length(questions)) {
-        question_tag <- paste0( questions[[i]]$Payload$DataExportTag, "_" )
-        matching_responses <- which(
-                                    gdata::startsWith(names(responses), question_tag) |
-                                    names(responses) == questions[[i]]$Payload$DataExportTag |
-                                    names(responses) %in% sapply(questions[[i]]$Payload$ChoiceDataExportTags, prepend_x)
-                                    )
+        export_tag_with_underscore <- paste0( questions[[i]]$Payload$DataExportTag, "_" )
+        export_tag_with_period <- paste0( questions[[i]]$Payload$DataExportTag, "." )
+        matching_responses <- c(which(gdata::startsWith(names(responses), export_tag_with_underscore)),
+                                which(gdata::startsWith(names(responses), export_tag_with_period)),
+                              which(names(responses) == questions[[i]]$Payload$DataExportTag),
+                              which(names(responses) %in% sapply(questions[[i]]$Payload$ChoiceDataExportTags, prepend_x)))
         questions[[i]]$Responses <- as.data.frame(responses[matching_responses])
     }
     questions

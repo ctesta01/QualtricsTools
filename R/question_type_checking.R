@@ -72,13 +72,6 @@ is_mc_single_answer <- function(question) {
                                  question$Payload$Selector == "DL" ||
                                  question$Payload$Selector == "SB")
 
-    is_Matrix = question$Payload$QuestionType == "Matrix"
-
-    has_Matrix_SA_selector = (question$Payload$SubSelector == "DL" ||
-                              question$Payload$Selector == "Bipolar" ||
-                              question$Payload$SubSelector == "SingleAnswer")
-
-
     return(is_Multiple_Choice && has_SingleAnswer_selector)
 }
 
@@ -86,7 +79,7 @@ is_mc_single_answer <- function(question) {
 #'
 #' A question is considered a matrix multiple answer question if it
 #' is a `$Payload$QuestionType == "Matrix"` question with
-#' `$Payload$SubSelector == "MultipleAnswer"`
+#' `$Payload$SubSelector == "SingleAnswer"` or `$Payload$SubSelector == "DL"`
 #'
 #' @param question The question parameter is a single question from a qualtrics survey.
 #'
@@ -96,41 +89,26 @@ is_matrix_single_answer <- function(question) {
   is_Matrix = question$Payload$QuestionType == "Matrix"
 
   has_Matrix_SA_selector = (question$Payload$SubSelector == "DL" ||
-                              question$Payload$Selector == "Bipolar" ||
                               question$Payload$SubSelector == "SingleAnswer")
 
   return(is_Matrix && has_Matrix_SA_selector)
 }
 
 
-#' Determine if a question is a rank order question
+#' Determine if a question is a matrix and multiple answer question
 #'
-#' @inheritParam is_mc_multiple_choice
-#' @return The return value of this is a boolean, true if it is one of these kinds of
-#' questions and false otherwise.
-is_rank_order <- function(x) {
-  return(x$Payload$QuestionType == "RO")
-}
-
-
-#' Determine if a question is a text entry question
+#' A question is considered a matrix multiple answer question if it
+#' is a `$Payload$QuestionType == "Matrix"` question with
+#' `$Payload$SubSelector == "SingleAnswer"` or `$Payload$SubSelector == "DL"`
 #'
-#' @inheritParams is_mc_multiple_choice
-#' @return The return value of this is a boolean, true if it is one of these kinds of
-#' questions and false otherwise.
-is_text_entry <- function(x) {
-  return(x$Payload$QuestionType == "TE")
-}
-
-
-#' Determine if a question is a Matrix question
-#'
-#' @inheritParam is_multiple_choice
+#' @param question The question parameter is a single question from a qualtrics survey.
 #'
 #' @return The return value of this is a boolean, true if it is one of these kinds of
 #' questions and false otherwise.
-is_matrix_question <- function(x) {
-  return(x$Payload$QuestionType == "Matrix")
+is_matrix_bipolar <- function(question) {
+  is_Matrix = question$Payload$QuestionType == "Matrix"
+
+  has_Matrix_SA_selector = question$Payload$Selector == "Bipolar"
+
+  return(is_Matrix && has_Matrix_SA_selector)
 }
-
-

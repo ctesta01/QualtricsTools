@@ -13,7 +13,7 @@ ask_user_for_qsf(surveyfile)
 The survey file the user uploads, as a list
 }
 \description{
-This function can be provided the path to a Qualtrics survey as its parameter, or 
+This function can be provided the path to a Qualtrics survey as its parameter, or
 the function will prompt the user to specify the path to the file.
 }
 
