@@ -100,7 +100,7 @@ mc_multiple_answer_results <- function(question) {
 }
 
 
-#' Create the Results Table for a Multiple Choice Single Answer Question
+#' Create the Results Table for a Matrix Single Answer Question
 #'
 #' The matrix_single_answer_results function uses the definition of the choices and answers in the
 #' QSF file and their potentially recoded values to determine how to table the results paired
@@ -138,9 +138,10 @@ matrix_single_answer_results <- function(question) {
 
   # flip the responses such that the sub-questions are the rows, and the choices
   # appear on top as columns.
-  # if the choices have been recoded, go through the $Payload$RecodeValues to get the original
+  # if the choices have been recoded, go through the $Payload$RecodeValues and $Payload$ChoiceDataExportTags
+  # to get the original
   # choice texts.
-  # if the choices haven't been recoded, use the $Payload$Answers to retrieve the original
+  # if the choices haven't been recoded, use the $Payload$Answers and $Payload$Choices to retrieve the original
   # choice texts.
   # replace the column names with the choice text.
   # the sub-question tags are formed as the $Payload$DataExportTag with an underscore, then an integer
@@ -155,8 +156,13 @@ matrix_single_answer_results <- function(question) {
     answers <- sapply(colnames(responses), function(x) question$Payload$Answers[[x]])
   }
   colnames(responses) <- answers
-  export_tag_with_underscore <- paste0(question$Payload$DataExportTag, "_")
-  choices <- sapply(rownames(responses), function(x) question$Payload$Choices[[gsub(export_tag_with_underscore, "", x)]])
+  if (all(names(question$Responses) %in% question$Payload$ChoiceDataExportTags)) {
+    choices_uncoded <- sapply(rownames(responses), function(x) which(question$Payload$ChoiceDataExportTags == x))
+    choices <- sapply(choices_uncoded, function(x) question$Payload$Choices[[x]])
+  } else {
+    export_tag_with_underscore <- paste0(question$Payload$DataExportTag, "_")
+    choices <- sapply(rownames(responses), function(x) question$Payload$Choices[[gsub(export_tag_with_underscore, "", x)]])
+  }
   choices <- unlist(choices, use.names = FALSE)
 
   # form a data frame with the first column listing the sub-question text, then
@@ -168,4 +174,17 @@ matrix_single_answer_results <- function(question) {
   return(responses)
 }
 
+#' Create the Results Table for a Matrix Multiple Answer Question
+#'
+#' The matrix_multiple_answer_results function uses the definition of the choices and answers in the
+#' QSF file and their potentially recoded values to determine how to table the results paired
+#' to that question. If you look at the source code, keep in mind that a matrix question's sub-questions
+#' are called "Choices" and that the choices for each sub-question are called "Answers"
+#'
+#' @inheritParams mc_single_answer_results
+#' @return a table with the matrix-sub-questions listed in the first column, the percentages for each
+#' choice for each sub-question listed in a table, and then another column with the total respondents
+#' for each subquestion.
+matrix_multiple_answer_results <- function(question) {
 
+}

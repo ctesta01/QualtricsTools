@@ -2,7 +2,7 @@
 % Please edit documentation in R/results_generation.R
 \name{matrix_single_answer_results}
 \alias{matrix_single_answer_results}
-\title{Create the Results Table for a Multiple Choice Single Answer Question}
+\title{Create the Results Table for a Matrix Single Answer Question}
 \usage{
 matrix_single_answer_results(question)
 }

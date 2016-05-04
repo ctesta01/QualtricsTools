@@ -68,7 +68,7 @@ ask_user_for_csv <- function(responsesfile) {
     }
     responses = read.csv(responsesfile, check.names=F)
 
-    responses[which(colnames(testing) == "")] <- NULL
+    responses[which(colnames(responses) == "")] <- NULL
 
     for (i in 1:length(colnames(responses))) {
         column <- colnames(responses)[i]
@@ -238,7 +238,7 @@ link_responses_to_questions <- function (questions, responses) {
                                 which(gdata::startsWith(names(responses), export_tag_with_period)),
                               which(names(responses) == questions[[i]]$Payload$DataExportTag),
                               starts_with_choice_export_tags)
-        questions[[i]]$Responses <- as.data.frame(responses[matching_responses])
+        questions[[i]]$Responses <- as.data.frame(responses[unique(matching_responses)])
     }
     questions
 }
