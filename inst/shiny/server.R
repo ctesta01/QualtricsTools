@@ -15,8 +15,11 @@ shinyServer(
     questions_with_responses <- link_responses_to_questions(questions_without_trash, responses)
     questions_with_results <- generate_results(questions_with_responses)
 
-    results_tables <- sapply(questions_with_results, function(x) x$Table)
-    results_table_html <- unlist(html_tabelize(results_tables, questions_with_results))
+
+
+
+
+    results_table_html <- html_tabelize(results_tables, questions_with_results)
 
     uncodeable_questions <- which(sapply(questions_with_results, function(x) !("Table" %in% names(x))))
     uncodeable_questions <- sapply(uncodeable_questions, function(x)

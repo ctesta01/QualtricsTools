@@ -244,7 +244,18 @@ generate_results <- function(questions) {
   return(questions)
 }
 
-html_tabelize <- function(results_tables, questions) {
+
+#' Create a List of HTML Versions of the Results Tables
+#'
+#' @param questions A list of questions with the relevant results tables
+#' stored as data frames under the questions[[i]]$Table element. Create
+#' such a list of questions by using generate_results function
+#'
+#' @return A list of HTML results tables for each question
+html_tabelize <- function(questions) {
+
+  results_tables <- sapply(questions, function(x) x$Table)
+
   tables <- list()
   for (i in 1:length(results_tables)) {
     if (is.null(results_tables[[i]]) == FALSE) {
