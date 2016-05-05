@@ -8,7 +8,7 @@ matrix_single_answer_results(question)
 }
 \arguments{
 \item{question}{The question must have a paired response column placed into the question
-under `$Responses`}
+under $Responses}
 }
 \value{
 a table with the matrix-sub-questions listed in the first column, the percentages for each

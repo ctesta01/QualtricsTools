@@ -8,7 +8,7 @@ mc_single_answer_results(question)
 }
 \arguments{
 \item{question}{The question must have a paired response column placed into the question
-under `$Responses`}
+under $Responses}
 }
 \value{
 a table with an N, Percent, and choice column, detailing the number of responses for each

@@ -16,7 +16,7 @@ percent0 <- function(x, digits = 1, format = "f", ...) {
 #' and their potentially recoded values to determine how to table the results paired to that question.
 #'
 #' @param question The question must have a paired response column placed into the question
-#' under `$Responses`
+#' under $Responses
 #' @return a table with an N, Percent, and choice column, detailing the number of responses for each
 #' choice.
 mc_single_answer_results <- function(question) {
@@ -174,17 +174,88 @@ matrix_single_answer_results <- function(question) {
   return(responses)
 }
 
+
 #' Create the Results Table for a Matrix Multiple Answer Question
 #'
-#' The matrix_multiple_answer_results function uses the definition of the choices and answers in the
-#' QSF file and their potentially recoded values to determine how to table the results paired
-#' to that question. If you look at the source code, keep in mind that a matrix question's sub-questions
-#' are called "Choices" and that the choices for each sub-question are called "Answers"
+#' The matrix_multiple_answer_results function is the naive solution to creating the
+#' results table for multiple answer matrix questions. It creates the results by
+#' taking the columns of the question, splitting them into sets with as many
+#' choices as there are per subquestion in each set of columns, and then
+#' laying the calculated results of each set on top of one another. Unfortunately, this
+#' will not take into account ordering. This assumes that the columns are in the default
+#' ordering from Qualtrics and have not been moved. Hopefully later versions of the program
+#' will adjust for this.
 #'
 #' @inheritParams mc_single_answer_results
 #' @return a table with the matrix-sub-questions listed in the first column, the percentages for each
 #' choice for each sub-question listed in a table, and then another column with the total respondents
 #' for each subquestion.
 matrix_multiple_answer_results <- function(question) {
-
+  respondents_count <- sapply(question$Responses, function(y) strtoi(length(which(y != -99))))
+  headernames <- sapply(question$Payload$Answers, function(y) y$Display)
+  rownames <- sapply(question$Payload$Choices, function(y) y$Display)
+  ma_matrix_sums <- sapply(question$Responses, function (y) sum(y == 1))
+  chunk2 <- function(y,n) split(y, cut(seq_along(y), n, labels = FALSE))
+  df <- t(as.data.frame((chunk2(ma_matrix_sums, length(headernames)))))
+  rownames(df) <- rownames
+  colnames(df) <- headernames
+  respondents_count <- respondents_count[seq(1, length(question$Responses), length(headernames))]
+  for (i in 1:nrow(df)) {
+    for (j in 1:ncol(df)) {
+      df[i,j] <- percent0(strtoi(df[i,j]) / respondents_count[i])
+    }
+  }
+  df <- cbind(df, N=respondents_count)
+  df <- cbind(Choices=sapply(question$Payload$Choices, function(y) y$Display), df)
+  return(df)
 }
+
+
+#' Create Results Tables and Pair Them to Questions
+#'
+#' The generate_results function takes a list of questions which have
+#' their responses paired to them, determines their question type,
+#' uses the results generation functions to create their results table,
+#' and saves the table to the question's $Table element. The function
+#' returns the list of questions with their paired results tables.
+#'
+#' @param questions A list of questions with the relevant response columns
+#' stored as a data frame under the questions[[i]]$Responses element. Create
+#' such a list of questions by using link_responses_to_questions.
+#'
+#' @return A list of questions with their results tables paired to them
+#' under the questions[[i]]$Table
+generate_results <- function(questions) {
+
+  for (i in 1:length(questions)) {
+    if (is_mc_multiple_answer(questions[[i]])) {
+      questions[[i]]$Table <- mc_multiple_answer_results(questions[[i]])
+    } else if (is_mc_single_answer(questions[[i]])) {
+      questions[[i]]$Table <- mc_single_answer_results(questions[[i]])
+    } else if (is_matrix_multiple_answer(questions[[i]])) {
+      questions[[i]]$Table <- matrix_multiple_answer_results(questions[[i]])
+    } else if (is_matrix_single_answer(questions[[i]])) {
+      questions[[i]]$Table <- matrix_single_answer_results(questions[[i]])
+    }
+  }
+
+  return(questions)
+}
+
+html_tabelize <- function(results_tables, questions) {
+  tables <- list()
+  for (i in 1:length(results_tables)) {
+    if (is.null(results_tables[[i]]) == FALSE) {
+      tables[[i]] <-
+        print(xtable::xtable(results_tables[[i]],
+                             caption=paste("Question:",
+                             questions[[i]]$Payload$DataExportTag)),
+              type="html",
+              html.table.attributes='class="data table table-bordered table-condensed"',
+              caption.placement="top",
+              include.rownames=FALSE)
+    }
+  }
+  return(lapply(tables, paste))
+}
+

@@ -11,5 +11,7 @@ Imports:
     rjson,
     gdata,
     installr,
-    shiny
+    shiny,
+    shinydashboard,
+    xtable
 RoxygenNote: 5.0.1

@@ -23,9 +23,9 @@ is_mc_multiple_answer <- function(question) {
                                    question$Payload$Selector == "MSB" ||
                                    question$Payload$Selector == "MACOL")
 
-    is_Multiple_Answer = (is_Multiple_Choice && has_MultipleAnswer_selector)
+    is_Multiple_Answer = isTRUE(is_Multiple_Choice && has_MultipleAnswer_selector)
 
-    return(is_Multiple_Choice && has_MultipleAnswer_selector)
+    return(is_Multiple_Answer)
 }
 
 
@@ -41,8 +41,8 @@ is_mc_multiple_answer <- function(question) {
 is_matrix_multiple_answer <- function(question) {
   is_Matrix = (question$Payload$QuestionType == "Matrix")
   has_Matrix_MA_selector = (question$Payload$SubSelector == "MultipleAnswer")
-
-  return(is_Matrix && has_Matrix_MA_selector)
+  is_Matrix_Multiple_Answer <- isTRUE(is_Matrix && has_Matrix_MA_selector)
+  return(is_Matrix_Multiple_Answer)
 }
 
 
@@ -71,8 +71,8 @@ is_mc_single_answer <- function(question) {
                                  question$Payload$Selector == "SACOL" ||
                                  question$Payload$Selector == "DL" ||
                                  question$Payload$Selector == "SB")
-
-    return(is_Multiple_Choice && has_SingleAnswer_selector)
+    is_MC_Single_answer <- isTRUE(is_Multiple_Choice && has_SingleAnswer_selector)
+    return(is_MC_Single_answer)
 }
 
 #' Determine if a question is a matrix and multiple answer question
@@ -90,8 +90,8 @@ is_matrix_single_answer <- function(question) {
 
   has_Matrix_SA_selector = (question$Payload$SubSelector == "DL" ||
                               question$Payload$SubSelector == "SingleAnswer")
-
-  return(is_Matrix && has_Matrix_SA_selector)
+  is_Matrix_Single_Answer <- isTRUE(is_Matrix && has_Matrix_SA_selector)
+  return(is_Matrix_Single_Answer)
 }
 
 
@@ -109,6 +109,6 @@ is_matrix_bipolar <- function(question) {
   is_Matrix = question$Payload$QuestionType == "Matrix"
 
   has_Matrix_SA_selector = question$Payload$Selector == "Bipolar"
-
-  return(is_Matrix && has_Matrix_SA_selector)
+  is_Matrix_Bipolar <- isTRUE(is_Matrix && has_Matrix_SA_selector)
+  return(is_Matrix_Bipolar)
 }

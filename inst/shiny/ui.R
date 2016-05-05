@@ -9,7 +9,7 @@ sidebar <- dashboardSidebar(
 )
 
 body <- dashboardBody(
-  tabItem(tabName = "plot",
+  tabItem(tabName = "submitting a survey",
     fluidRow(column(width = 4, tabBox( width = NULL,
       tabPanel(h5("upload files"),
         fileInput('file1',
@@ -20,27 +20,22 @@ body <- dashboardBody(
                   'Choose QSF Survey File',
                   accept=c('text/qsf', 'text/plain', '.qsf')
         )
-      ),
-      tabPanel(h5("settings"),
-        sliderInput("tfd", "test:", value=0, min=0, max = 20, step=1),
-        sliderInput("nd", "test:", value=1, min=0, max = 10, step=1),
-        sliderInput("ii", "test:", value = 9, min = 0.5, max = 15, step=0.5),
-        sliderInput("amt", "test:", value = 5, min = 0, max = 20, step=1)
       )
     )),
     column(width = 8,
-      box(width = NULL,
-        textOutput('table'),
-        collapsible = TRUE,
-        title = "Output",
-        status = "primary",
-        solidHeader = TRUE)
+      tabBox( width = NULL,
+              tabPanel(h5("results tables"),
+                         uiOutput("results_tables")
+              ),
+              tabPanel(h5("question dictionary"))
+      )
+
     ))
   )
 )
 
 dashboardPage(
-  dashboardHeader(title = "Qualtrics Reshaping"),
+  dashboardHeader(title = "Qualtrics Automation"),
   sidebar,
   body
 )
