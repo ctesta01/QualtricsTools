@@ -51,7 +51,9 @@ mc_single_answer_results <- function(question) {
         choices <- sapply(choices_uncoded, function(x) question$Payload$Choices[[x]])
         choices <- unlist(choices, use.names = FALSE)
     } else {
-        choices <- responses_tabled[,1]
+        choices_uncoded <- responses_tabled[,1]
+        choices_recoded <- sapply(choices_uncoded, function(x) question$Payload$Choices[[x]])
+        choices <- unlist(choices_recoded, use.names = FALSE)
     }
 
     # construct the results table with a column for N, Percent, and choices,
