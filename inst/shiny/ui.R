@@ -25,9 +25,12 @@ body <- dashboardBody(
     column(width = 8,
       tabBox( width = NULL,
               tabPanel(h5("results tables"),
-                         uiOutput("results_tables")
+                       textOutput("uncodeable_message"),
+                       downloadButton('downloadResults', 'Download Results'),
+                       uiOutput("results_tables")
               ),
-              tabPanel(h5("question dictionary"))
+              tabPanel(h5("question dictionary"),
+                       dataTableOutput("question_dictionary"))
       )
 
     ))

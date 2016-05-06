@@ -1,7 +1,7 @@
 shinyServer(
   function(input, output) {
 
-  main_process <- reactive({
+  main <- reactive({
     validate(
       need(validate_data_export_tags(questions_from_survey(load_qsf_data(input$file2))),
            "Please submit a survey with no duplicate question IDs"))
@@ -14,29 +14,35 @@ shinyServer(
     blocks_without_trash <- remove_trash_blocks(blocks)
     questions_with_responses <- link_responses_to_questions(questions_without_trash, responses)
     questions_with_results <- generate_results(questions_with_responses)
-
-
-
-
-
-    results_table_html <- html_tabelize(results_tables, questions_with_results)
-
-    uncodeable_questions <- which(sapply(questions_with_results, function(x) !("Table" %in% names(x))))
-    uncodeable_questions <- sapply(uncodeable_questions, function(x)
-      questions_with_results[[x]]$Payload$DataExportTag)
-    uncodeable_message <- ""
-    if (length(uncodeable_questions) > 0) {
-      uncodeable_message <- sprintf("The following questions could not be automatically
-                                   coded: %s", paste(uncodeable_questions, collapse=", "))
-    }
-
-    paste0(uncodeable_message, results_table_html)
-
+    blocks_with_questions <- questions_into_blocks(questions_with_results, blocks_without_trash)
+    questions_and_blocks <- list()
+    questions_and_blocks[['questions']] <- questions_with_results
+    questions_and_blocks[['blocks']] <- blocks_with_questions
+    return(questions_and_blocks)
     })
 
   output$results_tables <- renderUI({
-    div(HTML(main_process()), class="shiny-html-output")
+    blocks <- main()[['blocks']]
+    div(HTML(html_tabelize(blocks)), class="shiny-html-output")
   })
+
+  output$uncodeable_message <- renderText({
+    questions <- main()[['questions']]
+    uncodeable_questions_message(questions)
+  })
+
+  output$question_dictionary <- renderDataTable({
+    blocks <- main()[['blocks']]
+    create_question_dictionary(blocks)
+  })
+
+  output$downloadResults <- downloadHandler(
+    filename = 'tables.xls',
+    content = function(file) {
+      write(html_tabelize(main()[['blocks']]), file)
+    }
+  )
+
 
   }
 )

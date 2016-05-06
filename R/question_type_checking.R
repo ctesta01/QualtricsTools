@@ -112,3 +112,50 @@ is_matrix_bipolar <- function(question) {
   is_Matrix_Bipolar <- isTRUE(is_Matrix && has_Matrix_SA_selector)
   return(is_Matrix_Bipolar)
 }
+
+
+
+
+
+
+is_multiple_choice <- function(x) {
+  return(
+    (x$Payload$QuestionType == "MC" &&
+       (x$Payload$Selector == "MAVR" ||
+          x$Payload$Selector == "MAHR" ||
+          x$Payload$Selector == "MSB" ||
+          x$Payload$Selector == "MACOL")
+    ) ||
+      (x$Payload$QuestionType == "Matrix" &&
+         x$Payload$SubSelector == "MultipleAnswer"
+      ))
+}
+
+is_single_answer <- function(x) {
+  return(
+    (x$Payload$QuestionType == "MC" &&
+       (x$Payload$Selector == "SAVR" ||
+          x$Payload$Selector == "SAHR" ||
+          x$Payload$Selector == "SACOL" ||
+          x$Payload$Selector == "DL" ||
+          x$Payload$Selector == "SB")) ||
+      (x$Payload$QuestionType == "Matrix" && (
+        x$Payload$SubSelector == "DL" ||
+          x$Payload$Selector == "Bipolar" ||
+          x$Payload$SubSelector == "SingleAnswer"
+      ))
+
+  )
+}
+
+is_rank_order <- function(x) {
+  return(x$Payload$QuestionType == "RO")
+}
+
+is_text_entry <- function(x) {
+  return(x$Payload$QuestionType == "TE")
+}
+
+is_matrix_question <- function(x) {
+  return(x$Payload$QuestionType == "Matrix")
+}

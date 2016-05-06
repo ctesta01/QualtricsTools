@@ -252,23 +252,48 @@ generate_results <- function(questions) {
 #' such a list of questions by using generate_results function
 #'
 #' @return A list of HTML results tables for each question
-html_tabelize <- function(questions) {
-
-  results_tables <- sapply(questions, function(x) x$Table)
-
+html_tabelize <- function(blocks) {
   tables <- list()
-  for (i in 1:length(results_tables)) {
-    if (is.null(results_tables[[i]]) == FALSE) {
-      tables[[i]] <-
-        print(xtable::xtable(results_tables[[i]],
-                             caption=paste("Question:",
-                             questions[[i]]$Payload$DataExportTag)),
-              type="html",
-              html.table.attributes='class="data table table-bordered table-condensed"',
-              caption.placement="top",
-              include.rownames=FALSE)
+  for (i in 1:length(blocks)) {
+    if (length(blocks[[i]]$BlockElements) != 0) {
+      for (j in 1:length(blocks[[i]]$BlockElements)) {
+        # tables = c(print_tables, blocks[[i]]$BlockElements[[j]]$Payload$DataExportTag)
+        if (is.null(blocks[[i]]$BlockElements[[j]]$Table) == FALSE) {
+          tables = c(tables,
+                           print(xtable::xtable(blocks[[i]]$BlockElements[[j]]$Table,
+                                                caption=paste("Question:",
+                                                blocks[[i]]$BlockElements[[j]]$Payload$DataExportTag)),
+                                 type="html",
+                                 html.table.attributes='class="data table table-bordered table-condensed"',
+                                 caption.placement="top",
+                                 include.rownames=FALSE))
+          tables = c(tables, "<br>")
+        }
+      }
     }
   }
-  return(lapply(tables, paste))
+  return(unlist(lapply(tables, paste)))
 }
 
+
+#' Create a Message Stating Which Questions Weren't Automatically Tabled
+#'
+#' This is function is used in the Shiny app to tell users which questions weren't
+#' automatically coded. This may be changed later to be more informative, or
+#' to include this information elsewhere.
+#'
+#' @inheritParams html_tabelize
+#' @return A message stating for which questions could not have
+#' results automatically generated.
+uncodeable_questions_message <- function(questions) {
+  uncodeable_questions <- which(sapply(questions, function(x) !("Table" %in% names(x))))
+  uncodeable_questions <- sapply(uncodeable_questions, function(x)
+    questions[[x]]$Payload$DataExportTag)
+  uncodeable_message <- ""
+  if (length(uncodeable_questions) > 0) {
+    uncodeable_questions <- paste(uncodeable_questions, collapse=", ")
+    uncodeable_message <- sprintf("The following questions could not be automatically
+                                  coded: %s", uncodeable_questions)
+  }
+  return(uncodeable_message)
+}
