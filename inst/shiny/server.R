@@ -11,6 +11,7 @@ shinyServer(
     blocks <- blocks_from_survey(survey)
     questions <- questions_from_survey(survey)
     questions_without_trash <- remove_trash_questions(questions, blocks)
+    questions <- clean_question_text(questions)
     blocks_without_trash <- remove_trash_blocks(blocks)
     questions_with_responses <- link_responses_to_questions(questions_without_trash, responses)
     questions_with_results <- generate_results(questions_with_responses)

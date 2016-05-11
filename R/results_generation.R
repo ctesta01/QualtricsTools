@@ -34,7 +34,7 @@ mc_single_answer_results <- function(question) {
     # the second column of the responses_tabled are the numbers of responses for each factor, our Ns.
     # total number of responses to a question is counted by all the answers that aren't -99
     # use Ns and respondent_count to calculate the percents for each factor.
-    responses <- question$Responses[[1]]
+    responses <- question$Responses[[question$Payload$DataExportTag]]
     responses_tabled <- as.data.frame(table(factor(responses, levels=factors)))
     N <- responses_tabled[,2]
     respondent_count <- length(question$Responses[[1]] != -99)
@@ -49,6 +49,7 @@ mc_single_answer_results <- function(question) {
         choices_recoded <- responses_tabled[,1]
         choices_uncoded <- sapply(choices_recoded, function(x) which(question$Payload$RecodeValues == x))
         choices <- sapply(choices_uncoded, function(x) question$Payload$Choices[[x]])
+        choices <- sapply(choices, function(x) x['Display'])
         choices <- unlist(choices, use.names = FALSE)
     } else {
         choices_uncoded <- responses_tabled[,1]
@@ -130,7 +131,7 @@ matrix_single_answer_results <- function(question) {
   # the responses table is iterated over and turned into percents according to the
   # original values in the responses table and the respondents counts in the N variable.
   responses <- sapply(question$Responses, function(x) table(factor(x, factors)))
-  N <- sapply(question$Responses, function(x) strtoi(length(which(x != -99))))
+  N <- sapply(question$Responses, function(x) strtoi(length(which(x != -99 & x != ""))))
   for (i in 1:nrow(responses)) {
     for (j in 1:ncol(responses)) {
       responses[i,j] <- percent0(strtoi(responses[i,j]) /
@@ -165,7 +166,16 @@ matrix_single_answer_results <- function(question) {
     export_tag_with_underscore <- paste0(question$Payload$DataExportTag, "_")
     choices <- sapply(rownames(responses), function(x) question$Payload$Choices[[gsub(export_tag_with_underscore, "", x)]])
   }
-  choices <- unlist(choices, use.names = FALSE)
+
+  if (length(choices) == length(N)) {
+    choices <- unlist(choices, use.names = FALSE)
+  } else {
+    if (length(dim(choices)) == 2) {
+      choices <- choices[1,]
+    }
+    choices <- lapply(choices, function(x) x$Display)
+  }
+
 
   # form a data frame with the first column listing the sub-question text, then
   # include the table of percents for each answer choice for each sub-question,
@@ -230,14 +240,23 @@ matrix_multiple_answer_results <- function(question) {
 generate_results <- function(questions) {
 
   for (i in 1:length(questions)) {
-    if (is_mc_multiple_answer(questions[[i]])) {
-      questions[[i]]$Table <- mc_multiple_answer_results(questions[[i]])
-    } else if (is_mc_single_answer(questions[[i]])) {
-      questions[[i]]$Table <- mc_single_answer_results(questions[[i]])
-    } else if (is_matrix_multiple_answer(questions[[i]])) {
-      questions[[i]]$Table <- matrix_multiple_answer_results(questions[[i]])
-    } else if (is_matrix_single_answer(questions[[i]])) {
-      questions[[i]]$Table <- matrix_single_answer_results(questions[[i]])
+    if (is.null(questions[[i]]$Responses)) {
+      has_responses <- FALSE
+    } else {
+      has_responses <- ncol(questions[[i]]$Responses != 0)
+    }
+
+    if (has_responses) {
+      questions[[i]]$Table <- NULL
+      if (is_mc_multiple_answer(questions[[i]])) {
+        try(questions[[i]]$Table <- mc_multiple_answer_results(questions[[i]]), silent = TRUE)
+      } else if (is_mc_single_answer(questions[[i]])) {
+        try(questions[[i]]$Table <- mc_single_answer_results(questions[[i]]), silent = TRUE)
+      } else if (is_matrix_multiple_answer(questions[[i]])) {
+        try(questions[[i]]$Table <- matrix_multiple_answer_results(questions[[i]]), silent = TRUE)
+      } else if (is_matrix_single_answer(questions[[i]])) {
+        try(questions[[i]]$Table <- matrix_single_answer_results(questions[[i]]), silent = TRUE)
+      }
     }
   }
 

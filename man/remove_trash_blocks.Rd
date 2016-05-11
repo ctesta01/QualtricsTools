@@ -14,6 +14,12 @@ The list of blocks is returned without any Trash blocks
 }
 \description{
 This function finds among the trash blocks which has its $Type value
-set to "Trash" and then removes it from the blocks list.
+set to "Trash" and then removes it from the blocks list. The iteration
+in this function is backwards because it assigns NULL to any list
+items which need to be removed. Therefore, if it assigns NULL
+to a value and then moves up, it will not only skip questions as the
+higher up questions move downward as questions are deleted, but
+the total length of the list will be changing as it gets closer to the
+end of the list.
 }
 

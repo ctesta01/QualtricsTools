@@ -27,7 +27,7 @@ blocks_from_survey <- function(survey) {
 #' "SecondaryAttribute", and a "Payload" which contains
 #' most of the information about the question.
 #'
-#' @inheritParam blocks_from_survey
+#' @inheritParams blocks_from_survey
 #' @return A list of questions from the uploaded QSF file
 questions_from_survey <- function(survey) {
     questions <- survey$SurveyElements
@@ -71,12 +71,27 @@ remove_trash_questions <- function(questions, blocks) {
 #' Remove the Trash Block from the list of Blocks
 #'
 #' This function finds among the trash blocks which has its $Type value
-#' set to "Trash" and then removes it from the blocks list.
+#' set to "Trash" and then removes it from the blocks list. The iteration
+#' in this function is backwards because it assigns NULL to any list
+#' items which need to be removed. Therefore, if it assigns NULL
+#' to a value and then moves up, it will not only skip questions as the
+#' higher up questions move downward as questions are deleted, but
+#' the total length of the list will be changing as it gets closer to the
+#' end of the list.
 #'
 #' @inheritParams remove_trash_questions
 #' @return The list of blocks is returned without any Trash blocks
 remove_trash_blocks <- function(blocks) {
     blocks[which(sapply(blocks, function(x) x$Type == "Trash"))] = NULL
+    for (i in 1:length(blocks)) {
+      if (length(blocks[[i]]$BlockElements) != 0) {
+        for (j in length(blocks[[i]]$BlockElements):1) {
+          if(blocks[[i]]$BlockElements[[j]]$Type != "Question") {
+            blocks[[i]]$BlockElements[[j]] <- NULL
+          }
+        }
+      }
+    }
     return(blocks)
 }
 
@@ -144,20 +159,39 @@ questions_into_blocks <- function(questions, blocks) {
   for (i in 1:length(blocks)) {
     if (length(blocks[[i]]$BlockElements) != 0) {
       for (j in 1:length(blocks[[i]]$BlockElements)) {
-        blocks[[i]]$BlockElements[[j]] <- questions[[which(sapply(questions,
-                                  function(x) x$Payload$QuestionID ==
-            blocks[[i]]$BlockElements[[j]]$QuestionID))]]
+        matching_question <- sapply(questions,
+                                    function(x) x$Payload$QuestionID ==
+                                      blocks[[i]]$BlockElements[[j]]$QuestionID)
+        if (all(matching_question == FALSE) == FALSE) {
+          blocks[[i]]$BlockElements[[j]] <- questions[[which(matching_question)]]
+        }
       }
     }
   }
   return(blocks)
 }
 
+
+#' Clean QuestionText of HTML Tags
+clean_question_text <- function(questions) {
+  clean_html_tags <- function(x) gsub("(&[a-z]*;|<.*?>)", " ", x)
+  clean_extra_whitespace <- function(x) gsub("\\s+", " ", x)
+  clean_leading_whitespace <- function (x) gsub("^\\s+|\\s+$", "", x)
+
+  for (i in 1:length(questions)) {
+    questions[[i]][['Payload']][['QuestionTextClean']] <-
+      clean_leading_whitespace(clean_extra_whitespace(
+        clean_html_tags(
+          questions[[i]][['Payload']][['QuestionText']])))
+  }
+
+  return(questions)
+}
+
+
+
 #' Create a Question Dictionary
 create_question_dictionary <- function(blocks) {
-  cleanHTML <- function(htmlString) {
-    return(gsub("<.*?>", "", htmlString))
-  }
 
   list_of_rows_to_df <- function(data) {
     nCol <- max(vapply(data, length, 0))
@@ -194,7 +228,7 @@ create_question_dictionary <- function(blocks) {
       # data export tag
       blocks[[i]]$BlockElements[[j]]$Payload$DataExportTag,
       # question text
-      cleanHTML(blocks[[i]]$BlockElements[[j]]$Payload$QuestionText),
+      blocks[[i]]$BlockElements[[j]]$Payload$QuestionTextClean,
       # human readable question type
       human_readable_qtype(blocks[[i]]$BlockElements[[j]]),
       # qualtrics question type
