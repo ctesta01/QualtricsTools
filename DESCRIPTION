@@ -10,8 +10,8 @@ LazyData: true
 Imports:
     rjson,
     gdata,
-    installr,
     shiny,
     shinydashboard,
     xtable
+Remotes: talgalili/installr
 RoxygenNote: 5.0.1
