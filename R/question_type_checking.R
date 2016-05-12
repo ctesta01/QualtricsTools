@@ -134,7 +134,7 @@ is_multiple_choice <- function(x) {
 }
 
 is_single_answer <- function(x) {
-  return(is_single_answer(x) || is_matrix_bipolar(x) || is_matrix_single_answer)
+  return(is_mc_single_answer(x) || is_matrix_bipolar(x) || is_matrix_single_answer(x))
    # return(
 #    (x$Payload$QuestionType == "MC" &&
 #       (x$Payload$Selector == "SAVR" ||

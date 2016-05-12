@@ -159,11 +159,11 @@ questions_into_blocks <- function(questions, blocks) {
   for (i in 1:length(blocks)) {
     if (length(blocks[[i]]$BlockElements) != 0) {
       for (j in 1:length(blocks[[i]]$BlockElements)) {
-        matching_question <- sapply(questions,
-                                    function(x) x$Payload$QuestionID ==
-                                      blocks[[i]]$BlockElements[[j]]$QuestionID)
-        if (all(matching_question == FALSE) == FALSE) {
-          blocks[[i]]$BlockElements[[j]] <- questions[[which(matching_question)]]
+        matching_question <- which(sapply(questions,
+                                    function(x) isTRUE(x$Payload$QuestionID ==
+                                      blocks[[i]]$BlockElements[[j]]$QuestionID)))
+        if (length(matching_question) == 1) {
+          blocks[[i]]$BlockElements[[j]] <- questions[[matching_question]]
         }
       }
     }
@@ -188,6 +188,29 @@ clean_question_text <- function(questions) {
   return(questions)
 }
 
+human_readable_qtype <- function(questions) {
+  create_qtype <- function(q) {
+    qtype <- which(c(is_multiple_choice(q),
+                     is_single_answer(q),
+                     is_rank_order(q),
+                     is_text_entry(q)))
+    if (length(qtype) == 0) qtype <- 0
+    human_qtype <- switch(qtype,
+                          "Check All",
+                          "Single Answer",
+                          "Rank Order",
+                          "Text Entry")
+    if (is.null(human_qtype)) human_qtype <- ""
+    return(human_qtype)
+  }
+
+  for (i in 1:length(questions)) {
+    questions[[i]]$Payload$QuestionTypeHuman <- create_qtype(questions[[i]])
+  }
+
+  return(questions)
+}
+
 
 
 #' Create a Question Dictionary
@@ -200,22 +223,6 @@ create_question_dictionary <- function(blocks) {
     data.frame(data)
   }
 
-  human_readable_qtype <- function (question) {
-    qtype = ""
-    if (is_multiple_choice(question)) {
-      qtype = "Check All"
-    } else if (is_single_answer(question)) {
-      qtype = "Single Answer"
-    } else if (is_rank_order(question)) {
-      qtype = "Rank Order"
-    } else if (is_text_entry(question)) {
-      qtype = "Text Entry"
-    } else {
-      qtype = ""
-    }
-    return(qtype)
-  }
-
   # create_entry creates the row for any individual
   # response with the following elements in it:
   # "DataExportTag",
@@ -223,14 +230,14 @@ create_question_dictionary <- function(blocks) {
   # "QuestionType",
   # "QuestionType2",
   # "QuestionType3",
-  create_entry <- function(e, i, j) {
+  create_entry <- function(i, j) {
     return(c(
       # data export tag
       blocks[[i]]$BlockElements[[j]]$Payload$DataExportTag,
       # question text
       blocks[[i]]$BlockElements[[j]]$Payload$QuestionTextClean,
       # human readable question type
-      human_readable_qtype(blocks[[i]]$BlockElements[[j]]),
+      blocks[[i]]$BlockElements[[j]]$Payload$QuestionTypeHuman,
       # qualtrics question type
       blocks[[i]]$BlockElements[[j]]$Payload$QuestionType,
       # qualtrics question selector
@@ -251,7 +258,7 @@ create_question_dictionary <- function(blocks) {
         if (is.null(blocks[[i]]$BlockElements[[j]]$Payload$SubSelector)) {
           blocks[[i]]$BlockElements[[j]]$Payload$SubSelector <- ""
         }
-        entries[[e]] <- create_entry(e, i, j)
+        entries[[e]] <- create_entry(i, j)
       }
     }
   }
