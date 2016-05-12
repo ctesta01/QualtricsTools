@@ -19,14 +19,14 @@ body <- dashboardBody(
         fileInput('file2',
                   'Choose CSV Response Set File',
                   accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv')
-        )
+        ),
+        downloadButton('downloadResults', 'Download Results Table')
       )
     )),
     column(width = 8,
       tabBox( width = NULL,
               tabPanel(h5("results tables"),
                        textOutput("uncodeable_message"),
-                       downloadButton('downloadResults', 'Download Results'),
                        uiOutput("results_tables")
               ),
               tabPanel(h5("question dictionary"),
