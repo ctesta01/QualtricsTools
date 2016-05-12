@@ -116,3 +116,31 @@ validate_data_export_tags <- function(questions) {
 }
 
 
+#' Get Questions (with Responses) and Blocks (with Questions)
+#'
+#' This function returns a list with two elements, where
+#' the first element is questions with their responses
+#' and results-tables listed in them, and secondly
+#' the blocks of the survey, with questions listed in
+#' each block as BlockElements.
+#'
+#' @param survey A qualtrics survey, uploaded from a qsf/json file
+#' @param responses Qualtrics responses to a survey, uploaded from csv as a data frame
+#'
+#' @return a list with two elements, the first being the survey questions,
+#' and the second being the survey blocks
+get_questions_and_blocks <- function(survey, responses) {
+  blocks <- blocks_from_survey(survey)
+  questions <- questions_from_survey(survey)
+  questions_without_trash <- remove_trash_questions(questions, blocks)
+  questions <- clean_question_text(questions)
+  questions <- human_readable_qtype(questions)
+  blocks_without_trash <- remove_trash_blocks(blocks)
+  questions_with_responses <- link_responses_to_questions(questions_without_trash, responses)
+  questions_with_results <- generate_results(questions_with_responses)
+  blocks_with_questions <- questions_into_blocks(questions_with_results, blocks_without_trash)
+  questions_and_blocks <- list()
+  questions_and_blocks[['questions']] <- questions_with_results
+  questions_and_blocks[['blocks']] <- blocks_with_questions
+  return(questions_and_blocks)
+}

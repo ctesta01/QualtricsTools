@@ -13,12 +13,12 @@ body <- dashboardBody(
     fluidRow(column(width = 4, tabBox( width = NULL,
       tabPanel(h5("upload files"),
         fileInput('file1',
-                  'Choose CSV Response Set File',
-                  accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv')
-        ),
-        fileInput('file2',
                   'Choose QSF Survey File',
                   accept=c('text/qsf', 'text/plain', '.qsf')
+        ),
+        fileInput('file2',
+                  'Choose CSV Response Set File',
+                  accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv')
         )
       )
     )),
