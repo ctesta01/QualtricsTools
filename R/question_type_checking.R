@@ -114,51 +114,31 @@ is_matrix_bipolar <- function(question) {
 }
 
 
-
-
-
-
+#' Determine if a question is a multiple choice question
 is_multiple_choice <- function(x) {
   return(is_mc_multiple_answer(x) || is_matrix_multiple_answer(x))
-
- # return(
-#    (x$Payload$QuestionType == "MC" &&
-#       (x$Payload$Selector == "MAVR" ||
-#          x$Payload$Selector == "MAHR" ||
-#          x$Payload$Selector == "MSB" ||
-#          x$Payload$Selector == "MACOL")
-#    ) ||
-#      (x$Payload$QuestionType == "Matrix" &&
-#         x$Payload$SubSelector == "MultipleAnswer"
-#      ))
 }
 
+
+#' Determine if a question is a single answer question
 is_single_answer <- function(x) {
   return(is_mc_single_answer(x) || is_matrix_bipolar(x) || is_matrix_single_answer(x))
-   # return(
-#    (x$Payload$QuestionType == "MC" &&
-#       (x$Payload$Selector == "SAVR" ||
-#          x$Payload$Selector == "SAHR" ||
-#          x$Payload$Selector == "SACOL" ||
-#          x$Payload$Selector == "DL" ||
-#          x$Payload$Selector == "SB")) ||
-#      (x$Payload$QuestionType == "Matrix" && (
-#        x$Payload$SubSelector == "DL" ||
-#          x$Payload$Selector == "Bipolar" ||
-#          x$Payload$SubSelector == "SingleAnswer"
-#      ))
-#
-#  )
 }
 
+
+#' Determine if a question is a rank order question
 is_rank_order <- function(x) {
   return(x$Payload$QuestionType == "RO")
 }
 
+
+#' Determine if a question is a text entry question
 is_text_entry <- function(x) {
   return(x$Payload$QuestionType == "TE")
 }
 
+
+#' Determine if a question is a matrix question
 is_matrix_question <- function(x) {
   return(x$Payload$QuestionType == "Matrix")
 }
