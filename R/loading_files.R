@@ -80,23 +80,6 @@ ask_for_csv <- function(responsesfile) {
 }
 
 
-#' Validate Response Column Uniqueness
-#'
-#' It is crucial for parts of this program to work that the data response columns be unique
-#' to one another. This program checks for duplicates among the response column names
-#' of the questions and returns FALSE if there are any duplicates, and TRUE if there are no
-#' duplicates. Equivalently, FALSE represents FALSE validation, and TRUE represents TRUE validation.
-#'
-#' @param responses A data frame of responses from a Qualtrics survey
-validate_response_columns <- function(responses) {
-    if (any(duplicated(names(responses)))) {
-        FALSE
-    } else {
-        TRUE
-    }
-}
-
-
 #' Validate Data Export Tag Uniqueness
 #'
 #' It is crucial for parts of this program to work that the DataExportTags be unique
