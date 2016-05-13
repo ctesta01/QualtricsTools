@@ -154,9 +154,15 @@ remove_trash_blocks <- function(blocks) {
 #' as a data frame stored in $Responses.
 link_responses_to_questions <- function (questions, responses) {
     for (i in 1:length(questions)) {
+        # create a string with the data export tag and an underscore
+        # create a string with the data export tag and a period
         export_tag_with_underscore <- paste0( questions[[i]]$Payload$DataExportTag, "_" )
         export_tag_with_period <- paste0( questions[[i]]$Payload$DataExportTag, "." )
 
+        # there's also the possibility that a response column starts
+        # with a choice data export tag from a question. 
+        # this unlists the choice data export tags and creates
+        # a list of response columns that start with a choice data export tag.
         starts_with_choice_export_tags <- vector('integer')
         if ("ChoiceDataExportTags" %in% names(questions[[i]]$Payload)) {
           choice_export_tags <- unlist(questions[[i]]$Payload$ChoiceDataExportTags)
@@ -165,6 +171,13 @@ link_responses_to_questions <- function (questions, responses) {
                                                 which(gdata::startsWith(names(responses), j)))
           }
         }
+
+        # the response columns that match a question are the ones that: 
+        # - start with a data export tag followed by a underscore,
+        # - start with a data export tag followed by a period,
+        # - match the data export tag exactly,
+        # - start with a choice data export tag.
+        # take those matching response columns and join them to the question under $Responses
         matching_responses <- c(which(gdata::startsWith(names(responses), export_tag_with_underscore)),
                                 which(gdata::startsWith(names(responses), export_tag_with_period)),
                               which(names(responses) == questions[[i]]$Payload$DataExportTag),
@@ -187,11 +200,18 @@ link_responses_to_questions <- function (questions, responses) {
 #' for each index i.
 questions_into_blocks <- function(questions, blocks) {
   for (i in 1:length(blocks)) {
+    # loop through each block, and in each block, loop through the BlockElements
     if (length(blocks[[i]]$BlockElements) != 0) {
       for (j in 1:length(blocks[[i]]$BlockElements)) {
+
+        # create matching_question as a list of indices of questions which
+        # have the corresponding QuestionID
         matching_question <- which(sapply(questions,
                                     function(x) isTRUE(x$Payload$QuestionID ==
                                       blocks[[i]]$BlockElements[[j]]$QuestionID)))
+
+        # if matching_question is a list of length 1 then we've matched the 
+        # question uniquely and can replace the BlockElement with the actual question
         if (length(matching_question) == 1) {
           blocks[[i]]$BlockElements[[j]] <- questions[[matching_question]]
         }
@@ -202,22 +222,60 @@ questions_into_blocks <- function(questions, blocks) {
 }
 
 
-#' Clean QuestionText of HTML Tags
+#' Create Cleaned Question Text
+#'
+#' This function loops through every question and applies the clean_html function to
+#' the QuestionText and then saves the cleaned output to QuestionTextClean.
+#'
+#' @param questions A list of questions extracted from a Qualtrics QSF file. Use 
+#' questions_from_survey() to get them from an imported survey.
+#'
+#' @return A list of questions which now include in their Payload a QuestionTextClean
+#' element, a copy of the QuestionText but cleaned of any HTML tags and HTML entities. 
 clean_question_text <- function(questions) {
-  clean_html_tags <- function(x) gsub("(&[a-z]*;|<.*?>)", " ", x)
-  clean_extra_whitespace <- function(x) gsub("\\s+", " ", x)
-  clean_leading_whitespace <- function (x) gsub("^\\s+|\\s+$", "", x)
-
+    
   for (i in 1:length(questions)) {
     questions[[i]][['Payload']][['QuestionTextClean']] <-
-      clean_leading_whitespace(clean_extra_whitespace(
-        clean_html_tags(
-          questions[[i]][['Payload']][['QuestionText']])))
+      clean_html(questions[[i]][['Payload']][['QuestionText']])
   }
 
   return(questions)
 }
 
+
+#' Clean HTML and whitespace from a string
+#'
+#' This function uses regex extensively to clean HTML out of a given text block. 
+#' "(&[a-z]*;|<.*?>)" is the first regular expression used. 
+#' It matches a substring that starts with & and ends with ; with 
+#' lower case letters between them, or a substring with < and > on each side, with 
+#' any characters between. Each matched substring is replaced with a space character.
+#' The next regex is "\\s+". It matches multiple characters of whitespace, and 
+#' reduces them to a single space character.
+#' The last regex used is "^\\s+|\\s+$". It matches whitespace at the beginning
+#' or end of the text and removes it. 
+#'
+#' @param text any text string that might contain HTML or whitespace that needs stripped.
+#' @return text without any html or extraneous whitespace.
+clean_html <- function(text) {
+  clean_html_tags <- function(x) gsub("(&[a-z]*;|<.*?>)", " ", x)
+  clean_extra_whitespace <- function(x) gsub("\\s+", " ", x)
+  clean_leading_whitespace <- function (x) gsub("^\\s+|\\s+$", "", x)
+  return(clean_leading_whitespace(clean_extra_whitespace(clean_html_tags(text))))
+}
+
+
+#' Create Human Readable Question Types
+#'
+#' This function saves, admittedly reductionist, more friendly question type 
+#' descriptions. It doesn't have human human readable versions for every question type, 
+#' but for some it is useful to reduce the question type to something more simple. 
+#' This has a nested function (create_qtype) that determines a question's human question type, 
+#' and then it loops through the questions and saves to each the QuestionTypeHuman
+#' field with the output of create_qtype. 
+#'
+#' @inheritParams clean_question_text
+#' @return A list of questions which include in their Payload a QuestionTypeHuman field.
 human_readable_qtype <- function(questions) {
   create_qtype <- function(q) {
     qtype <- which(c(is_multiple_choice(q),
@@ -226,7 +284,7 @@ human_readable_qtype <- function(questions) {
                      is_text_entry(q)))
     if (length(qtype) == 0) qtype <- 0
     human_qtype <- switch(qtype,
-                          "Check All",
+                          "Multiple Answer",
                           "Single Answer",
                           "Rank Order",
                           "Text Entry")
@@ -244,6 +302,11 @@ human_readable_qtype <- function(questions) {
 
 
 #' Create a Question Dictionary
+#'
+#' @param blocks The blocks provided to this function must include questions inserted into
+#' the BlockElements. Create the list of blocks from a survey with blocks_from_survey(), 
+#' and with questions on hand, insert them into the blocks with questions_into_blocks().
+#' @return A data frame with a row for each question describing the question's details.
 create_question_dictionary <- function(blocks) {
 
   list_of_rows_to_df <- function(data) {
@@ -255,11 +318,11 @@ create_question_dictionary <- function(blocks) {
 
   # create_entry creates the row for any individual
   # response with the following elements in it:
-  # "DataExportTag",
-  # "QuestionText",
-  # "QuestionType",
-  # "QuestionType2",
-  # "QuestionType3",
+  # - The data export tag,
+  # - "QuestionTextClean", the question text stripped of any HTML strings/entities,
+  # - "QuestionTypeHuman", the human readable question type,
+  # - "QuestionType", the qualtrics supplied question type,
+  # - "Selector", the qualtrics defined question selector
   create_entry <- function(i, j) {
     return(c(
       # data export tag
