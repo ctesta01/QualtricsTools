@@ -59,7 +59,7 @@ mc_single_answer_results <- function(question) {
 
     # construct the results table with a column for N, Percent, and choices,
     # but make sure that the choices column doesn't have a header when it prints.
-    results_table <- data.frame(N, Percent, choices)
+    results_table <- data.frame(N, Percent, choices, row.names = NULL)
     colnames(results_table)[3] <- ""
     results_table
 }
@@ -97,7 +97,7 @@ mc_multiple_answer_results <- function(question) {
 
   # construct the results table with a column for N, Percent, and choices,
   # but make sure that the choices column doesn't have a header when it prints.
-  results_table <- data.frame(N, Percent, choices)
+  results_table <- data.frame(N, Percent, choices, row.names = NULL)
   colnames(results_table)[3] <- ""
   results_table
 }
@@ -180,7 +180,7 @@ matrix_single_answer_results <- function(question) {
   # form a data frame with the first column listing the sub-question text, then
   # include the table of percents for each answer choice for each sub-question,
   # then include as the last column the number of respondents to each sub-question.
-  responses <- data.frame(choices, responses, N, check.names=F)
+  responses <- data.frame(choices, responses, N, check.names=FALSE, row.names = NULL)
   colnames(responses)[1] <- ""
   rownames(responses) <- NULL
   return(responses)
