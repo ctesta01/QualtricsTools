@@ -1,33 +1,3 @@
-#' Get Questions (with Responses) and Blocks (with Questions)
-#'
-#' This function returns a list with two elements, where
-#' the first element is questions with their responses
-#' and results-tables listed in them, and secondly
-#' the blocks of the survey, with questions listed in
-#' each block as BlockElements.
-#'
-#' @param survey A qualtrics survey, uploaded from a qsf/json file
-#' @param responses Qualtrics responses to a survey, uploaded from csv as a data frame
-#'
-#' @return a list with two elements, the first being the survey questions,
-#' and the second being the survey blocks
-get_questions_and_blocks <- function(survey, responses) {
-  blocks <- blocks_from_survey(survey)
-  questions <- questions_from_survey(survey)
-  questions_without_trash <- remove_trash_questions(questions, blocks)
-  questions <- clean_question_text(questions)
-  questions <- human_readable_qtype(questions)
-  blocks_without_trash <- remove_trash_blocks(blocks)
-  questions_with_responses <- link_responses_to_questions(questions_without_trash, responses)
-  questions_with_results <- generate_results(questions_with_responses)
-  blocks_with_questions <- questions_into_blocks(questions_with_results, blocks_without_trash)
-  questions_and_blocks <- list()
-  questions_and_blocks[['questions']] <- questions_with_results
-  questions_and_blocks[['blocks']] <- blocks_with_questions
-  return(questions_and_blocks)
-}
-
-
 #' Set Response Data to Sample Data or User Data
 #'
 #' load_csv_data returns the sample response set or the user's response set depending
@@ -42,7 +12,7 @@ load_csv_data <- function(file1) {
     if (is.null(file1)) {
         responses <- sample_responses
     } else {
-        responses <- ask_user_for_csv(file1$datapath)
+        responses <- ask_for_csv(file1$datapath)
     }
     return(responses)
 }
@@ -61,7 +31,7 @@ load_qsf_data <- function(file2) {
     if (is.null(file2)) {
         survey <- sample_survey
     } else {
-        survey <- ask_user_for_qsf(file2$datapath)
+        survey <- ask_for_qsf(file2$datapath)
     }
 }
 
@@ -74,7 +44,7 @@ load_qsf_data <- function(file2) {
 #' @param The file path to a Qualtrics survey file
 #'
 #' @return The survey file the user uploads, as a list
-ask_user_for_qsf <- function(surveyfile) {
+ask_for_qsf <- function(surveyfile) {
     if (missing(surveyfile)) {
         print("Select Qualtrics Survey File:")
         surveyfile = file.choose()
@@ -91,7 +61,7 @@ ask_user_for_qsf <- function(surveyfile) {
 #' it removes the first row after turning its entries into attributes.
 #'
 #' @return The csv file the user uploads, as a data frame
-ask_user_for_csv <- function(responsesfile) {
+ask_for_csv <- function(responsesfile) {
     if (missing(responsesfile)) {
         print("Select CSV Response File:")
         responsesfile = file.choose()
