@@ -6,6 +6,10 @@
 \usage{
 questions_from_survey(survey)
 }
+\arguments{
+\item{survey}{This should be a Qualtrics survey in the form of a list
+imported from the JSON-formatted QSF file.}
+}
 \value{
 A list of questions from the uploaded QSF file
 }

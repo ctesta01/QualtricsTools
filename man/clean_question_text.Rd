@@ -2,11 +2,20 @@
 % Please edit documentation in R/reorganizing_survey_data.R
 \name{clean_question_text}
 \alias{clean_question_text}
-\title{Clean QuestionText of HTML Tags}
+\title{Create Cleaned Question Text}
 \usage{
 clean_question_text(questions)
 }
+\arguments{
+\item{questions}{A list of questions extracted from a Qualtrics QSF file. Use
+questions_from_survey() to get them from an imported survey.}
+}
+\value{
+A list of questions which now include in their Payload a QuestionTextClean
+element, a copy of the QuestionText but cleaned of any HTML tags and HTML entities.
+}
 \description{
-Clean QuestionText of HTML Tags
+This function loops through every question and applies the clean_html function to
+the QuestionText and then saves the cleaned output to QuestionTextClean.
 }
 

@@ -6,6 +6,14 @@
 \usage{
 create_question_dictionary(blocks)
 }
+\arguments{
+\item{blocks}{The blocks provided to this function must include questions inserted into
+the BlockElements. Create the list of blocks from a survey with blocks_from_survey(),
+and with questions on hand, insert them into the blocks with questions_into_blocks().}
+}
+\value{
+A data frame with a row for each question describing the question's details.
+}
 \description{
 Create a Question Dictionary
 }
