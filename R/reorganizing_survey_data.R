@@ -11,7 +11,7 @@
 #'
 #' @return a list with two elements, the first being the survey questions,
 #' and the second being the survey blocks
-get_questions_and_blocks <- function(survey, responses) {
+get_coded_questions_and_blocks <- function(survey, responses) {
   blocks <- blocks_from_survey(survey)
   questions <- questions_from_survey(survey)
   questions <- remove_trash_questions(questions, blocks)
