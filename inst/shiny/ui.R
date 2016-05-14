@@ -18,7 +18,7 @@ body <- dashboardBody(
         ),
         fileInput('file2',
                   'Choose CSV Response Set File',
-                  accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv')
+                  accept=c('text/csv', 'text/comma-separated-values', '.csv')
         ),
         downloadButton('downloadResults', 'Download Results Table')
       )

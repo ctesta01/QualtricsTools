@@ -311,8 +311,8 @@ uncodeable_questions_message <- function(questions) {
   uncodeable_message <- ""
   if (length(uncodeable_questions) > 0) {
     uncodeable_questions <- paste(uncodeable_questions, collapse=", ")
-    uncodeable_message <- sprintf("The following questions could not be automatically
-                                  coded: %s", uncodeable_questions)
+    uncodeable_message <- sprintf("The following questions could not be automatically coded: %s",
+                                  uncodeable_questions)
   }
   return(uncodeable_message)
 }

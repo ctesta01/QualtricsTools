@@ -8,11 +8,12 @@
 #'
 #'
 #' @return The return value is the responses data frame
-load_csv_data <- function(file1) {
-    if (is.null(file1)) {
+load_csv_data <- function(file2) {
+    if (is.null(file2)) {
         responses <- sample_responses
     } else {
-        responses <- ask_for_csv(file1$datapath)
+      cat(file2$datapath)
+        responses <- ask_for_csv(file2$datapath)
     }
     return(responses)
 }
@@ -27,11 +28,11 @@ load_csv_data <- function(file1) {
 #'
 #' @return The return value is the survey list object
 
-load_qsf_data <- function(file2) {
-    if (is.null(file2)) {
+load_qsf_data <- function(file1) {
+    if (is.null(file1)) {
         survey <- sample_survey
     } else {
-        survey <- ask_for_qsf(file2$datapath)
+        survey <- ask_for_qsf(file1$datapath)
     }
 }
 
