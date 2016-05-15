@@ -5,9 +5,9 @@ Qualtrics survey data and responses. The project is an R package, and
 comes with a Shiny application that can be used as an interface for 
 some automatic report generation. 
 
-![calculating results tables](https://gfycat.com/ifr/PerfumedTangibleAfricangroundhornbill)
+![calculating results tables](https://giant.gfycat.com/PerfumedTangibleAfricangroundhornbill.gif)
 
-![constructing a question dictionary](https://gfycat.com/ifr/ThoughtfulCreamyKoalabear)
+![constructing a question dictionary](https://giant.gfycat.com/ThoughtfulCreamyKoalabear.gif)
 
 More details will come soon!
 
