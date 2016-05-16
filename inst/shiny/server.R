@@ -7,10 +7,12 @@ shinyServer(
            try(questions_from_survey(
            load_qsf_data(input$file1)
            ))),
-           "Please submit a survey with no duplicate question IDs"))
+           "Please submit a survey with no duplicate question IDs")
+      )
+
 
     survey <- load_qsf_data(input$file1)
-    responses <- load_csv_data(input$file2)
+    responses <- load_csv_data(input$file2, input$file1)
     survey_and_responses <- list()
     survey_and_responses[[1]] <- survey
     survey_and_responses[[2]] <- responses
@@ -19,17 +21,22 @@ shinyServer(
 
 
   output$results_tables <- renderUI({
+    if (length(main()) == 2) {
     survey <- main()[[1]]
     responses <- main()[[2]]
     blocks <- get_coded_questions_and_blocks(survey, responses)[[2]]
     div(HTML(html_tabelize(blocks)), class="shiny-html-output")
+    }
   })
 
   output$uncodeable_message <- renderText({
+    validate(need(length(main()) == 2, "Please upload survey responses"))
+    if (length(main()) == 2) {
     survey <- main()[[1]]
     responses <- main()[[2]]
     questions <- get_coded_questions_and_blocks(survey, responses)[[1]]
     uncodeable_questions_message(questions)
+    }
   })
 
   output$question_dictionary <- renderDataTable({

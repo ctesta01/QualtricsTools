@@ -162,8 +162,9 @@ matrix_single_answer_results <- function(question) {
   }
   answers <- sapply(answers, clean_html)
   colnames(responses) <- answers
-  if (all(names(question$Responses) %in% question$Payload$ChoiceDataExportTags)) {
-    choices_uncoded <- sapply(rownames(responses), function(x) which(question$Payload$ChoiceDataExportTags == x))
+  choice_export_tags <- sapply(question$Payload$ChoiceDataExportTags, function(x) gsub("-", "_", x))
+  if (all(names(question$Responses) %in% choice_export_tags)) {
+    choices_uncoded <- sapply(rownames(responses), function(x) which(choice_export_tags == x))
     choices <- sapply(choices_uncoded, function(x) question$Payload$Choices[[x]][[1]])
   } else {
     export_tag_with_underscore <- paste0(question$Payload$DataExportTag, "_")

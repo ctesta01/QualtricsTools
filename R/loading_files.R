@@ -8,9 +8,11 @@
 #'
 #'
 #' @return The return value is the responses data frame
-load_csv_data <- function(file2) {
-    if (is.null(file2)) {
-        responses <- sample_responses
+load_csv_data <- function(file2, file1) {
+    if (is.null(file2) && is.null(file1)) {
+      responses <- sample_responses
+    } else if (is.null(file2)) {
+      responses <- NULL
     } else {
         responses <- ask_for_csv(file2$datapath)
     }
