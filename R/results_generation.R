@@ -50,12 +50,13 @@ mc_single_answer_results <- function(question) {
         choices_uncoded <- sapply(choices_recoded, function(x) which(question$Payload$RecodeValues == x))
         choices <- sapply(choices_uncoded, function(x) question$Payload$Choices[[x]])
         choices <- sapply(choices, function(x) x['Display'])
-        choices <- unlist(choices, use.names = FALSE)
     } else {
         choices_uncoded <- responses_tabled[,1]
         choices_recoded <- sapply(choices_uncoded, function(x) question$Payload$Choices[[x]])
-        choices <- unlist(choices_recoded, use.names = FALSE)
     }
+    choices <- unlist(choices, use.names = FALSE)
+    choices <- sapply(choices, clean_html)
+
 
     # construct the results table with a column for N, Percent, and choices,
     # but make sure that the choices column doesn't have a header when it prints.
@@ -92,6 +93,7 @@ mc_multiple_answer_results <- function(question) {
   names(N) <- gsub(paste0(data_export_tag, "_"), "", names(question$Responses))
   choices <- sapply(names(N), function(x) question$Payload$Choices[[x]])
   choices <- unlist(choices, use.names = FALSE)
+  choices <- sapply(choices, clean_html)
   N <- unlist(N, use.names = FALSE)
   Percent <- percent0(N / respondents_count)
 
@@ -135,7 +137,7 @@ matrix_single_answer_results <- function(question) {
   for (i in 1:nrow(responses)) {
     for (j in 1:ncol(responses)) {
       responses[i,j] <- percent0(strtoi(responses[i,j]) /
-                              N[1])
+                              N[j])
     }
   }
 
@@ -158,6 +160,7 @@ matrix_single_answer_results <- function(question) {
   } else {
     answers <- sapply(colnames(responses), function(x) question$Payload$Answers[[x]])
   }
+  answers <- sapply(answers, clean_html)
   colnames(responses) <- answers
   if (all(names(question$Responses) %in% question$Payload$ChoiceDataExportTags)) {
     choices_uncoded <- sapply(rownames(responses), function(x) which(question$Payload$ChoiceDataExportTags == x))
@@ -175,7 +178,7 @@ matrix_single_answer_results <- function(question) {
     }
     choices <- lapply(choices, function(x) x$Display)
   }
-
+  choices <- sapply(choices, clean_html)
 
   # form a data frame with the first column listing the sub-question text, then
   # include the table of percents for each answer choice for each sub-question,
@@ -205,7 +208,9 @@ matrix_single_answer_results <- function(question) {
 matrix_multiple_answer_results <- function(question) {
   respondents_count <- sapply(question$Responses, function(y) strtoi(length(which(y != -99))))
   headernames <- sapply(question$Payload$Answers, function(y) y$Display)
+  headernames <- sapply(headernames, clean_html)
   rownames <- sapply(question$Payload$Choices, function(y) y$Display)
+  rownames <- sapply(rownames, clean_html)
   ma_matrix_sums <- sapply(question$Responses, function (y) sum(y == 1))
   chunk2 <- function(y,n) split(y, cut(seq_along(y), n, labels = FALSE))
   df <- t(as.data.frame((chunk2(ma_matrix_sums, length(headernames)))))
@@ -217,8 +222,11 @@ matrix_multiple_answer_results <- function(question) {
       df[i,j] <- percent0(strtoi(df[i,j]) / respondents_count[i])
     }
   }
+  choices <- sapply(question$Payload$Choices, function(y) y$Display)
+  choices <- sapply(choices, clean_html)
+
   df <- cbind(df, N=respondents_count)
-  df <- cbind(Choices=sapply(question$Payload$Choices, function(y) y$Display), df)
+  df <- cbind("Choices"=choices, df)
   return(df)
 }
 
@@ -278,14 +286,13 @@ html_tabelize <- function(blocks) {
       for (j in 1:length(blocks[[i]]$BlockElements)) {
         # tables = c(print_tables, blocks[[i]]$BlockElements[[j]]$Payload$DataExportTag)
         if (is.null(blocks[[i]]$BlockElements[[j]]$Table) == FALSE) {
-          tables = c(tables,
-                           print(xtable::xtable(blocks[[i]]$BlockElements[[j]]$Table,
+          tables = c(tables, capture.output(print(xtable::xtable(blocks[[i]]$BlockElements[[j]]$Table,
                                                 caption=paste("Question:",
                                                 blocks[[i]]$BlockElements[[j]]$Payload$DataExportTag)),
                                  type="html",
                                  html.table.attributes='class="data table table-bordered table-condensed"',
                                  caption.placement="top",
-                                 include.rownames=FALSE))
+                                 include.rownames=FALSE)))
           tables = c(tables, "<br>")
         }
       }

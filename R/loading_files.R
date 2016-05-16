@@ -12,7 +12,6 @@ load_csv_data <- function(file2) {
     if (is.null(file2)) {
         responses <- sample_responses
     } else {
-      cat(file2$datapath)
         responses <- ask_for_csv(file2$datapath)
     }
     return(responses)
