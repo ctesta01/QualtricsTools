@@ -48,11 +48,10 @@ mc_single_answer_results <- function(question) {
     if ("RecodeValues" %in% names(question$Payload)) {
         choices_recoded <- responses_tabled[,1]
         choices_uncoded <- sapply(choices_recoded, function(x) which(question$Payload$RecodeValues == x))
-        choices <- sapply(choices_uncoded, function(x) question$Payload$Choices[[x]])
-        choices <- sapply(choices, function(x) x['Display'])
+        choices <- sapply(choices_uncoded, function(x) question$Payload$Choices[[x]][[1]])
     } else {
         choices_uncoded <- responses_tabled[,1]
-        choices_recoded <- sapply(choices_uncoded, function(x) question$Payload$Choices[[x]])
+        choices <- sapply(choices_uncoded, function(x) question$Payload$Choices[[x]][[1]])
     }
     choices <- unlist(choices, use.names = FALSE)
     choices <- sapply(choices, clean_html)
@@ -88,10 +87,11 @@ mc_multiple_answer_results <- function(question) {
   # texts, and then flatten it.
   # lastly, flatten the Ns list and calculate the Percents.
   N <- sapply(question$Responses, function(x) sum(x == 1))
-  respondents_count <- length(question$Responses[[1]] != -99)
+  respondents_count <- length(which(apply(
+    question$Responses, 1, function(row) !(all(row == -99) | all(row == "")))))
   data_export_tag <- question$Payload$DataExportTag
   names(N) <- gsub(paste0(data_export_tag, "_"), "", names(question$Responses))
-  choices <- sapply(names(N), function(x) question$Payload$Choices[[x]])
+  choices <- sapply(names(N), function(x) question$Payload$Choices[[x]][[1]])
   choices <- unlist(choices, use.names = FALSE)
   choices <- sapply(choices, clean_html)
   N <- unlist(N, use.names = FALSE)
@@ -155,21 +155,21 @@ matrix_single_answer_results <- function(question) {
   responses <- t(responses)
   if ("RecodeValues" %in% names(question$Payload)) {
     answers_uncoded <- sapply(colnames(responses), function(x) which(question$Payload$RecodeValue == x))
-    answers <- sapply(answers_uncoded, function(x) question$Payload$Answers[[x]])
+    answers <- sapply(answers_uncoded, function(x) question$Payload$Answers[[x]][[1]])
     answers <- unlist(answers, use.names = FALSE)
   } else {
-    answers <- sapply(colnames(responses), function(x) question$Payload$Answers[[x]])
+    answers <- sapply(colnames(responses), function(x) question$Payload$Answers[[x]][[1]])
   }
   answers <- sapply(answers, clean_html)
   colnames(responses) <- answers
   if (all(names(question$Responses) %in% question$Payload$ChoiceDataExportTags)) {
     choices_uncoded <- sapply(rownames(responses), function(x) which(question$Payload$ChoiceDataExportTags == x))
-    choices <- sapply(choices_uncoded, function(x) question$Payload$Choices[[x]])
+    choices <- sapply(choices_uncoded, function(x) question$Payload$Choices[[x]][[1]])
   } else {
     export_tag_with_underscore <- paste0(question$Payload$DataExportTag, "_")
-    choices <- sapply(rownames(responses), function(x) question$Payload$Choices[[gsub(export_tag_with_underscore, "", x)]])
+    choices <- sapply(rownames(responses), function(x)
+      question$Payload$Choices[[gsub(export_tag_with_underscore, "", x)]][[1]])
   }
-
   if (length(choices) == length(N)) {
     choices <- unlist(choices, use.names = FALSE)
   } else {
@@ -287,8 +287,9 @@ html_tabelize <- function(blocks) {
         # tables = c(print_tables, blocks[[i]]$BlockElements[[j]]$Payload$DataExportTag)
         if (is.null(blocks[[i]]$BlockElements[[j]]$Table) == FALSE) {
           tables = c(tables, capture.output(print(xtable::xtable(blocks[[i]]$BlockElements[[j]]$Table,
-                                                caption=paste("Question:",
-                                                blocks[[i]]$BlockElements[[j]]$Payload$DataExportTag)),
+                                                caption=paste0("Question ",
+                                                blocks[[i]]$BlockElements[[j]]$Payload$DataExportTag,
+                                                ": ", blocks[[i]]$BlockElements[[j]]$Payload$QuestionTextClean)),
                                  type="html",
                                  html.table.attributes='class="data table table-bordered table-condensed"',
                                  caption.placement="top",

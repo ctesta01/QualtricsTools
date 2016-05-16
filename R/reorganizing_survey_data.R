@@ -167,6 +167,7 @@ link_responses_to_questions <- function (questions, responses) {
         starts_with_choice_export_tags <- vector('integer')
         if ("ChoiceDataExportTags" %in% names(questions[[i]]$Payload)) {
           choice_export_tags <- unlist(questions[[i]]$Payload$ChoiceDataExportTags)
+          choice_export_tags <- sapply(choice_export_tags, function(x) gsub("-", "_", x))
           for (j in choice_export_tags) {
             starts_with_choice_export_tags <- c(starts_with_choice_export_tags,
                                                 which(gdata::startsWith(names(responses), j)))
