@@ -8,13 +8,13 @@
 #'
 #'
 #' @return The return value is the responses data frame
-load_csv_data <- function(file2, file1) {
+load_csv_data <- function(file2, file1, headerrows) {
     if (is.null(file2) && is.null(file1)) {
       responses <- sample_responses
     } else if (is.null(file2)) {
       responses <- NULL
     } else {
-        responses <- ask_for_csv(file2$datapath)
+        responses <- ask_for_csv(file2$datapath, headerrows)
     }
     return(responses)
 }
@@ -63,21 +63,19 @@ ask_for_qsf <- function(surveyfile) {
 #' it removes the first row after turning its entries into attributes.
 #'
 #' @return The csv file the user uploads, as a data frame
-ask_for_csv <- function(responsesfile) {
+ask_for_csv <- function(responsesfile, headerrows) {
     if (missing(responsesfile)) {
         print("Select CSV Response File:")
         responsesfile = file.choose()
+    }
+    if (missing(headerrows)) {
+      headerrows <- 2
     }
     responses = read.csv(responsesfile, check.names=F)
 
     responses[which(colnames(responses) == "")] <- NULL
 
-    for (i in 1:length(colnames(responses))) {
-        column <- colnames(responses)[i]
-        attr(responses[[column]], "text") <- responses[1, i]
-    }
-
-    responses <- responses[-1, ]
+    responses <- responses[(1 - headerrows), ]
     return(responses)
 }
 

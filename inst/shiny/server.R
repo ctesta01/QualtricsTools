@@ -12,7 +12,7 @@ shinyServer(
 
 
     survey <- load_qsf_data(input$file1)
-    responses <- load_csv_data(input$file2, input$file1)
+    responses <- load_csv_data(input$file2, input$file1, input$headerrows)
     survey_and_responses <- list()
     survey_and_responses[[1]] <- survey
     survey_and_responses[[2]] <- responses

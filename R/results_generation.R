@@ -91,6 +91,9 @@ mc_multiple_answer_results <- function(question) {
     question$Responses, 1, function(row) !(all(row == -99) | all(row == "")))))
   data_export_tag <- question$Payload$DataExportTag
   names(N) <- gsub(paste0(data_export_tag, "_"), "", names(question$Responses))
+  if ("RecodeValues" %in% names(question$Payload) && names(N) %in% question$Payload$RecodeValues) {
+    names(N) <- sapply(names(N), function(x) which(question$Payload$RecodeValues == x))
+  }
   choices <- sapply(names(N), function(x) question$Payload$Choices[[x]][[1]])
   choices <- unlist(choices, use.names = FALSE)
   choices <- sapply(choices, clean_html)
@@ -162,10 +165,14 @@ matrix_single_answer_results <- function(question) {
   }
   answers <- sapply(answers, clean_html)
   colnames(responses) <- answers
-  choice_export_tags <- sapply(question$Payload$ChoiceDataExportTags, function(x) gsub("-", "_", x))
-  if (all(names(question$Responses) %in% choice_export_tags)) {
+  choice_export_tags_with_underscores <- sapply(question$Payload$ChoiceDataExportTags, function(x) gsub("-", "_", x))
+  response_names_without_export_tag <- gsub(paste0(question$Payload$DataExportTag, "_"), "", names(question$Responses))
+  if (all(names(question$Responses) %in% choice_export_tags_with_underscores)) {
     choices_uncoded <- sapply(rownames(responses), function(x) which(choice_export_tags == x))
     choices <- sapply(choices_uncoded, function(x) question$Payload$Choices[[x]][[1]])
+  } else if (all(response_names_without_export_tag %in% question$Payload$ChoiceDataExportTags)){
+    choices <- sapply(response_names_without_export_tag, function(x) which(question$Payload$ChoiceDataExportTags == x))
+    choices <- sapply(choices, function(x) question$Payload$Choices[[x]][[1]])
   } else {
     export_tag_with_underscore <- paste0(question$Payload$DataExportTag, "_")
     choices <- sapply(rownames(responses), function(x)

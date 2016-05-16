@@ -20,6 +20,7 @@ body <- dashboardBody(
                   'Choose CSV Response Set File',
                   accept=c('text/csv', 'text/comma-separated-values', '.csv')
         ),
+        numericInput("headerrows", "How many header rows are there in the responses?", 2, min = 1),
         downloadButton('downloadResults', 'Download Results Table')
       )
     )),
