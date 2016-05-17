@@ -25,7 +25,7 @@ shinyServer(
     survey <- main()[[1]]
     responses <- main()[[2]]
     blocks <- get_coded_questions_and_blocks(survey, responses)[[2]]
-    div(HTML(html_tabelize(blocks)), class="shiny-html-output")
+    div(HTML(tabelize_blocks(blocks)), class="shiny-html-output")
     }
   })
 
@@ -49,15 +49,31 @@ shinyServer(
     blocks <- remove_trash_blocks(blocks)
     blocks <- questions_into_blocks(questions, blocks)
     create_question_dictionary(blocks)
-
   })
 
-  output$downloadResults <- downloadHandler(
+  output$downloadResultsTables <- downloadHandler(
     filename = 'tables.xls',
     content = function(file) {
-      write(html_tabelize(get_coded_questions_and_blocks(main()[[1]], main()[[2]])[[2]]), file)
+      write(tabelize_blocks(get_coded_questions_and_blocks(main()[[1]], main()[[2]])[[2]]), file)
     }
   )
+
+  output$downloadTextAppendices <- downloadHandler(
+    filename = 'appendices.xls',
+    content = function(file) {
+      write(text_appendices_table(get_coded_questions_and_blocks(main()[[1]], main()[[2]])[[2]]), file)
+    }
+  )
+
+  output$text_appendices <- renderUI({
+    validate(need(length(main()) == 2, "Please upload survey responses"))
+    if (length(main()) == 2) {
+      survey <- main()[[1]]
+      responses <- main()[[2]]
+      blocks <- get_coded_questions_and_blocks(survey, responses)[[2]]
+      div(HTML(text_appendices_table(blocks)), class="shiny-html-output")
+    }
+  })
 
   }
 )

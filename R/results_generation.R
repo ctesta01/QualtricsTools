@@ -297,7 +297,7 @@ generate_results <- function(questions) {
 #' such a list of questions by using generate_results function
 #'
 #' @return A list of HTML results tables for each question
-html_tabelize <- function(blocks) {
+tabelize_blocks <- function(blocks) {
   tables <- list()
   for (i in 1:length(blocks)) {
     if (length(blocks[[i]]$BlockElements) != 0) {
@@ -321,6 +321,86 @@ html_tabelize <- function(blocks) {
 }
 
 
+text_appendices_table <- function(blocks) {
+  appendix_lettering <- function(number) {
+    if (number %in% 1:26) {
+      return(LETTERS[[number]])
+    } else if (number %in% 27:702) {
+      first_digit <- (floor((number - 1) / 26))
+      second_digit <- ((number - 1) %% 26) + 1
+      first_letter <- LETTERS[[first_digit]]
+      second_letter <- LETTERS[[second_digit]]
+      return(paste0(first_letter, second_letter))
+    }
+  }
+
+  tables <- list()
+  e <- 0
+  for (i in 1:length(blocks)) {
+    if (length(blocks[[i]]$BlockElements) != 0) {
+      for (j in 1:length(blocks[[i]]$BlockElements)) {
+        if (!(is.null(blocks[[i]]$BlockElements[[j]]$Responses))) {
+
+          text_columns <- which(sapply(colnames(blocks[[i]]$BlockElements[[j]]$Responses),
+                                       function(x) grepl("TEXT", x)))
+
+          if (blocks[[i]]$BlockElements[[j]]$Payload$QuestionType == "TE") {
+            responses <- blocks[[i]]$BlockElements[[j]]$Responses
+            responses <- as.data.frame(responses[!apply(responses, 1, function(x) any(x=="")),])
+            colnames(responses) <- colnames(blocks[[i]]$BlockElements[[j]]$Responses)
+            if (length(as.list(responses)) > 0) {
+            e <- e+1
+            tables <- c(tables, paste0("Appendix ", appendix_lettering(e), ": <br>"))
+            tables <- c(tables, capture.output(print(xtable::xtable(
+                responses,
+                caption=paste0(
+                  blocks[[i]]$BlockElements[[j]]$Payload$QuestionTextClean,
+                  "<br># of Respondents: ",
+                  nrow(responses))
+                ),
+              type="html",
+              html.table.attributes='class="data table table-bordered table-condensed"',
+              caption.placement="top",
+              include.rownames=FALSE)))
+
+            tables <- c(tables, "<br>")
+            }
+
+          } else if (length(text_columns) > 0) {
+            for (k in 1:length(text_columns)) {
+              responses <- blocks[[i]]$BlockElements[[j]]$Responses[text_columns[[k]]]
+              responses <- as.data.frame(responses[!apply(responses, 1, function(x) any(x=="")),])
+              colnames(responses) <- colnames(blocks[[i]]$BlockElements[[j]]$Responses[text_columns[[k]]])
+              if (length(as.list(responses)) > 0) {
+                e <- e+1
+
+              tables <- c(tables, paste0("Appendix ", appendix_lettering(e), ": <br>"))
+              tables <- c(tables, capture.output(print(xtable::xtable(
+                  responses,
+                  caption=paste0(
+                    blocks[[i]]$BlockElements[[j]]$Payload$QuestionTextClean,
+                    "<br># of Respondents: ",
+                    nrow(responses))
+                  ),
+                type="html",
+                html.table.attributes='class="data table table-bordered table-condensed"',
+                caption.placement="top",
+                include.rownames=FALSE))
+                )
+
+              tables <- c(tables, "<br>")
+              }
+
+            }
+          }
+        }
+      }
+    }
+  }
+  return(unlist(lapply(tables, paste)))
+}
+
+
 #' Create a Message Stating Which Questions Weren't Automatically Tabled
 #'
 #' This is function is used in the Shiny app to tell users which questions weren't
@@ -331,7 +411,7 @@ html_tabelize <- function(blocks) {
 #' @return A message stating for which questions could not have
 #' results automatically generated.
 uncodeable_questions_message <- function(questions) {
-  uncodeable_questions <- which(sapply(questions, function(x) !("Table" %in% names(x))))
+  uncodeable_questions <- which(sapply(questions, function(x) !("Table" %in% names(x)) && (x$Payload$QuestionType != "TE")))
   uncodeable_questions <- sapply(uncodeable_questions, function(x)
     questions[[x]]$Payload$DataExportTag)
   uncodeable_message <- ""

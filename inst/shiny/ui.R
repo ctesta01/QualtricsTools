@@ -21,7 +21,11 @@ body <- dashboardBody(
                   accept=c('text/csv', 'text/comma-separated-values', '.csv')
         ),
         numericInput("headerrows", "How many header rows are there in the responses?", 2, min = 1),
-        downloadButton('downloadResults', 'Download Results Table')
+        downloadButton('downloadResultsTables', 'Download Results Table'),
+        h5(""),
+        downloadButton('downloadQuestionDictionary', 'Download Question Dictionary'),
+        h5(""),
+        downloadButton('downloadTextAppendices', 'Download Text Appendices')
       )
     )),
     column(width = 8,
@@ -29,9 +33,12 @@ body <- dashboardBody(
               tabPanel(h5("results tables"),
                        textOutput("uncodeable_message"),
                        uiOutput("results_tables")
-              ),
+                      ),
               tabPanel(h5("question dictionary"),
-                       dataTableOutput("question_dictionary"))
+                       dataTableOutput("question_dictionary")
+                       ),
+              tabPanel(h5("text appendices"),
+                       uiOutput("text_appendices"))
       )
 
     ))
