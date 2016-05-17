@@ -75,7 +75,7 @@ ask_for_csv <- function(responsesfile, headerrows) {
 
     responses[which(colnames(responses) == "")] <- NULL
 
-    responses <- responses[(1 - headerrows), ]
+    responses <- responses[headerrows:nrow(responses),]
     return(responses)
 }
 

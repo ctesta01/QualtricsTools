@@ -55,10 +55,9 @@ shinyServer(
   output$downloadResults <- downloadHandler(
     filename = 'tables.xls',
     content = function(file) {
-      write(html_tabelize(main()[['blocks']]), file)
+      write(html_tabelize(get_coded_questions_and_blocks(main()[[1]], main()[[2]])[[2]]), file)
     }
   )
-
 
   }
 )
