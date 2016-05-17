@@ -86,11 +86,15 @@ mc_multiple_answer_results <- function(question) {
   # from the choice numbers in the column, we construct a list of the corresponding choice
   # texts, and then flatten it.
   # lastly, flatten the Ns list and calculate the Percents.
-  N <- sapply(question$Responses, function(x) sum(x == 1))
+  responses <- question$Responses
+  not_text_columns <- which(sapply(colnames(responses), function(x) !(grepl("TEXT", x))))
+  responses <- responses[, not_text_columns]
+
+  N <- sapply(responses, function(x) sum(x == 1))
   respondents_count <- length(which(apply(
-    question$Responses, 1, function(row) !(all(row == -99) | all(row == "")))))
+    responses, 1, function(row) !(all(row == -99) | all(row == "")))))
   data_export_tag <- question$Payload$DataExportTag
-  names(N) <- gsub(paste0(data_export_tag, "_"), "", names(question$Responses))
+  names(N) <- gsub(paste0(data_export_tag, "_"), "", names(responses))
   if ("RecodeValues" %in% names(question$Payload) && names(N) %in% question$Payload$RecodeValues) {
     names(N) <- sapply(names(N), function(x) which(question$Payload$RecodeValues == x))
   }
@@ -135,8 +139,11 @@ matrix_single_answer_results <- function(question) {
   # of respondents for each matrix sub-question in each entry.
   # the responses table is iterated over and turned into percents according to the
   # original values in the responses table and the respondents counts in the N variable.
-  responses <- sapply(question$Responses, function(x) table(factor(x, factors)))
-  N <- sapply(question$Responses, function(x) strtoi(length(which(x != -99 & x != ""))))
+  orig_responses <- question$Responses
+  not_text_columns <- which(sapply(colnames(orig_responses), function(x) !(grepl("TEXT", x))))
+  orig_responses <- orig_responses[, not_text_columns]
+  responses <- sapply(orig_responses, function(x) table(factor(x, factors)))
+  N <- sapply(orig_responses, function(x) strtoi(length(which(x != -99 & x != ""))))
   for (i in 1:nrow(responses)) {
     for (j in 1:ncol(responses)) {
       responses[i,j] <- percent0(strtoi(responses[i,j]) /
@@ -166,8 +173,8 @@ matrix_single_answer_results <- function(question) {
   answers <- sapply(answers, clean_html)
   colnames(responses) <- answers
   choice_export_tags_with_underscores <- sapply(question$Payload$ChoiceDataExportTags, function(x) gsub("-", "_", x))
-  response_names_without_export_tag <- gsub(paste0(question$Payload$DataExportTag, "_"), "", names(question$Responses))
-  if (all(names(question$Responses) %in% choice_export_tags_with_underscores)) {
+  response_names_without_export_tag <- gsub(paste0(question$Payload$DataExportTag, "_"), "", names(orig_responses))
+  if (all(names(orig_responses) %in% choice_export_tags_with_underscores)) {
     choices_uncoded <- sapply(rownames(responses), function(x) which(choice_export_tags == x))
     choices <- sapply(choices_uncoded, function(x) question$Payload$Choices[[x]][[1]])
   } else if (all(response_names_without_export_tag %in% question$Payload$ChoiceDataExportTags)){
@@ -214,23 +221,26 @@ matrix_single_answer_results <- function(question) {
 #' choice for each sub-question listed in a table, and then another column with the total respondents
 #' for each subquestion.
 matrix_multiple_answer_results <- function(question) {
-  respondents_count <- sapply(question$Responses, function(y) strtoi(length(which(y != -99))))
+  orig_responses <- question$Responses
+  not_text_columns <- which(sapply(colnames(orig_responses), function(x) !(grepl("TEXT", x))))
+  orig_responses <- orig_responses[, not_text_columns]
+  respondents_count <- sapply(orig_responses, function(y) strtoi(length(which(y != -99))))
   headernames <- sapply(question$Payload$Answers, function(y) y$Display)
   headernames <- sapply(headernames, clean_html)
   rownames <- sapply(question$Payload$Choices, function(y) y$Display)
   rownames <- sapply(rownames, clean_html)
-  ma_matrix_sums <- sapply(question$Responses, function (y) sum(y == 1))
+  ma_matrix_sums <- sapply(orig_responses, function (y) sum(y == 1))
   chunk2 <- function(y,n) split(y, cut(seq_along(y), n, labels = FALSE))
   df <- t(as.data.frame((chunk2(ma_matrix_sums, length(headernames)))))
   rownames(df) <- rownames
   colnames(df) <- headernames
-  respondents_count <- respondents_count[seq(1, length(question$Responses), length(headernames))]
+  respondents_count <- respondents_count[seq(1, length(orig_responses), length(headernames))]
   for (i in 1:nrow(df)) {
     for (j in 1:ncol(df)) {
       df[i,j] <- percent0(strtoi(df[i,j]) / respondents_count[i])
     }
   }
-  choices <- sapply(question$Payload$Choices, function(y) y$Display)
+  choices <- sapply(question$Payload$Choices, function(y) y[[1]])
   choices <- sapply(choices, clean_html)
 
   df <- cbind(df, N=respondents_count)
