@@ -37,7 +37,7 @@ mc_single_answer_results <- function(question) {
     responses <- question$Responses[[question$Payload$DataExportTag]]
     responses_tabled <- as.data.frame(table(factor(responses, levels=factors)))
     N <- responses_tabled[,2]
-    respondent_count <- length(question$Responses[[1]] != -99)
+    respondent_count <- length(which((question$Responses[[1]] != -99) & (question$Responses[[1]] != "")))
     Percent <- percent0(N / respondent_count)
 
     # if the choice variables have been recoded, first the factors are retrieved from the responses_tabled,
@@ -347,6 +347,7 @@ text_appendices_table <- function(blocks) {
           if (blocks[[i]]$BlockElements[[j]]$Payload$QuestionType == "TE") {
             responses <- blocks[[i]]$BlockElements[[j]]$Responses
             responses <- as.data.frame(responses[!apply(responses, 1, function(x) any(x=="")),])
+            responses <- as.data.frame(responses[!apply(responses, 1, function(x) any(x==-99)),])
             colnames(responses) <- colnames(blocks[[i]]$BlockElements[[j]]$Responses)
             if (length(as.list(responses)) > 0) {
             e <- e+1
@@ -370,6 +371,7 @@ text_appendices_table <- function(blocks) {
             for (k in 1:length(text_columns)) {
               responses <- blocks[[i]]$BlockElements[[j]]$Responses[text_columns[[k]]]
               responses <- as.data.frame(responses[!apply(responses, 1, function(x) any(x=="")),])
+              responses <- as.data.frame(responses[!apply(responses, 1, function(x) any(x==-99)),])
               colnames(responses) <- colnames(blocks[[i]]$BlockElements[[j]]$Responses[text_columns[[k]]])
               if (length(as.list(responses)) > 0) {
                 e <- e+1

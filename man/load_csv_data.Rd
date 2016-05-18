@@ -4,7 +4,7 @@
 \alias{load_csv_data}
 \title{Set Response Data to Sample Data or User Data}
 \usage{
-load_csv_data(file1)
+load_csv_data(file2, file1, headerrows)
 }
 \arguments{
 \item{file1}{This should be a CSV received from a file upload made in the Shiny UI,

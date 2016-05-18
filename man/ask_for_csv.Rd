@@ -4,7 +4,7 @@
 \alias{ask_for_csv}
 \title{Ask the user for the Qualtrics Response Set}
 \usage{
-ask_for_csv(responsesfile)
+ask_for_csv(responsesfile, headerrows)
 }
 \value{
 The csv file the user uploads, as a data frame

@@ -4,7 +4,7 @@
 \alias{load_qsf_data}
 \title{Set Survey to Sample Survey or User Survey}
 \usage{
-load_qsf_data(file2)
+load_qsf_data(file1)
 }
 \arguments{
 \item{file2}{This should be a QSF file received from a file upload made in the Shiny UI,
