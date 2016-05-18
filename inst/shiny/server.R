@@ -60,11 +60,13 @@ shinyServer(
     }
   })
 
+  # output tabpanels' contents
   output$results_tables <- renderUI(div(HTML(results_tables()), class="shiny-html-output"))
   output$uncodeable_message <- renderText(uncodeable_message())
   output$question_dictionary <- renderDataTable(question_dictionary())
   output$text_appendices <- renderUI(div(HTML(text_appendices()), class="shiny-html-output"))
 
+  # download buttons
   output$downloadResultsTables <- downloadHandler(
     filename = 'results_tables.xls',
     content = function(file) {
