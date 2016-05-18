@@ -4,12 +4,14 @@ shinyServer(
   function(input, output) {
 
   survey_and_responses <- reactive({
+    questions <- try(questions_from_survey(load_qsf_data(input$file1)))
+    duplicates <- questions[which(duplicated(sapply(questions, function(x) x$Payload$DataExportTag)))]
+    duplicate_tags <- sapply(duplicates, function(x) x$Payload$DataExportTag)
     validate(
-      need(validate_data_export_tags(
-           try(questions_from_survey(
-           load_qsf_data(input$file1)
-           ))),
-           "Please submit a survey with no duplicate question IDs")
+      need(validate_data_export_tags(questions),
+           paste0("Please submit a survey with no duplicate question IDs.
+           The following questions were duplicated: ",
+                  paste(duplicate_tags, collapse=", ")))
       )
     survey <- load_qsf_data(input$file1)
     responses <- load_csv_data(input$file2, input$file1, input$headerrows)
@@ -19,15 +21,6 @@ shinyServer(
     return(list_survey_and_responses)
     })
 
-  results_tables <- reactive({
-    if (length(survey_and_responses()) == 2) {
-      survey <- survey_and_responses()[[1]]
-      responses <- survey_and_responses()[[2]]
-      blocks <- get_coded_questions_and_blocks(survey, responses)[[2]]
-      tabelize_blocks(blocks)
-    }
-  })
-
   uncodeable_message <- reactive({
     validate(need(length(survey_and_responses()) == 2, "Please upload survey responses"))
     if (length(survey_and_responses()) == 2) {
@@ -35,6 +28,15 @@ shinyServer(
       responses <- survey_and_responses()[[2]]
       questions <- get_coded_questions_and_blocks(survey, responses)[[1]]
       uncodeable_questions_message(questions)
+    }
+  })
+
+  results_tables <- reactive({
+    if (length(survey_and_responses()) == 2) {
+      survey <- survey_and_responses()[[1]]
+      responses <- survey_and_responses()[[2]]
+      blocks <- get_coded_questions_and_blocks(survey, responses)[[2]]
+      tabelize_blocks(blocks)
     }
   })
 
@@ -61,8 +63,8 @@ shinyServer(
   })
 
   # output tabpanels' contents
-  output$results_tables <- renderUI(div(HTML(results_tables()), class="shiny-html-output"))
   output$uncodeable_message <- renderText(uncodeable_message())
+  output$results_tables <- renderUI(div(HTML(results_tables()), class="shiny-html-output"))
   output$question_dictionary <- renderDataTable(question_dictionary())
   output$text_appendices <- renderUI(div(HTML(text_appendices()), class="shiny-html-output"))
 
