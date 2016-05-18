@@ -224,7 +224,7 @@ matrix_multiple_answer_results <- function(question) {
   orig_responses <- question$Responses
   not_text_columns <- which(sapply(colnames(orig_responses), function(x) !(grepl("TEXT", x))))
   orig_responses <- orig_responses[, not_text_columns]
-  respondents_count <- sapply(orig_responses, function(y) strtoi(length(which(y != -99))))
+  respondents_count <- sapply(orig_responses, function(y) strtoi(length(which((y != -99) & (y != "")))))
   headernames <- sapply(question$Payload$Answers, function(y) y$Display)
   headernames <- sapply(headernames, clean_html)
   rownames <- sapply(question$Payload$Choices, function(y) y$Display)
