@@ -37,7 +37,8 @@ mc_single_answer_results <- function(question) {
     responses <- question$Responses[[question$Payload$DataExportTag]]
     responses_tabled <- as.data.frame(table(factor(responses, levels=factors)))
     N <- responses_tabled[,2]
-    respondent_count <- length(which((question$Responses[[1]] != -99) & (question$Responses[[1]] != "")))
+    exporttag <- question$Payload$DataExportTag
+    respondent_count <- length(which((question$Responses[[exporttag]] != -99) & (question$Responses[[exporttag]] != "")))
     Percent <- percent0(N / respondent_count)
 
     # if the choice variables have been recoded, first the factors are retrieved from the responses_tabled,
@@ -164,7 +165,7 @@ matrix_single_answer_results <- function(question) {
   # use the $Payload$Choices list to retrieve the original sub-question text.
   responses <- t(responses)
   if ("RecodeValues" %in% names(question$Payload)) {
-    answers_uncoded <- sapply(colnames(responses), function(x) which(question$Payload$RecodeValue == x))
+    answers_uncoded <- sapply(colnames(responses), function(x) names(question$Payload$RecodeValues[which(question$Payload$RecodeValues == x)])[[1]])
     answers <- sapply(answers_uncoded, function(x) question$Payload$Answers[[x]][[1]])
     answers <- unlist(answers, use.names = FALSE)
   } else {
@@ -198,7 +199,7 @@ matrix_single_answer_results <- function(question) {
   # form a data frame with the first column listing the sub-question text, then
   # include the table of percents for each answer choice for each sub-question,
   # then include as the last column the number of respondents to each sub-question.
-  responses <- data.frame(choices, responses, N, check.names=FALSE, row.names = NULL)
+  responses <- data.frame(choices, N, responses, check.names=FALSE, row.names = NULL)
   colnames(responses)[1] <- ""
   rownames(responses) <- NULL
   return(responses)
@@ -243,8 +244,7 @@ matrix_multiple_answer_results <- function(question) {
   choices <- sapply(question$Payload$Choices, function(y) y[[1]])
   choices <- sapply(choices, clean_html)
 
-  df <- cbind(df, N=respondents_count)
-  df <- cbind("Choices"=choices, df)
+  df <- cbind("Choices"=choices, N=respondents_count, df)
   return(df)
 }
 
@@ -409,11 +409,14 @@ text_appendices_table <- function(blocks) {
 #' automatically coded. This may be changed later to be more informative, or
 #' to include this information elsewhere.
 #'
-#' @inheritParams html_tabelize
+#' @inheritParams tabelize_blocks
 #' @return A message stating for which questions could not have
 #' results automatically generated.
 uncodeable_questions_message <- function(questions) {
-  uncodeable_questions <- which(sapply(questions, function(x) !("Table" %in% names(x)) && (x$Payload$QuestionType != "TE")))
+  uncodeable_questions <- which(sapply(questions, function(x)
+    !("Table" %in% names(x)) &&
+    (x$Payload$QuestionType != "TE") &&
+    (x$Payload$QuestionType != "DB")))
   uncodeable_questions <- sapply(uncodeable_questions, function(x)
     questions[[x]]$Payload$DataExportTag)
   uncodeable_message <- ""

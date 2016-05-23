@@ -1,3 +1,8 @@
+#' Find Question Index from DataExportTag
+find_question <- function(questions, exporttag) {
+  return(which(sapply(questions, function(x) x$Payload$DataExportTag == exporttag)))
+}
+
 #' Get Questions (with Responses) and Blocks (with Questions)
 #'
 #' This function returns a list with two elements, where
