@@ -321,6 +321,25 @@ tabelize_blocks <- function(blocks) {
 }
 
 
+#' Create HTML Tables for the Text Entry Questions
+#'
+#' This function creates an HTML string with tables 
+#' for each of the text entry questions and their responses. 
+#' The appendix_lettering function inside this function 
+#' is to create lettering for the tables in the style 
+#' of "A, B, ..., Z, AA, ..., ZZ" and so forth. The html 
+#' tables are created by looping through the blocks
+#' and their contained question block elements. For each
+#' question, if the question is a Text Entry question or 
+#' any of the response columns contain "TEXT" then a table
+#' is created for those responses. 
+#'
+#' @param blocks A list of blocks with block elements replaced
+#' by the question with its paired responses. 
+#'
+#' @return an html string containing a title, 
+#' question text, and the text responses for each 
+#' text appendix. 
 text_appendices_table <- function(blocks) {
   appendix_lettering <- function(number) {
     if (number %in% 1:26) {
