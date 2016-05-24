@@ -9,4 +9,4 @@ some automatic report generation.
 
 More details will come soon!
 
-![diving penguins](http://cheezburger.com/6377394944)
+![diving penguins](https://media.giphy.com/media/22zIpaS7fhqU/giphy.gi://media.giphy.com/media/22zIpaS7fhqU/giphy.gif)
