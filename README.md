@@ -9,4 +9,4 @@ some automatic report generation.
 
 More details will come soon!
 
-![bouncing off a rock ledge](https://media.giphy.com/media/3oEdvd6Cv6VAFFWESI/giphy.gif)
+![diving penguins](http://cheezburger.com/6377394944)
