@@ -12,7 +12,6 @@ Imports:
     gdata,
     shiny,
     shinydashboard,
-    xtable,
-    pander
+    xtable
 Remotes: talgalili/installr
 RoxygenNote: 5.0.1

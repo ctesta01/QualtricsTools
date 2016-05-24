@@ -70,9 +70,9 @@ shinyServer(
 
   # download buttons
   output$downloadResultsTables <- downloadHandler(
-    filename = 'results_tables.xls',
+    filename = 'results_tables.docx',
     content = function(file) {
-      write(unlist(results_tables()), file)
+      file.copy(html_to_docx(results_tables()), file)
     }
   )
 
@@ -84,9 +84,9 @@ shinyServer(
   )
 
   output$downloadTextAppendices <- downloadHandler(
-    filename = 'appendices.xls',
+    filename = 'appendices.docx',
     content = function(file) {
-      write(text_appendices(), file)
+      file.copy(html_to_docx(text_appendices()), file)
     }
   )
 
