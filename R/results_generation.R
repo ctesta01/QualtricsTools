@@ -160,9 +160,6 @@ matrix_single_answer_results <- function(question) {
   # if the choices haven't been recoded, use the $Payload$Answers and $Payload$Choices to retrieve the original
   # choice texts.
   # replace the column names with the choice text.
-  # the sub-question tags are formed as the $Payload$DataExportTag with an underscore, then an integer
-  # starting from 1. Strip the DataExportTag and underscore from the sub-question tag, and then
-  # use the $Payload$Choices list to retrieve the original sub-question text.
   responses <- t(responses)
   if ("RecodeValues" %in% names(question$Payload)) {
     answers_uncoded <- sapply(colnames(responses), function(x) names(question$Payload$RecodeValues[which(question$Payload$RecodeValues == x)])[[1]])
@@ -173,19 +170,48 @@ matrix_single_answer_results <- function(question) {
   }
   answers <- sapply(answers, clean_html)
   colnames(responses) <- answers
+
+  # in Qualtrics Insights, Qualtrics has improved the naming of the response columns.
+  # prior to insights, they did not include the data export tag in the response header.
+  # After insights, the data export tag has been included in the response columns.
+  # The choice export tags also have "-" replaced with "_" whenever they're used as response
+  # headers. We check if the response columns are exactly the choice data export tags,
+  # or if they are the choice export tags prepended with the data export tags.
   choice_export_tags_with_underscores <- sapply(question$Payload$ChoiceDataExportTags, function(x) gsub("-", "_", x))
   response_names_without_export_tag <- gsub(paste0(question$Payload$DataExportTag, "_"), "", names(orig_responses))
+
+  # if the response columns are the choice data export tags, then
+  # we use the choice data export tags numbering to retrieve the
+  # corresponding choice text.
   if (all(names(orig_responses) %in% choice_export_tags_with_underscores)) {
     choices_uncoded <- sapply(rownames(responses), function(x) which(choice_export_tags == x))
     choices <- sapply(choices_uncoded, function(x) question$Payload$Choices[[x]][[1]])
+
+    # if the response columns are prepended with the data export tag, we
+    # use the response column names without the data export tag to retrieve
+    # the choice text by going through the choice data export tags indexes.
   } else if (all(response_names_without_export_tag %in% question$Payload$ChoiceDataExportTags)){
     choices <- sapply(response_names_without_export_tag, function(x) which(question$Payload$ChoiceDataExportTags == x))
     choices <- sapply(choices, function(x) question$Payload$Choices[[x]][[1]])
+
+    # if neither of the above are true, we attempt a last ditch
+    # effort and strip the data export tag if it's present from the
+    # response column name, and try to retrieve it directly from the
+    # list of choices using the rest of the response column name.
   } else {
     export_tag_with_underscore <- paste0(question$Payload$DataExportTag, "_")
     choices <- sapply(rownames(responses), function(x)
       question$Payload$Choices[[gsub(export_tag_with_underscore, "", x)]][[1]])
   }
+
+  # sometimes what we get back isn't going to be
+  # the length we want. If it is, we go ahead and
+  # unlist the choices. If not, we
+  # try to lower the dimension if the dimension is 2,
+  # and we try to select only the display parts of the
+  # choices.
+  # last, we run the HTML cleaner on the choices
+  # so that the choice text appears nicely.
   if (length(choices) == length(N)) {
     choices <- unlist(choices, use.names = FALSE)
   } else {
