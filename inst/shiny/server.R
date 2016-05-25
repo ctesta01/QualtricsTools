@@ -4,7 +4,10 @@ shinyServer(
   function(input, output) {
 
   survey_and_responses <- reactive({
-    questions <- try(questions_from_survey(load_qsf_data(input$file1)))
+    survey <- try(load_qsf_data(input$file1))
+    questions <- try(questions_from_survey(survey))
+    blocks <- try(blocks_from_survey(survey))
+    questions <- remove_trash_questions(questions, blocks)
     duplicates <- questions[which(duplicated(sapply(questions, function(x) x$Payload$DataExportTag)))]
     duplicate_tags <- sapply(duplicates, function(x) x$Payload$DataExportTag)
     validate(
@@ -13,7 +16,6 @@ shinyServer(
            The following questions were duplicated: ",
                   paste(duplicate_tags, collapse=", ")))
       )
-    survey <- load_qsf_data(input$file1)
     responses <- load_csv_data(input$file2, input$file1, input$headerrows)
     list_survey_and_responses <- list()
     list_survey_and_responses[[1]] <- survey
