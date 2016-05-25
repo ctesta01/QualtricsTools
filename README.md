@@ -9,4 +9,5 @@ some automatic report generation.
 
 More details will come soon!
 
-![diving penguins](https://media.giphy.com/media/22zIpaS7fhqU/giphy.gif)
+<img align="middle" src="https://media.giphy.com/media/22zIpaS7fhqU/giphy.gif" alt="diving penguins">
+
