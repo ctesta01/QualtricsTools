@@ -1,3 +1,33 @@
+#' Setup the Global Environment for a Survey
+#'
+#' This function sets up the .GlobalEnv to include survey, responses, questions
+#' (without trash questions, with clean question text,
+#' with a human readable question type, with responses, and with results if
+#' automatically generateable), and blocks (without trash blocks, with questions
+#' inserted in place of the BlockElements representing them).
+get_setup <- function() {
+    try(survey <<- ask_for_qsf())
+    try(responses <<- ask_for_csv())
+    try(blocks <<- blocks_from_survey(survey))
+    try(questions <<- questions_from_survey(survey))
+    try(questions <<- remove_trash_questions(questions, blocks))
+    try(questions <<- clean_question_text(questions))
+    try(questions <<- human_readable_qtype(questions))
+    try(blocks <<- remove_trash_blocks(blocks))
+    try(questions <<- link_responses_to_questions(questions, responses))
+    try(questions <<- generate_results(questions))
+    try(blocks <<- questions_into_blocks(questions, blocks))
+
+  if ( exists("survey", 1) &&
+       exists("responses", 1) &&
+       exists("questions", 1) &&
+       exists("blocks", 1)
+  ) {
+    cat("survey, responses, questions, and blocks have all been made
+        globally available in your R session.")
+  }
+}
+
 #' Find Question Index from DataExportTag
 find_question <- function(questions, exporttag) {
   return(which(sapply(questions, function(x) x$Payload$DataExportTag == exporttag)))
