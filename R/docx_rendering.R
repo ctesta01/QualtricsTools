@@ -38,6 +38,7 @@ html_to_docx <- function(html) {
 	pandoc_command <- gsub("temp_docx", temp_docx, pandoc_command)
 	system(pandoc_command)
 	setwd(orig_directory)
+	options("encoding" = "native.enc")
 	return(temp_docx_full)
 }
 
