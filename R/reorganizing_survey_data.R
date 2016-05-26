@@ -308,4 +308,100 @@ human_readable_qtype <- function(questions) {
 }
 
 
+#' Create a Question Dictionary
+#'
+#' @param blocks The blocks provided to this function must include questions inserted into
+#' the BlockElements. Create the list of blocks from a survey with blocks_from_survey(),
+#' and with questions on hand, insert them into the blocks with questions_into_blocks().
+#' @return A data frame with a row for each question describing the question's details.
+create_question_dictionary <- function(blocks) {
 
+  # take a list of rows, all with the same length, and
+  # turn them into a data frame.
+  list_of_rows_to_df <- function(data) {
+    nCol <- max(vapply(data, length, 0))
+    data <- lapply(data, function(row) c(row, rep(NA, nCol-length(row))))
+    data <- matrix(unlist(data), nrow=length(data), ncol=nCol, byrow=TRUE)
+    data.frame(data)
+  }
+
+  # create_entry creates the row for any individual
+  # response with the following elements in it:
+  # - The data export tag,
+  # - "QuestionTextClean", the question text stripped of any HTML strings/entities,
+  # - "QuestionTypeHuman", the human readable question type,
+  # - "QuestionType", the qualtrics supplied question type,
+  # - "Selector", the qualtrics defined question selector
+  create_entry <- function(i, j) {
+    return(c(
+      # data export tag
+      blocks[[i]]$BlockElements[[j]]$Payload$DataExportTag,
+      # question text
+      blocks[[i]]$BlockElements[[j]]$Payload$QuestionTextClean,
+      # human readable question type
+      blocks[[i]]$BlockElements[[j]]$Payload$QuestionTypeHuman,
+      # qualtrics question type
+      blocks[[i]]$BlockElements[[j]]$Payload$QuestionType,
+      # qualtrics question selector
+      blocks[[i]]$BlockElements[[j]]$Payload$Selector
+    ))
+  }
+
+  ### loop through each block, then each question,
+  # then of the columns of the responses,
+  # then each of the entries in each of the response columns,
+  # and create an entry using "create_entry"
+  entries <- list()
+  e <- 0
+  for (i in 1:length(blocks)) {
+    if (length(blocks[[i]]$BlockElements) != 0) {
+      for (j in 1:length(blocks[[i]]$BlockElements)) {
+        e <- e + 1
+        entries[[e]] <- create_entry(i, j)
+      }
+    }
+  }
+
+  # entries are turned into a data frame with the specified headers
+  question_dictionary <- list_of_rows_to_df(entries)
+  colnames(question_dictionary) <- c("DataExportTag",
+                                     "QuestionText", "QuestionType", "QuestionType2",
+                                     "QuestionType3")
+  return(question_dictionary)
+}
+
+
+#' Create Uncodeable Question Dictionary
+uncodeable_question_dictionary <- function(blocks) {
+
+  # loop through each question,
+  # and then remove everything that's not a survey question,
+  # any questions that have a results table, and any questions
+  # that are text entry or descriptive box questions.
+
+  # make sure we run backwards so that we don't
+  # move the next question to our current iterator, and then
+  # skip it.
+  for (i in 1:length(blocks)) {
+    if (length(blocks[[i]]$BlockElements) != 0) {
+      for (j in length(blocks[[i]]$BlockElements):1) {
+        if (!("Element" %in% names(blocks[[i]]$BlockElements[[j]]))) {
+          blocks[[i]]$BlockElements[[j]] <- NULL
+        }
+        else if ("Element" %in% names(blocks[[i]]$BlockElements[[j]])) {
+          if ("Table" %in% names(blocks[[i]]$BlockElements[[j]]) ||
+              blocks[[i]]$BlockElements[[j]]$Payload$QuestionType == "TE" ||
+              blocks[[i]]$BlockElements[[j]]$Payload$QuestionType == "DB"
+              ) {
+            blocks[[i]]$BlockElements[[j]] <- NULL
+          }
+        }
+      }
+    }
+  }
+
+  # we've cut out everything that isn't something that didn't get coded,
+  # so now we just create a question dictionary with the remaining
+  # results-tables-less questions.
+  return(create_question_dictionary(blocks))
+}
