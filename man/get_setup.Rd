@@ -4,7 +4,11 @@
 \alias{get_setup}
 \title{Setup the Global Environment for a Survey}
 \usage{
-get_setup()
+get_setup(headerrows)
+}
+\arguments{
+\item{headerrows}{An optional parameter for specifying the number of
+headerrows in the response csv.}
 }
 \description{
 This function sets up the .GlobalEnv to include survey, responses, questions

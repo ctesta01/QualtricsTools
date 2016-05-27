@@ -5,9 +5,15 @@
 #' with a human readable question type, with responses, and with results if
 #' automatically generateable), and blocks (without trash blocks, with questions
 #' inserted in place of the BlockElements representing them).
-get_setup <- function() {
+#'
+#' @param headerrows An optional parameter for specifying the number of
+#' headerrows in the response csv.
+get_setup <- function(headerrows) {
+  if (missing(headerrows)) {
+    headerrows <- 3
+  }
     try(survey <<- ask_for_qsf())
-    try(responses <<- ask_for_csv())
+    try(responses <<- ask_for_csv(headerrows = headerrows))
     try(blocks <<- blocks_from_survey(survey))
     try(questions <<- questions_from_survey(survey))
     try(questions <<- remove_trash_questions(questions, blocks))
@@ -28,9 +34,24 @@ get_setup <- function() {
   }
 }
 
-#' Find Question Index from DataExportTag
+#' Find Question from DataExportTag
+#'
+#' This function takes a list of questions and an export tag and
+#' looks for the matching question. It will try to select
+#' the question uniquely.
 find_question <- function(questions, exporttag) {
-  return(which(sapply(questions, function(x) x$Payload$DataExportTag == exporttag)))
+  matched_question_index <- which(sapply(questions, function(x) x$Payload$DataExportTag == exporttag))
+  return(questions[[matched_question_index]])
+}
+
+#' Find Question Index from DataExportTag
+#'
+#' This function takes a list of questions and an export tag and
+#' looks for the matching question. It returns the index(es) of
+#' the questions with that Question Data Export Tag.
+find_question_index <- function(questions, exporttag) {
+  matched_question_index <- which(sapply(questions, function(x) x$Payload$DataExportTag == exporttag))
+  return(matched_question_index)
 }
 
 #' Get Questions (with Responses) and Blocks (with Questions)

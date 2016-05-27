@@ -2,11 +2,13 @@
 % Please edit documentation in R/reorganizing_survey_data.R
 \name{find_question}
 \alias{find_question}
-\title{Find Question Index from DataExportTag}
+\title{Find Question from DataExportTag}
 \usage{
 find_question(questions, exporttag)
 }
 \description{
-Find Question Index from DataExportTag
+This function takes a list of questions and an export tag and
+looks for the matching question. It will try to select
+the question uniquely.
 }
 

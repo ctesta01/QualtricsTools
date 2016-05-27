@@ -1,57 +1,3 @@
-#' Create Results Tables and Pair Them to Questions
-#'
-#' The generate_results function takes a list of questions which have
-#' their responses paired to them, determines their question type,
-#' uses the results generation functions to create their results table,
-#' and saves the table to the question's $Table element. The function
-#' returns the list of questions with their paired results tables.
-#'
-#' @param questions A list of questions with the relevant response columns
-#' stored as a data frame under the questions[[i]]$Responses element. Create
-#' such a list of questions by using link_responses_to_questions.
-#'
-#' @return A list of questions with their results tables paired to them
-#' under the questions[[i]]$Table
-generate_results <- function(questions) {
-
-  # loop through all the questions that have responses,
-  # and for each question that has responses, determine
-  # it's question type (among the ones which have question
-  # results generating functions), then generate the results for
-  # that question and save them to that question.
-  for (i in 1:length(questions)) {
-    if (is.null(questions[[i]]$Responses)) {
-      has_responses <- FALSE
-    } else {
-      has_responses <- ncol(questions[[i]]$Responses != 0)
-    }
-
-    if (has_responses) {
-      questions[[i]]$Table <- NULL
-
-      if (is_mc_multiple_answer(questions[[i]])) {
-        try(questions[[i]]$Table <-
-              mc_multiple_answer_results(questions[[i]]), silent = TRUE)
-
-      } else if (is_mc_single_answer(questions[[i]])) {
-        try(questions[[i]]$Table <-
-              mc_single_answer_results(questions[[i]]), silent = TRUE)
-
-      } else if (is_matrix_multiple_answer(questions[[i]])) {
-        try(questions[[i]]$Table <-
-              matrix_multiple_answer_results(questions[[i]]), silent = TRUE)
-
-      } else if (is_matrix_single_answer(questions[[i]])) {
-        try(questions[[i]]$Table <-
-              matrix_single_answer_results(questions[[i]]), silent = TRUE)
-      }
-    }
-  }
-
-  return(questions)
-}
-
-
 #' Create a List of HTML Versions of the Results Tables
 #'
 #' @param questions A list of questions with the relevant results tables
@@ -179,18 +125,18 @@ text_appendices_table <- function(blocks) {
             colnames(responses) <- colnames(blocks[[i]]$BlockElements[[j]]$Responses)
             if (length(as.list(responses)) > 0) {
               e <- e+1
-              tables <- c(tables, paste0("Appendix ", appendix_lettering(e), ": <br>"))
               tables <- c(tables, capture.output(print(xtable::xtable(
-                responses,
-                caption=paste0(
+                rbind(
+                  paste0("Appendix ", appendix_lettering(e)),
                   blocks[[i]]$BlockElements[[j]]$Payload$QuestionTextClean,
-                  "<br># of Respondents: ",
-                  nrow(responses))
+                  paste0("# of Respondents: ",
+                         nrow(responses)),
+                  responses)
               ),
               type="html",
               html.table.attributes='class="data table table-bordered table-condensed"',
-              caption.placement="top",
               include.rownames=FALSE)))
+
 
               tables <- c(tables, "<br>")
             }
@@ -216,19 +162,17 @@ text_appendices_table <- function(blocks) {
               if (length(as.list(responses)) > 0) {
                 e <- e+1
 
-                tables <- c(tables, paste0("Appendix ", appendix_lettering(e), ": <br>"))
                 tables <- c(tables, capture.output(print(xtable::xtable(
-                  responses,
-                  caption=paste0(
+                  rbind(
+                    paste0("Appendix ", appendix_lettering(e)),
                     blocks[[i]]$BlockElements[[j]]$Payload$QuestionTextClean,
-                    "<br># of Respondents: ",
-                    nrow(responses))
+                    paste0("# of Respondents: ",
+                           nrow(responses)),
+                    responses)
                 ),
                 type="html",
                 html.table.attributes='class="data table table-bordered table-condensed"',
-                caption.placement="top",
-                include.rownames=FALSE))
-                )
+                include.rownames=FALSE)))
 
                 tables <- c(tables, "<br>")
               }
@@ -269,74 +213,12 @@ uncodeable_questions_message <- function(questions) {
   uncodeable_message <- ""
   if (length(uncodeable_questions) > 0) {
     uncodeable_questions <- paste(uncodeable_questions, collapse=", ")
-    uncodeable_message <- sprintf("The following questions could not be automatically coded: %s",
+    uncodeable_message <- sprintf("The following questions could not be automatically processed: %s",
                                   uncodeable_questions)
+  } else {
+    uncodeable_message <- "All questions were successfully processed!"
   }
   return(uncodeable_message)
 }
 
 
-#' Create a Question Dictionary
-#'
-#' @param blocks The blocks provided to this function must include questions inserted into
-#' the BlockElements. Create the list of blocks from a survey with blocks_from_survey(),
-#' and with questions on hand, insert them into the blocks with questions_into_blocks().
-#' @return A data frame with a row for each question describing the question's details.
-create_question_dictionary <- function(blocks) {
-
-  # take a list of rows, all with the same length, and
-  # turn them into a data frame.
-  list_of_rows_to_df <- function(data) {
-    nCol <- max(vapply(data, length, 0))
-    data <- lapply(data, function(row) c(row, rep(NA, nCol-length(row))))
-    data <- matrix(unlist(data), nrow=length(data), ncol=nCol, byrow=TRUE)
-    data.frame(data)
-  }
-
-  # create_entry creates the row for any individual
-  # response with the following elements in it:
-  # - The data export tag,
-  # - "QuestionTextClean", the question text stripped of any HTML strings/entities,
-  # - "QuestionTypeHuman", the human readable question type,
-  # - "QuestionType", the qualtrics supplied question type,
-  # - "Selector", the qualtrics defined question selector
-  create_entry <- function(i, j) {
-    return(c(
-      # data export tag
-      blocks[[i]]$BlockElements[[j]]$Payload$DataExportTag,
-      # question text
-      blocks[[i]]$BlockElements[[j]]$Payload$QuestionTextClean,
-      # human readable question type
-      blocks[[i]]$BlockElements[[j]]$Payload$QuestionTypeHuman,
-      # qualtrics question type
-      blocks[[i]]$BlockElements[[j]]$Payload$QuestionType,
-      # qualtrics question selector
-      blocks[[i]]$BlockElements[[j]]$Payload$Selector
-    ))
-  }
-
-  ### loop through each block, then each question,
-  # then of the columns of the responses,
-  # then each of the entries in each of the response columns,
-  # and create an entry using "create_entry"
-  entries <- list()
-  e <- 0
-  for (i in 1:length(blocks)) {
-    if (length(blocks[[i]]$BlockElements) != 0) {
-      for (j in 1:length(blocks[[i]]$BlockElements)) {
-        e <- e + 1
-        if (is.null(blocks[[i]]$BlockElements[[j]]$Payload$SubSelector)) {
-          blocks[[i]]$BlockElements[[j]]$Payload$SubSelector <- ""
-        }
-        entries[[e]] <- create_entry(i, j)
-      }
-    }
-  }
-
-  # entries are turned into a data frame with the specified headers
-  question_dictionary <- list_of_rows_to_df(entries)
-  colnames(question_dictionary) <- c("DataExportTag",
-                                     "QuestionText", "QuestionType", "QuestionType2",
-                                     "QuestionType3")
-  return(question_dictionary)
-}

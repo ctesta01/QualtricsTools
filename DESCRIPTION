@@ -8,10 +8,12 @@ Description:
 License: BSD
 LazyData: true
 Imports:
-    rjson,
     gdata,
+    magrittr,
+    rjson,
     shiny,
     shinydashboard,
+    tidyr,
     xtable
 Remotes: talgalili/installr
 RoxygenNote: 5.0.1
