@@ -8,6 +8,7 @@
 tabelize_blocks <- function(blocks) {
   # all the html tables will be saved into the tables list.
   tables <- list()
+  options(stringsAsFactors = FALSE)
 
   # loop through every block element that has a results table,
   # and for each add to the tables list the results table,
@@ -129,8 +130,10 @@ text_appendices_table <- function(blocks) {
                 rbind(
                   paste0("Appendix ", appendix_lettering(e)),
                   blocks[[i]]$BlockElements[[j]]$Payload$QuestionTextClean,
-                  paste0("# of Respondents: ",
-                         nrow(responses)),
+                  "",
+                  paste0("Responses: (",
+                         nrow(responses),
+                         ")"),
                   responses)
               ),
               type="html",
@@ -166,8 +169,10 @@ text_appendices_table <- function(blocks) {
                   rbind(
                     paste0("Appendix ", appendix_lettering(e)),
                     blocks[[i]]$BlockElements[[j]]$Payload$QuestionTextClean,
-                    paste0("# of Respondents: ",
-                           nrow(responses)),
+                    "",
+                    paste0("Responses: (",
+                           nrow(responses),
+                           ")"),
                     responses)
                 ),
                 type="html",
@@ -185,6 +190,7 @@ text_appendices_table <- function(blocks) {
   }
   return(unlist(lapply(tables, paste)))
 }
+
 
 
 #' Create a Message Stating Which Questions Weren't Automatically Tabled
