@@ -413,11 +413,17 @@ create_question_dictionary <- function(blocks) {
     }
   }
 
-  # entries are turned into a data frame with the specified headers
-  question_dictionary <- list_of_rows_to_df(entries)
-  colnames(question_dictionary) <- c("DataExportTag",
-                                     "QuestionText", "QuestionType", "QuestionType2",
-                                     "QuestionType3")
+  if (length(entries) > 0) {
+    question_dictionary <- list_of_rows_to_df(entries)
+    colnames(question_dictionary) <-
+      c("DataExportTag",
+        "QuestionText",
+        "QuestionType",
+        "QuestionType2",
+        "QuestionType3")
+  } else {
+    question_dictionary <- NULL
+  }
   return(question_dictionary)
 }
 
