@@ -130,6 +130,7 @@ text_appendices_table <- function(blocks) {
                 rbind(
                   paste0("Appendix ", appendix_lettering(e)),
                   blocks[[i]]$BlockElements[[j]]$Payload$QuestionTextClean,
+		  "Verbatim responses -- these have not been edited in any way.",
                   "",
                   paste0("Responses: (",
                          nrow(responses),
@@ -169,6 +170,7 @@ text_appendices_table <- function(blocks) {
                   rbind(
                     paste0("Appendix ", appendix_lettering(e)),
                     blocks[[i]]$BlockElements[[j]]$Payload$QuestionTextClean,
+		    "Verbatim responses -- these have not been edited in any way.",
                     "",
                     paste0("Responses: (",
                            nrow(responses),
