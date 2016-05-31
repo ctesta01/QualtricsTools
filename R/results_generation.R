@@ -87,18 +87,27 @@ mc_multiple_answer_results <- function(question) {
   # from the choice numbers in the column, we construct a list of the corresponding choice
   # texts, and then flatten it.
   # lastly, flatten the Ns list and calculate the Percents.
-  responses <- question$Responses
-  not_text_columns <- which(sapply(colnames(responses), function(x) !(grepl("TEXT", x))))
-  responses <- responses[, not_text_columns]
+  orig_responses <- question$Responses
+  not_text_columns <- which(sapply(colnames(orig_responses), function(x) !(grepl("TEXT", x))))
+  orig_responses <- orig_responses[, not_text_columns]
 
-  N <- sapply(responses, function(x) sum(x == 1))
+  N <- sapply(orig_responses, function(x) sum(x == 1))
   respondents_count <- length(which(apply(
-    responses, 1, function(row) !(all(row == -99) | all(row == "")))))
+    orig_responses, 1, function(row) !(all(row == -99) | all(row == "")))))
   data_export_tag <- question$Payload$DataExportTag
-  names(N) <- gsub(paste0(data_export_tag, "_"), "", names(responses))
-  if ("RecodeValues" %in% names(question$Payload) && names(N) %in% question$Payload$RecodeValues) {
+  names(N) <- gsub(paste0(data_export_tag, "_"), "", names(orig_responses))
+
+  # this is kinda sketchy...
+  # Qualtrics Insights uses the RecodeValues, but
+  # Qualtrics Pre-Insights uses the Choice index directly.
+  # Hopefully checking if all the choices from the response data
+  # are in the recode values is a good measure of whether we're using Qualtrics Insights
+  # or not.
+  if ("RecodeValues" %in% names(question$Payload) && all(names(N) %in% question$Payload$RecodeValues)) {
     names(N) <- sapply(names(N), function(x) which(question$Payload$RecodeValues == x))
   }
+
+
   choices <- sapply(names(N), function(x) question$Payload$Choices[[x]][[1]])
   choices <- unlist(choices, use.names = FALSE)
   choices <- sapply(choices, clean_html)
@@ -184,7 +193,7 @@ matrix_single_answer_results <- function(question) {
   # we use the choice data export tags numbering to retrieve the
   # corresponding choice text.
   if (all(names(orig_responses) %in% choice_export_tags_with_underscores)) {
-    choices_uncoded <- sapply(rownames(responses), function(x) which(choice_export_tags == x))
+    choices_uncoded <- sapply(rownames(responses), function(x) which(choice_export_tags_with_underscores == x))
     choices <- sapply(choices_uncoded, function(x) question$Payload$Choices[[x]][[1]])
 
     # if the response columns are prepended with the data export tag, we
@@ -234,44 +243,139 @@ matrix_single_answer_results <- function(question) {
 
 #' Create the Results Table for a Matrix Multiple Answer Question
 #'
-#' The matrix_multiple_answer_results function is the naive solution to creating the
-#' results table for multiple answer matrix questions. It creates the results by
-#' taking the columns of the question, splitting them into sets with as many
-#' choices as there are per subquestion in each set of columns, and then
-#' laying the calculated results of each set on top of one another. Unfortunately, this
-#' will not take into account ordering. This assumes that the columns are in the default
-#' ordering from Qualtrics and have not been moved. Hopefully later versions of the program
-#' will adjust for this.
-#'
 #' @inheritParams mc_single_answer_results
-#' @return a table with the matrix-sub-questions listed in the first column, the percentages for each
-#' choice for each sub-question listed in a table, and then another column with the total respondents
-#' for each subquestion.
+#' @return a table with the matrix-sub-questions listed in the first column,
+#' a column with the total number of respondents for each subquestion, and
+#' the percentages for each choice for each sub-question.
 matrix_multiple_answer_results <- function(question) {
+  # this function takes a long vector with the rownames of the response
+  # columns, and turns it into a matrix of the results.
+  # the response column names usually look something like "Q5_1_2",
+  # ie, Question 5, Choice 1, Answer 2.
+  vector_to_dataframe <- function(vector) {
+    df <- data.frame(names = names(vector), value = as.numeric(vector))
+    `%>%` <- magrittr::`%>%`
+    # the regular expression used in this line is a
+    # positive lookbehind for a "_", followed by
+    # a positive lookahead for a string of
+    # one or more integers, followed by the end of the string.
+    # this separate command splits the column header into the
+    # first part, and the last part, where the last part is always
+    # the answer variable.
+    df <- tidyr::separate(df, names, into=c("Choices", "Answers"), sep = "(?<=_) ?(?=([0-9]+$))") %>% tidyr::spread(Answers, value)
+
+    # when the separated results are spread, they list the
+    # first part of the separation in the first column.
+    # we fix that by replacing the rownames with the first column,
+    # and deleting the first column.
+    rownames(df) <- gsub("_$", "", df[,1])
+    df <- df[,-1]
+    return(df)
+  }
+
+  # select only the non-text responses, and save the question's export_tag
   orig_responses <- question$Responses
   not_text_columns <- which(sapply(colnames(orig_responses), function(x) !(grepl("TEXT", x))))
   orig_responses <- orig_responses[, not_text_columns]
-  respondents_count <- sapply(orig_responses, function(y) strtoi(length(which((y != -99) & (y != "")))))
-  headernames <- sapply(question$Payload$Answers, function(y) y$Display)
-  headernames <- sapply(headernames, clean_html)
-  rownames <- sapply(question$Payload$Choices, function(y) y$Display)
-  rownames <- sapply(rownames, clean_html)
-  ma_matrix_sums <- sapply(orig_responses, function (y) sum(y == 1))
-  chunk2 <- function(y,n) split(y, cut(seq_along(y), n, labels = FALSE))
-  df <- t(as.data.frame((chunk2(ma_matrix_sums, length(headernames)))))
-  rownames(df) <- rownames
-  colnames(df) <- headernames
-  respondents_count <- respondents_count[seq(1, length(orig_responses), length(headernames))]
-  for (i in 1:nrow(df)) {
-    for (j in 1:ncol(df)) {
-      df[i,j] <- percent0(strtoi(df[i,j]) / respondents_count[i])
+  export_tag <- question$Payload$DataExportTag
+
+  # Qualtrics Insights prepends every response column with the question's export_tag,
+  # Qualtrics before Insights did not always do so.
+  if (all(gdata::startsWith(names(orig_responses), export_tag))) {
+    names(orig_responses) <- gsub(paste0(export_tag, "_"), "", names(orig_responses))
+  }
+
+  # create the percentage table of results, choices spanning the rows,
+  # answers spanning the columns.
+  ma_matrix_nums <- sapply(orig_responses, function (y) sum(y == 1))
+  respondents_count <- length(which(apply(orig_responses, 1, function(x) any(x == 1))))
+  ma_matrix_nums <- vector_to_dataframe(ma_matrix_nums)
+  for (i in 1:nrow(ma_matrix_nums)) {
+    for (j in 1:ncol(ma_matrix_nums)) {
+      ma_matrix_nums[i, j] <- percent0(strtoi(ma_matrix_nums[i, j]) / (respondents_count))
     }
   }
-  choices <- sapply(question$Payload$Choices, function(y) y[[1]])
-  choices <- sapply(choices, clean_html)
 
-  df <- cbind("Choices"=choices, N=respondents_count, df)
+  # if "RecodeValues" or "ChoiceDataExportTags" appear
+  # in the QSF entry for a question, use those lists
+  # to find and replace the given coded variable with the
+  # variable internal to the QSF -- the actual index of the
+  # answer or choice in the $Payload$Answers and $Payload$Choices
+  # lists
+  if ("RecodeValues" %in% names(question$Payload) && colnames(ma_matrix_nums) %in% question$Payload$RecodeValues) {
+    Answers <- sapply(colnames(ma_matrix_nums), function(x) names(question$Payload$RecodeValues)[which(question$Payload$RecodeValues == x)] )
+  } else {
+    Answers <- colnames(ma_matrix_nums)
+  }
+  if ("ChoiceDataExportTags" %in% names(question$Payload) && rownames(ma_matrix_nums) %in% question$Payload$ChoiceDataExportTags) {
+    Choices <- sapply(rownames(ma_matrix_nums), function(x) names(question$Payload$ChoiceDataExportTags)[which(question$Payload$ChoiceDataExportTags == x)] )
+  } else {
+    Choices <- rownames(ma_matrix_nums)
+  }
+
+  # get the choices and answers from their index,
+  # and clean them of any html strings
+  Answers <- sapply(Answers, function(x) question$Payload$Answers[[x]][[1]])
+  Choices <- sapply(Choices, function(x) question$Payload$Choices[[x]][[1]])
+  colnames(ma_matrix_nums) <- clean_html(Answers)
+  Choices <- clean_html(Choices)
+
+  # create the data frame
+  df <- cbind(Choices, N=rep(respondents_count, nrow(ma_matrix_nums)), ma_matrix_nums)
   return(df)
 }
 
 
+
+#' Create Results Tables and Pair Them to Questions
+#'
+#' The generate_results function takes a list of questions which have
+#' their responses paired to them, determines their question type,
+#' uses the results generation functions to create their results table,
+#' and saves the table to the question's $Table element. The function
+#' returns the list of questions with their paired results tables.
+#'
+#' @param questions A list of questions with the relevant response columns
+#' stored as a data frame under the questions[[i]]$Responses element. Create
+#' such a list of questions by using link_responses_to_questions.
+#'
+#' @return A list of questions with their results tables paired to them
+#' under the questions[[i]]$Table
+generate_results <- function(questions) {
+
+  # loop through all the questions that have responses,
+  # and for each question that has responses, determine
+  # it's question type (among the ones which have question
+  # results generating functions), then generate the results for
+  # that question and save them to that question.
+  for (i in 1:length(questions)) {
+    if (is.null(questions[[i]]$Responses)) {
+      has_responses <- FALSE
+    } else {
+      has_responses <- ncol(questions[[i]]$Responses != 0)
+    }
+
+    if (has_responses) {
+      questions[[i]]$Table <- NULL
+
+      if (is_mc_multiple_answer(questions[[i]])) {
+        try(questions[[i]]$Table <-
+              mc_multiple_answer_results(questions[[i]]), silent = TRUE)
+
+      } else if (is_mc_single_answer(questions[[i]])) {
+        try(questions[[i]]$Table <-
+              mc_single_answer_results(questions[[i]]), silent = TRUE)
+
+      } else if (is_matrix_multiple_answer(questions[[i]])) {
+        try(questions[[i]]$Table <-
+              matrix_multiple_answer_results(questions[[i]]), silent = TRUE)
+
+      } else if (is_matrix_single_answer(questions[[i]])) {
+        try(questions[[i]]$Table <-
+              matrix_single_answer_results(questions[[i]]), silent = TRUE)
+      }
+    }
+  }
+
+  return(questions)
+}

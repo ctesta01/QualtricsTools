@@ -11,18 +11,11 @@ matrix_multiple_answer_results(question)
 under $Responses}
 }
 \value{
-a table with the matrix-sub-questions listed in the first column, the percentages for each
-choice for each sub-question listed in a table, and then another column with the total respondents
-for each subquestion.
+a table with the matrix-sub-questions listed in the first column,
+a column with the total number of respondents for each subquestion, and
+the percentages for each choice for each sub-question.
 }
 \description{
-The matrix_multiple_answer_results function is the naive solution to creating the
-results table for multiple answer matrix questions. It creates the results by
-taking the columns of the question, splitting them into sets with as many
-choices as there are per subquestion in each set of columns, and then
-laying the calculated results of each set on top of one another. Unfortunately, this
-will not take into account ordering. This assumes that the columns are in the default
-ordering from Qualtrics and have not been moved. Hopefully later versions of the program
-will adjust for this.
+Create the Results Table for a Matrix Multiple Answer Question
 }
 
