@@ -1,0 +1,9 @@
+.text_appendices tr:nth-child(-n+4) {
+	text-align: center;
+}
+
+.text_appendices tr:nth-child(n+6) {
+	display: block;
+	border-collapse: collapse;
+	border: 0.1pt solid #CCC
+}
