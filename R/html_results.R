@@ -39,6 +39,11 @@ tabelize_blocks <- function(blocks) {
                              include.rownames=FALSE)))
           tables = c(tables, "<br>")
 
+        } else if ("Payload" %in% names(blocks[[i]]$BlockElements[[j]])) {
+          tables = c(tables, HTML(paste0("<br><p style='color: #777;'>The results table for Question ",
+                                   blocks[[i]]$BlockElements[[j]]$Payload$DataExportTag,
+                                   " could not be automatically processed.")))
+          tables = c(tables, "<br>")
         }
       }
     }
@@ -138,7 +143,7 @@ text_appendices_table <- function(blocks) {
                   responses)
               ),
               type="html",
-              html.table.attributes='class="data table table-bordered table-condensed"',
+              html.table.attributes='class="text_appendices data table table-bordered table-condensed"',
               include.rownames=FALSE)))
 
 
@@ -178,7 +183,7 @@ text_appendices_table <- function(blocks) {
                     responses)
                 ),
                 type="html",
-                html.table.attributes='class="data table table-bordered table-condensed"',
+                html.table.attributes='class="text_appendices data table table-bordered table-condensed"',
                 include.rownames=FALSE)))
 
                 tables <- c(tables, "<br>")

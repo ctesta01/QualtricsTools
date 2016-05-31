@@ -9,6 +9,10 @@ sidebar <- dashboardSidebar(
 )
 
 body <- dashboardBody(
+  tags$head(
+    tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
+  ),
+
   tabItem(tabName = "submitting a survey",
     fluidRow(column(width = 4, tabBox( width = NULL,
       tabPanel(h5("upload files"),
