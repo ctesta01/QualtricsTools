@@ -4,7 +4,7 @@ sidebar <- dashboardSidebar(
   hr(),
   sidebarMenu(id="tabs",
     menuItem("Report Generator", tabName="report", icon=icon("leanpub"), selected=TRUE),
-    menuItem("Long and Lean Formatter", tabName = "tableau", icon=icon("database"))
+    menuItem("Reshaping Responses", tabName = "reshape", icon=icon("database"))
     )
 )
 
@@ -14,7 +14,8 @@ body <- dashboardBody(
     tags$script(src = "custom.js")
   ),
 
-  tabItem(tabName = "submitting a survey",
+  tabItems(
+  tabItem(tabName = "report",
     fluidRow(column(width = 4, tabBox( width = NULL,
       tabPanel(h5("upload files"),
         fileInput('file1',
@@ -47,6 +48,15 @@ body <- dashboardBody(
       )
 
     ))
+  ),
+
+  tabItem(tabName = "reshape",
+          fluidRow(column(width=4,
+                          tabBox(width=NULL,
+                                 tabPanel("questions for panel data",
+                                          uiOutput("panel_data_input")
+                                 ))))
+  )
   )
 )
 

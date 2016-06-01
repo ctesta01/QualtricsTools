@@ -92,6 +92,11 @@ shinyServer(
     }
   )
 
+  output$panel_data_input <- renderUI({
+    response_columns <- names(load_csv_data(input$file2, input$file1, input$headerrows))
+    selectInput('in6', 'Options', response_columns, multiple=TRUE, selectize=TRUE)
+  })
+
 
   }
 )

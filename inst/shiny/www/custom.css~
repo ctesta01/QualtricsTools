@@ -12,3 +12,6 @@
 	display: block;
 }
 
+.selectize-control.multi .selectize-input.has-items {
+  padding-bottom: 20px;
+}
