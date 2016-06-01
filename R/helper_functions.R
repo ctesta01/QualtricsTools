@@ -1,3 +1,63 @@
+#' Get the Choice Text based on the Choice from a Question
+#'
+#' Input a question and a choice, and this function will
+#' do its best to give you back the choice text.
+choice_text_from_question <- function(question, choice) {
+  is_99 <- choice == "-99"
+
+  # if the question is a multiple answer question,
+  # meaning some form of "check all that apply",
+  # then the answers are boolean valued -- either they
+  # checked it or they didn't. Return TRUE, FALSE, or
+  # "Seen, but Unanswered" depending.
+  if (is_multiple_choice(question)) {
+    if (choice %in% c(1, "1")) {
+      choice <- "TRUE"
+    } else {
+      choice <- "FALSE"
+    }
+
+    # if the question is a single answer multiple choice
+    # question, then it either has recode values, or
+    # the choice given is directly correspondent with
+    # the index of the choice in the $Payload$Choices
+    # list. if the choice given doesn't match any
+    # of the recode values, try getting it directly from
+    # the choices.
+  } else if (is_mc_single_answer(question)) {
+    if ("RecodeValues" %in% names(question$Payload)) {
+      recoded_value <- which(question$Payload$RecodeValues == x)
+      if (length(recoded_value) != 0) choice <- recoded_value
+      choice <- question$Payload$Choices[[choice]][[1]]
+    } else {
+      choice <- question$Payload$Choices[[choice]][[1]]
+    }
+
+
+    # if the question is a single answer matrix question,
+    # the question will either have recode values, or not.
+    # if the question has recode values, attempt to use the
+    # $Payload$RecodeValues list to retrieve the recoded_value.
+    # If that doesn't work, just use the original choice given.
+  } else if (is_matrix_single_answer(question)) {
+    if ("RecodeValues" %in% names(question$Payload)) {
+      recoded_value <- which(question$Payload$RecodeValues == choice)
+      if (length(recoded_value) != 0) {
+        choice <- names(question$Payload$RecodeValues[recoded_value])[[1]]
+      }
+      choice <- question$Payload$Choices[[choice]][[1]]
+    } else {
+      choice <- question$Payload$Choices[[choice]][[1]]
+    }
+  }
+
+  if (is_99) choice <- "Seen, but Unanswered"
+  choice <- clean_html(choice)
+  return(choice)
+}
+
+
+
 #' A Shiny app to format Qualtrics survey data and generate reports
 #'
 #' This function launches the Shiny interface for the Qualtrics
