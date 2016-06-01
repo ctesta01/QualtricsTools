@@ -10,7 +10,8 @@ sidebar <- dashboardSidebar(
 
 body <- dashboardBody(
   tags$head(
-    tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
+    tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"),
+    tags$script(src = "custom.js")
   ),
 
   tabItem(tabName = "submitting a survey",
