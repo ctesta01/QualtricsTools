@@ -310,16 +310,6 @@ human_readable_qtype <- function(questions) {
 #' and with questions on hand, insert them into the blocks with questions_into_blocks().
 #' @return A data frame with a row for each question describing the question's details.
 create_question_dictionary <- function(blocks) {
-
-  # take a list of rows, all with the same length, and
-  # turn them into a data frame.
-  list_of_rows_to_df <- function(data) {
-    nCol <- max(vapply(data, length, 0))
-    data <- lapply(data, function(row) c(row, rep(NA, nCol-length(row))))
-    data <- matrix(unlist(data), nrow=length(data), ncol=nCol, byrow=TRUE)
-    data.frame(data)
-  }
-
   # create_entry creates the row for any individual
   # response with the following elements in it:
   # - The data export tag,
@@ -406,3 +396,53 @@ uncodeable_question_dictionary <- function(blocks) {
   # results-tables-less questions.
   return(create_question_dictionary(blocks))
 }
+
+
+#' Create Long and Lean Response Dictionary
+lean_responses <- function(blocks) {
+  create_entry <- function(b, be, c, r) {
+    if (!("SubSelector" %in% names(blocks[[b]]$BlockElements[[be]]))) {
+      blocks[[b]]$BlockElements[[be]]$Payload$SubSelector <- ""
+    }
+    return(c(
+      toString(responses[[1]][[r]]),
+      names(blocks[[b]]$BlockElements[[be]]$Responses)[[c]],
+      blocks[[b]]$BlockElements[[be]]$Payload$DataExportTag,
+      blocks[[b]]$BlockElements[[be]]$Payload$QuestionTextClean,
+      blocks[[b]]$BlockElements[[be]]$Payload$QuestionTypeHuman,
+      blocks[[b]]$BlockElements[[be]]$Payload$QuestionType,
+      blocks[[b]]$BlockElements[[be]]$Payload$Selector,
+      blocks[[b]]$BlockElements[[be]]$Payload$SubSelector,
+      toString(blocks[[b]]$BlockElements[[be]]$Responses[[c]][[r]]),
+      choice_text_from_question(blocks[[b]]$BlockElements[[be]],
+                                blocks[[b]]$BlockElements[[be]]$Responses[[c]][[r]])
+    ))
+  }
+
+  dictionary <- list()
+  e <- 0
+  for (b in 1:length(blocks)) {
+    if (length(blocks[[b]]) > 0) {
+      for (be in 1:length(blocks[[b]]$BlockElements)) {
+        if ("Responses" %in% names(blocks[[b]]$BlockElements[[be]])) {
+          coln <- ncol(blocks[[b]]$BlockElements[[be]]$Responses)
+          rown <- nrow(blocks[[b]]$BlockElements[[be]]$Responses)
+          if (coln > 0) {
+            for (c in 1:coln) {
+              if (rown > 0) {
+                for (r in 1:rown) {
+                  e <- e+1
+                  dictionary[[e]] <- create_entry(b, be, c, r)
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return(list_of_rows_to_df(dictionary))
+}
+
+
