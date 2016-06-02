@@ -1,9 +1,45 @@
+# take a list of rows, all with the same length, and
+# turn them into a data frame.
+list_of_rows_to_df <- function(data) {
+  nCol <- max(vapply(data, length, 0))
+  data <- lapply(data, function(row) c(row, rep(NA, nCol-length(row))))
+  data <- matrix(unlist(data), nrow=length(data), ncol=nCol, byrow=TRUE)
+  data.frame(data)
+}
+
+
+#' Get the Index of the Question Corresponding to a Response Column
+#'
+#' Use this function to get the indexes identifying a question
+#' in the blocks list. Give it a response column name, and it will
+#' try to find the question it corresponds to. Otherwise, it will
+#' respond NULL.
+question_from_response_column <- function(blocks, response_name) {
+  # construct a list, with keys as the response column names, and
+  # values as pairs of block and blockelement indexes.
+  responses_to_indexes <- list()
+  for (i in 1:length(blocks)) {
+    if (length(blocks[[i]]) > 0) {
+      for (j in 1:length(blocks[[i]]$BlockElements)) {
+        if ("Responses" %in% names(blocks[[i]]$BlockElements[[j]])) {
+          for (k in names(blocks[[i]]$BlockElements[[j]]$Responses)) {
+          responses_to_indexes[[k]] <- c(i, j)
+          }
+        }
+      }
+    }
+  }
+  return(responses_to_indexes[[response_name]])
+}
+
+
 #' Get the Choice Text based on the Choice from a Question
 #'
 #' Input a question and a choice, and this function will
 #' do its best to give you back the choice text.
 choice_text_from_question <- function(question, choice) {
   is_99 <- choice == "-99"
+  choice <- toString(choice)
 
   # if the question is a multiple answer question,
   # meaning some form of "check all that apply",
@@ -26,11 +62,14 @@ choice_text_from_question <- function(question, choice) {
     # the choices.
   } else if (is_mc_single_answer(question)) {
     if ("RecodeValues" %in% names(question$Payload)) {
-      recoded_value <- which(question$Payload$RecodeValues == x)
-      if (length(recoded_value) != 0) choice <- recoded_value
-      choice <- question$Payload$Choices[[choice]][[1]]
+      recoded_value <- which(question$Payload$RecodeValues == choice)
+      if (length(recoded_value) != 0)
+        choice <- recoded_value
+      if (choice %in% names(question$Payload$Choices))
+        choice <- question$Payload$Choices[[choice]][[1]]
     } else {
-      choice <- question$Payload$Choices[[choice]][[1]]
+      if (choice %in% names(question$Payload$Choices))
+        choice <- question$Payload$Choices[[choice]][[1]]
     }
 
 
@@ -43,16 +82,20 @@ choice_text_from_question <- function(question, choice) {
     if ("RecodeValues" %in% names(question$Payload)) {
       recoded_value <- which(question$Payload$RecodeValues == choice)
       if (length(recoded_value) != 0) {
-        choice <- names(question$Payload$RecodeValues[recoded_value])[[1]]
+        if (choice %in% names(question$Payload$Choices))
+          choice <- names(question$Payload$RecodeValues[recoded_value])[[1]]
       }
-      choice <- question$Payload$Choices[[choice]][[1]]
+      if (choice %in% names(question$Payload$Choices))
+        choice <- question$Payload$Choices[[choice]][[1]]
     } else {
-      choice <- question$Payload$Choices[[choice]][[1]]
+      if (choice %in% names(question$Payload$Choices))
+        choice <- question$Payload$Choices[[choice]][[1]]
     }
   }
 
   if (is_99) choice <- "Seen, but Unanswered"
   choice <- clean_html(choice)
+  if (is.na(choice)) choice <- ""
   return(choice)
 }
 
@@ -78,12 +121,24 @@ app <- function() {
 #'
 #' @param headerrows An optional parameter for specifying the number of
 #' headerrows in the response csv.
-get_setup <- function(headerrows) {
+get_setup <- function(headerrows, already_loaded) {
   if (missing(headerrows)) {
     headerrows <- 3
   }
-  try(survey <<- ask_for_qsf())
-  try(responses <<- ask_for_csv(headerrows = headerrows))
+
+  if (missing(already_loaded)) {
+    already_loaded <- FALSE
+  }
+
+  if (already_loaded == FALSE) {
+    try(survey <<- ask_for_qsf())
+    try(responses <<- ask_for_csv(headerrows = headerrows))
+  }
+
+  if (already_loaded == TRUE) {
+    if (!exists("survey", where = -1)) survey <<- sample_survey
+    if (!exists("responses", where = -1)) responses <<- sample_responses
+  }
   try(blocks <<- blocks_from_survey(survey))
   try(questions <<- questions_from_survey(survey))
   try(questions <<- remove_trash_questions(questions, blocks))
