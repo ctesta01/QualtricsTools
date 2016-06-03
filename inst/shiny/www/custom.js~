@@ -1,6 +1,0 @@
-$("document").ready(function() {
-    setTimeout(function() {
-        $("body").toggleClass('sidebar-collapse', false);
-    },5);
-});
-
