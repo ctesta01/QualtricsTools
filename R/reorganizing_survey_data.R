@@ -399,8 +399,8 @@ uncodeable_question_dictionary <- function(blocks) {
 
 
 #' Create Long and Lean Response Dictionary
-lean_responses <- function(blocks) {
-  create_entry <- function(b, be, c, r) {
+lean_responses <- function(blocks, responses) {
+  create_entry <- function(b, be, c, r, responses) {
     if (!("SubSelector" %in% names(blocks[[b]]$BlockElements[[be]]))) {
       blocks[[b]]$BlockElements[[be]]$Payload$SubSelector <- ""
     }
@@ -432,7 +432,7 @@ lean_responses <- function(blocks) {
               if (rown > 0) {
                 for (r in 1:rown) {
                   e <- e+1
-                  dictionary[[e]] <- create_entry(b, be, c, r)
+                  dictionary[[e]] <- create_entry(b, be, c, r, responses)
                 }
               }
             }
@@ -441,8 +441,20 @@ lean_responses <- function(blocks) {
       }
     }
   }
-
-  return(list_of_rows_to_df(dictionary))
+  dictionary <- list_of_rows_to_df(dictionary)
+  names(dictionary) <- c(
+    "Response ID",
+    "Response Column",
+    "Question DataExportTag",
+    "Question Text",
+    "Question Type",
+    "Question Type 2",
+    "Question Type 3",
+    "Question Type 4",
+    "Choice Variable",
+    "Choice Text"
+  )
+  return(dictionary)
 }
 
 

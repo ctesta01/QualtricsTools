@@ -52,6 +52,7 @@ shinyServer(
     blocks <- remove_trash_blocks(blocks)
     blocks <- questions_into_blocks(questions, blocks)
     create_question_dictionary(blocks)
+
   })
 
   text_appendices <- reactive({
@@ -92,11 +93,47 @@ shinyServer(
     }
   )
 
-  output$panel_data_input <- renderUI({
-    response_columns <- names(load_csv_data(input$file2, input$file1, input$headerrows))
-    selectInput('in6', 'Options', response_columns, multiple=TRUE, selectize=TRUE)
+  output$something_else <- renderMenu({
+    # response_columns <- names(load_csv_data(input$file2, input$file1, input$headerrows))
+    sidebarMenu(
+      menuItem("testing",
+               tabName = "booglah",
+               icon = icon("calendar"),
+               # selectInput('in6', 'Options', response_columns, multiple=TRUE, selectize=TRUE)
+               selectInput("inputTest", label = h5("Input Test"), choices = c("a", "b", "c", "d"), multiple=TRUE, selectize=TRUE, width = '95%')
+    )
+    )
   })
 
+  long_and_lean <- reactive({
+    validate(need(length(survey_and_responses()) == 2, "Please upload survey responses"))
+    if (length(survey_and_responses()) == 2) {
+      survey <- survey_and_responses()[[1]]
+      responses <- survey_and_responses()[[2]]
+      blocks <- get_coded_questions_and_blocks(survey, responses)[[2]]
+      lean_responses(blocks, responses)
+    }
+  })
+
+  output$long_and_lean <- renderDataTable(long_and_lean())
+
+  output$panel_data_input <- renderMenu({
+    response_columns <- names(load_csv_data(input$file2, input$file1, input$headerrows))
+    sidebarMenu(
+      menuItem("Reshaping Responses", tabName = "reshaping", icon = icon("calendar"),
+               menuSubItem("View Lean Responses", tabName="reshape", icon=icon("leanpub")),
+               selectInput('selected_response_cols',
+                           "Choose response columns for inclusion as panel data:",
+                           response_columns,
+                           multiple=TRUE,
+                           selectize=TRUE)
+               )
+      )
+  })
+
+  output$test <- reactive({
+    input$selected_response_cols
+  })
 
   }
 )

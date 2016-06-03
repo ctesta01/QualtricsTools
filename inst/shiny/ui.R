@@ -1,10 +1,32 @@
 library(shinydashboard)
 
 sidebar <- dashboardSidebar(
-  hr(),
   sidebarMenu(id="tabs",
-    menuItem("Report Generator", tabName="report", icon=icon("leanpub"), selected=TRUE),
-    menuItem("Reshaping Responses", tabName = "reshape", icon=icon("database"))
+    menuItem("File Uploading",
+             icon=icon("upload"),
+             selected=TRUE,
+             fileInput('file1',
+                       'Choose QSF Survey File',
+                       accept=c('text/qsf', 'text/plain', '.qsf')
+             ),
+             fileInput('file2',
+                       'Choose CSV Response Set File',
+                       accept=c('text/csv', 'text/comma-separated-values', '.csv')
+             ),
+             numericInput("headerrows", "How many header rows are there in the responses?", 2, min = 1)
+             ),
+    menuItem("Report Generator",
+             tabName="report-gen",
+             icon=icon("tasks"),
+             menuSubItem("View Processed Results", tabName="report", icon=icon("leanpub")),
+             h5(""),
+             downloadButton('downloadResultsTables', 'Results Table', class="btn-primary"),
+             h5(""),
+             downloadButton('downloadQuestionDictionary', 'Question Dictionary', class="btn-primary"),
+             h5(""),
+             downloadButton('downloadTextAppendices', 'Text Appendices', class="btn-primary")
+             ),
+    menuItemOutput("panel_data_input")
     )
 )
 
@@ -16,25 +38,8 @@ body <- dashboardBody(
 
   tabItems(
   tabItem(tabName = "report",
-    fluidRow(column(width = 4, tabBox( width = NULL,
-      tabPanel(h5("upload files"),
-        fileInput('file1',
-                  'Choose QSF Survey File',
-                  accept=c('text/qsf', 'text/plain', '.qsf')
-        ),
-        fileInput('file2',
-                  'Choose CSV Response Set File',
-                  accept=c('text/csv', 'text/comma-separated-values', '.csv')
-        ),
-        numericInput("headerrows", "How many header rows are there in the responses?", 2, min = 1),
-        downloadButton('downloadResultsTables', 'Download Results Table'),
-        h5(""),
-        downloadButton('downloadQuestionDictionary', 'Download Question Dictionary'),
-        h5(""),
-        downloadButton('downloadTextAppendices', 'Download Text Appendices')
-      )
-    )),
-    column(width = 8,
+    fluidRow(
+    column(width = 12,
       tabBox( width = NULL,
               tabPanel(h5("results tables"),
                        textOutput("uncodeable_message"),
@@ -44,19 +49,22 @@ body <- dashboardBody(
                        dataTableOutput("question_dictionary")
                        ),
               tabPanel(h5("text appendices"),
-                       uiOutput("text_appendices"))
+                       uiOutput("text_appendices")
+                       )
+              )
       )
-
-    ))
+    )
   ),
 
   tabItem(tabName = "reshape",
-          fluidRow(column(width=4,
-                          tabBox(width=NULL,
-                                 tabPanel("questions for panel data",
-                                          uiOutput("panel_data_input")
-                                 ))))
-  )
+          fluidRow(column(width=8,
+                          tabPanel(h5("long and lean responses"),
+                                   verbatimTextOutput("test"),
+                                   dataTableOutput("long_and_lean")
+                                   )
+                          )
+                   )
+          )
   )
 )
 
