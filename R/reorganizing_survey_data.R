@@ -458,3 +458,22 @@ lean_responses <- function(blocks, responses) {
 }
 
 
+answers_from_response_column <- function(response_column, responses, lean_responses) {
+  if (!missing(lean_responses) && response_column %in% lean_responses$`Response Column`) {
+    selected_df <- lean_responses[lean_responses$`Response Column` == response_column,
+                                  c(1, 9, 10)]
+    names(selected_df) <- c("Response ID",
+                            paste0("Variable Responses To: ",
+                                   lean_responses[lean_responses$`Response Column` == response_column, 4][[1]]
+                                   ),
+                            paste0("Recoded Responses To: ",
+                                   lean_responses[lean_responses$`Response Column` == response_column, 4][[1]]
+                                   )
+                            )
+  } else {
+    selected_df <- responses[c(1,which(names(responses) == response_column))]
+    names(selected_df) <- c("Response ID", response_column)
+  }
+
+  return(selected_df)
+}
