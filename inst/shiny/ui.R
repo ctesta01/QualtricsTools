@@ -57,7 +57,7 @@ body <- dashboardBody(
   ),
 
   tabItem(tabName = "reshape",
-          fluidRow(column(width=8,
+          fluidRow(column(width=12,
                           tabPanel(h5("long and lean responses"),
                                    verbatimTextOutput("test"),
                                    dataTableOutput("long_and_lean")

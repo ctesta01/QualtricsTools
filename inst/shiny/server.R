@@ -93,17 +93,12 @@ shinyServer(
     }
   )
 
-  output$something_else <- renderMenu({
-    # response_columns <- names(load_csv_data(input$file2, input$file1, input$headerrows))
-    sidebarMenu(
-      menuItem("testing",
-               tabName = "booglah",
-               icon = icon("calendar"),
-               # selectInput('in6', 'Options', response_columns, multiple=TRUE, selectize=TRUE)
-               selectInput("inputTest", label = h5("Input Test"), choices = c("a", "b", "c", "d"), multiple=TRUE, selectize=TRUE, width = '95%')
-    )
-    )
-  })
+  output$downloadLeanData <- downloadHandler (
+    filename = 'lean_responses.csv',
+    content = function(file) {
+      write.csv(long_and_lean(), file, row.names=F)
+    }
+  )
 
   long_and_lean <- reactive({
     validate(need(length(survey_and_responses()) == 2, "Please upload survey responses"))
@@ -111,11 +106,23 @@ shinyServer(
       survey <- survey_and_responses()[[1]]
       responses <- survey_and_responses()[[2]]
       blocks <- get_coded_questions_and_blocks(survey, responses)[[2]]
-      lean_responses(blocks, responses)
+      dictionary <- lean_responses(blocks, responses)
+      for (response_column in input$selected_response_cols) {
+        dictionary <- merge(x = dictionary,
+                            y = answers_from_response_column(response_column, responses, dictionary),
+                            by = "Response ID",
+                            all = TRUE
+                            )
+      }
+      return(dictionary)
     }
   })
 
-  output$long_and_lean <- renderDataTable(long_and_lean())
+  output$long_and_lean <- renderDataTable(long_and_lean()[,c(2,4,9,10:length(names(long_and_lean())))],
+                                          options = list(scrollX = TRUE,
+                                                         pageLength = 10,
+                                                         autoWidth = TRUE
+                                          ))
 
   output$panel_data_input <- renderMenu({
     response_columns <- names(load_csv_data(input$file2, input$file1, input$headerrows))
@@ -126,7 +133,8 @@ shinyServer(
                            "Choose response columns for inclusion as panel data:",
                            response_columns,
                            multiple=TRUE,
-                           selectize=TRUE)
+                           selectize=TRUE),
+               downloadButton('downloadLeanData', 'Lean Responses', class="btn-primary")
                )
       )
   })
