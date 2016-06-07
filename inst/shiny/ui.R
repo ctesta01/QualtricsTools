@@ -15,19 +15,14 @@ sidebar <- dashboardSidebar(
              ),
              numericInput("headerrows", "How many header rows are there in the responses?", 2, min = 1)
              ),
-    menuItem("Report Generator",
-             tabName="report-gen",
-             icon=icon("tasks"),
-             menuSubItem("View Processed Results", tabName="report", icon=icon("leanpub")),
+             menuItem("View Processed Results", tabName="report", icon=icon("tasks")),
              h5(""),
              downloadButton('downloadResultsTables', 'Results Table', class="btn-primary"),
              h5(""),
              downloadButton('downloadQuestionDictionary', 'Question Dictionary', class="btn-primary"),
              h5(""),
              downloadButton('downloadTextAppendices', 'Text Appendices', class="btn-primary")
-             ),
-    menuItemOutput("panel_data_input")
-    )
+             )
 )
 
 body <- dashboardBody(
@@ -54,17 +49,7 @@ body <- dashboardBody(
               )
       )
     )
-  ),
-
-  tabItem(tabName = "reshape",
-          fluidRow(column(width=12,
-                          tabPanel(h5("long and lean responses"),
-                                   verbatimTextOutput("test"),
-                                   dataTableOutput("long_and_lean")
-                                   )
-                          )
-                   )
-          )
+  )
   )
 )
 

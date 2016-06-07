@@ -10,12 +10,10 @@
 	border: 0.1pt solid #CCC
 }
 
-// formatting the response column names as they 
-// appear in the selection box for the response reshaping
-.selectize-input > * {
- 	display: block !important;
+ul.treeview-menu.menu-open {
+  padding-bottom: 10px;
 }
 
-.sidebar-menu .treeview-menu {
-	padding: 10px;
+.sidebar-menu a.btn {
+	margin-left: 20px;
 }

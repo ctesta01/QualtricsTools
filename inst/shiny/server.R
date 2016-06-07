@@ -92,56 +92,5 @@ shinyServer(
       file.copy(html_to_docx(text_appendices()), file)
     }
   )
-
-  output$downloadLeanData <- downloadHandler (
-    filename = 'lean_responses.csv',
-    content = function(file) {
-      write.csv(long_and_lean(), file, row.names=F)
-    }
-  )
-
-  long_and_lean <- reactive({
-    validate(need(length(survey_and_responses()) == 2, "Please upload survey responses"))
-    if (length(survey_and_responses()) == 2) {
-      survey <- survey_and_responses()[[1]]
-      responses <- survey_and_responses()[[2]]
-      blocks <- get_coded_questions_and_blocks(survey, responses)[[2]]
-      dictionary <- lean_responses(blocks, responses)
-      for (response_column in input$selected_response_cols) {
-        dictionary <- merge(x = dictionary,
-                            y = answers_from_response_column(response_column, responses, dictionary),
-                            by = "Response ID",
-                            all = TRUE
-                            )
-      }
-      return(dictionary)
-    }
-  })
-
-  output$long_and_lean <- renderDataTable(long_and_lean()[,c(2,4,9,10:length(names(long_and_lean())))],
-                                          options = list(scrollX = TRUE,
-                                                         pageLength = 10,
-                                                         autoWidth = TRUE
-                                          ))
-
-  output$panel_data_input <- renderMenu({
-    response_columns <- names(load_csv_data(input$file2, input$file1, input$headerrows))
-    sidebarMenu(
-      menuItem("Reshaping Responses", tabName = "reshaping", icon = icon("calendar"),
-               menuSubItem("View Lean Responses", tabName="reshape", icon=icon("leanpub")),
-               selectInput('selected_response_cols',
-                           "Choose response columns for inclusion as panel data:",
-                           response_columns,
-                           multiple=TRUE,
-                           selectize=TRUE),
-               downloadButton('downloadLeanData', 'Lean Responses', class="btn-primary")
-               )
-      )
-  })
-
-  output$test <- reactive({
-    input$selected_response_cols
-  })
-
   }
 )
