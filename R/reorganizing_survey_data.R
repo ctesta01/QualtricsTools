@@ -399,23 +399,55 @@ uncodeable_question_dictionary <- function(blocks) {
 
 
 #' Create Long and Lean Response Dictionary
-lean_responses <- function(blocks, responses) {
-  create_entry <- function(b, be, c, r, responses) {
-    if (!("SubSelector" %in% names(blocks[[b]]$BlockElements[[be]]))) {
-      blocks[[b]]$BlockElements[[be]]$Payload$SubSelector <- ""
+lean_responses <- function(panel_columns) {
+  blocks <- get("blocks", envir=1)
+  choices_from_first_row <- get("choices_from_first_row", envir=1)
+  responses <- get("responses", envir=1)
+
+  create_entry <- function(question, response_column, response_row) {
+    responses <- get("responses", envir=1)
+
+    # make sure that the subselector either exists or is set to "", so that
+    # including it in an entry doesn't error
+    if (!("SubSelector" %in% names(question$Payload))) {
+      question$Payload$SubSelector <- ""
     }
+
+    # check the question_text_2 field to see if it includes anything not already
+    # in the Question Text 1 field -- if so, set question_text_2 to ""
+    question_text_2 <- gsub("#", ".", names(question$Responses)[[response_column]])
+    question_text_2 <- choices_from_first_row[[question_text_2]]
+    if (is.null(question_text_2)) question_text_2 <- ""
+    question_text_2 <- gsub("\\.\\.\\.$", "", question_text_2)
+    if (gdata::startsWith(question$Payload$QuestionText, question_text_2)) {
+      question_text_2 <- ""
+    } else {
+      question_text_2 <- clean_html(question_text_2)
+    }
+
     return(c(
-      toString(responses[[1]][[r]]),
-      names(blocks[[b]]$BlockElements[[be]]$Responses)[[c]],
-      blocks[[b]]$BlockElements[[be]]$Payload$DataExportTag,
-      blocks[[b]]$BlockElements[[be]]$Payload$QuestionTextClean,
-      blocks[[b]]$BlockElements[[be]]$Payload$QuestionTypeHuman,
-      blocks[[b]]$BlockElements[[be]]$Payload$QuestionType,
-      blocks[[b]]$BlockElements[[be]]$Payload$Selector,
-      blocks[[b]]$BlockElements[[be]]$Payload$SubSelector,
-      toString(blocks[[b]]$BlockElements[[be]]$Responses[[c]][[r]]),
-      choice_text_from_question(blocks[[b]]$BlockElements[[be]],
-                                blocks[[b]]$BlockElements[[be]]$Responses[[c]][[r]])
+      # Respondent ID:
+      as.character(responses[,1][[response_row]]),
+      # Question Data Export Tag:
+      question$Payload$DataExportTag,
+      # Question Response Column:
+      names(question$Responses)[[response_column]],
+      # Question Text:
+      question$Payload$QuestionTextClean,
+      # Question Text 2:
+      question_text_2,
+      # Question Type 1:
+      question$Payload$QuestionType,
+      # Question Type 2:
+      question$Payload$Selector,
+      # Question Type 3:
+      question$Payload$SubSelector,
+      # Response Type:
+      question$Payload$QuestionTypeHuman,
+      # Raw Response:
+      toString(question$Responses[[response_column]][[response_row]]),
+      # Coded Response:
+      choice_text_from_question(question, question$Responses[[response_column]][[response_row]])
     ))
   }
 
@@ -432,7 +464,17 @@ lean_responses <- function(blocks, responses) {
               if (rown > 0) {
                 for (r in 1:rown) {
                   e <- e+1
-                  dictionary[[e]] <- create_entry(b, be, c, r, responses)
+                  dictionary[[e]] <- tryCatch(create_entry(blocks[[b]]$BlockElements[[be]], c, r),
+                                              error = function(e) {
+                                                cat(print0("DataExportTag: "
+                                                           , blocks[[b]]$BlockElements[[be]]$Payload$DataExportTag
+                                                           , "Response Column: "
+                                                           , c
+                                                           , "Response Row: "
+                                                           , r
+                                                           ))
+                                                return(NULL)
+                                              })
                 }
               }
             }
@@ -441,38 +483,49 @@ lean_responses <- function(blocks, responses) {
       }
     }
   }
+
   dictionary <- list_of_rows_to_df(dictionary)
   names(dictionary) <- c(
-    "Response ID",
-    "Response Column",
-    "Question DataExportTag",
+    "Respondent ID",
+    "Question Data Export Tag",
+    "Question Response Column",
     "Question Text",
-    "Question Type",
+    "Question Text 2",
+    "Question Type 1",
     "Question Type 2",
     "Question Type 3",
-    "Question Type 4",
-    "Choice Variable",
-    "Choice Text"
+    "Response Type",
+    "Raw Response",
+    "Coded Response"
   )
+
+  if (!missing(panel_columns)) {
+    panel_data <- list()
+    for (i in 1:length(panel_columns)) {
+      panel_data[[i]] <- answers_from_response_column(panel_columns[[i]], responses, dictionary)
+    }
+    panel_data <- reshape::merge_recurse(panel_data)
+    dictionary <- merge(x = dictionary, y = panel_data, by = "Respondent ID", all = TRUE)
+  }
   return(dictionary)
 }
 
 
 answers_from_response_column <- function(response_column, responses, lean_responses) {
-  if (!missing(lean_responses) && response_column %in% lean_responses$`Response Column`) {
-    selected_df <- lean_responses[lean_responses$`Response Column` == response_column,
-                                  c(1, 9, 10)]
-    names(selected_df) <- c("Response ID",
-                            paste0("Variable Responses To: ",
-                                   lean_responses[lean_responses$`Response Column` == response_column, 4][[1]]
+  if (!missing(lean_responses) && response_column %in% lean_responses$`Question Response Column`) {
+    selected_df <- lean_responses[lean_responses$`Question Response Column` == response_column,
+                                  c(1, 10, 11)]
+    names(selected_df) <- c("Respondent ID",
+                            paste0("Raw Response: ",
+                                   lean_responses[lean_responses$`Question Response Column` == response_column, 4][[1]]
                                    ),
-                            paste0("Recoded Responses To: ",
-                                   lean_responses[lean_responses$`Response Column` == response_column, 4][[1]]
+                            paste0("Coded Response: ",
+                                   lean_responses[lean_responses$`Question Response Column` == response_column, 4][[1]]
                                    )
                             )
   } else {
     selected_df <- responses[c(1,which(names(responses) == response_column))]
-    names(selected_df) <- c("Response ID", response_column)
+    names(selected_df) <- c("Respondent ID", response_column)
   }
 
   return(selected_df)
