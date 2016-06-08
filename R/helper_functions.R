@@ -38,8 +38,8 @@ question_from_response_column <- function(blocks, response_name) {
 #' Input a question and a choice, and this function will
 #' do its best to give you back the choice text.
 choice_text_from_question <- function(question, choice) {
-  is_99 <- choice == "-99"
-  choice <- toString(choice)
+  original <- choice
+  choice <- as.character(choice)
 
   # if the question is a multiple answer question,
   # meaning some form of "check all that apply",
@@ -48,9 +48,9 @@ choice_text_from_question <- function(question, choice) {
   # "Seen, but Unanswered" depending.
   if (is_multiple_choice(question)) {
     if (choice %in% c(1, "1")) {
-      choice <- "TRUE"
+      choice <- "Selected"
     } else {
-      choice <- "FALSE"
+      choice <- "Not Selected"
     }
 
     # if the question is a single answer multiple choice
@@ -82,20 +82,19 @@ choice_text_from_question <- function(question, choice) {
     if ("RecodeValues" %in% names(question$Payload)) {
       recoded_value <- which(question$Payload$RecodeValues == choice)
       if (length(recoded_value) != 0) {
-        if (choice %in% names(question$Payload$Choices))
-          choice <- names(question$Payload$RecodeValues[recoded_value])[[1]]
+        choice <- names(question$Payload$RecodeValues[recoded_value])[[1]]
       }
-      if (choice %in% names(question$Payload$Choices))
-        choice <- question$Payload$Choices[[choice]][[1]]
+      if (choice %in% names(question$Payload$Answers))
+        choice <- question$Payload$Answers[[choice]][[1]]
     } else {
-      if (choice %in% names(question$Payload$Choices))
-        choice <- question$Payload$Choices[[choice]][[1]]
+      if (choice %in% names(question$Payload$Answers))
+        choice <- question$Payload$Answers[[choice]][[1]]
     }
   }
 
-  if (is_99) choice <- "Seen, but Unanswered"
+  if (original %in% c(-99, "-99")) choice <- "Seen, but Unanswered"
+  if (is.na(choice) || identical(choice, original)) choice <- ""
   choice <- clean_html(choice)
-  if (is.na(choice)) choice <- ""
   return(choice)
 }
 
