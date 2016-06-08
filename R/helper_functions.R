@@ -179,3 +179,73 @@ find_question_index <- function(questions, exporttag) {
   matched_question_index <- which(sapply(questions, function(x) x$Payload$DataExportTag == exporttag))
   return(matched_question_index)
 }
+
+display_logic_from_question <- function(question) {
+  display_logic <- list()
+  e <- 1
+  if ("DisplayLogic" %in% names(question$Payload)) {
+    display_logic[[e]] <- "Question Display Logic:"
+    e <- e+1
+    dl_indices_1 <- suppressWarnings(which(!is.na(as.numeric(names(question$Payload$DisplayLogic)))))
+    for (i in dl_indices_1) {
+      dl_indices_2 <- suppressWarnings(which(!is.na(as.numeric(names(question$Payload$DisplayLogic[[i]])))))
+      for (j in dl_indices_2) {
+        if ("Description" %in% names(question$Payload$DisplayLogic[[i]][[j]])) {
+          display_logic[[e]] <- clean_html(question$Payload$DisplayLogic[[i]][[j]]$Description)
+          e <- e+1
+        }
+      }
+    }
+  }
+
+  if ("Choices" %in% names(question$Payload)) {
+    choices_with_logic <- sapply(question$Payload$Choices, function(x) "DisplayLogic" %in% names(x))
+    has_choice_logic <- any(choices_with_logic)
+    choices_with_logic <- which(choices_with_logic)
+    if (has_choice_logic) {
+      display_logic[[e]] <- "Choice Display Logic:"
+      e <- e+1
+      for (i in choices_with_logic) {
+        display_logic[[e]] <- paste0("Display Logic for ", question$Payload$Choices[[i]]$Display, ":")
+        e <- e+1
+        dl_indices_1 <- suppressWarnings(which(!is.na(as.numeric(names(question$Payload$Choices[[i]]$DisplayLogic)))))
+        for (j in dl_indices_1) {
+          dl_indices_2 <- suppressWarnings(which(!is.na(as.numeric(names(question$Payload$Choices[[i]]$DisplayLogic[[j]])))))
+          for (k in dl_indices_2) {
+            if ("Description" %in% names(question$Payload$Choices[[i]]$DisplayLogic[[j]][[k]])) {
+              display_logic[[e]] <- clean_html(question$Payload$Choices[[i]]$DisplayLogic[[j]][[k]]$Description)
+              e <- e+1
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if ("Answers" %in% names(question$Payload)) {
+    answers_with_logic <- sapply(question$Payload$Answers, function(x) "DisplayLogic" %in% names(x))
+    has_answer_logic <- any(answers_with_logic)
+    answers_with_logic <- which(answers_with_logic)
+    if (has_answer_logic) {
+      display_logic[[e]] <- "Answer Display Logic:"
+      e <- e+1
+      for (i in answers_with_logic) {
+        display_logic[[e]] <- paste0("Display Logic for ", question$Payload$Answers[[i]]$Display, ":")
+        e <- e+1
+        dl_indices_1 <- suppressWarnings(which(!is.na(as.numeric(names(question$Payload$Answers[[i]]$DisplayLogic)))))
+        for (j in dl_indices_1) {
+          dl_indices_2 <- suppressWarnings(which(!is.na(as.numeric(names(question$Payload$Answers[[i]]$DisplayLogic[[j]])))))
+          for (k in dl_indices_2) {
+            if ("Description" %in% names(question$Payload$Answers[[i]]$DisplayLogic[[j]][[k]])) {
+              display_logic[[e]] <- clean_html(question$Payload$Answers[[i]]$DisplayLogic[[j]][[k]]$Description)
+              e <- e+1
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return(display_logic)
+}
+
