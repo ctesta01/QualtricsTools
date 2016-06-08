@@ -72,10 +72,13 @@ ask_for_csv <- function(responsesfile, headerrows) {
       headerrows <- 2
     }
     responses = read.csv(responsesfile, check.names=F)
-
     responses[which(colnames(responses) == "")] <- NULL
+    choices <- lapply(responses[1,], function(x) gsub(".*-", "", as.character(x)))
+    choices_from_first_row <<- rbind(as.data.frame(choices))
 
     responses <- responses[headerrows:nrow(responses),]
+    responses <- responses[apply(responses,1,function(x)any(x != "")),]
+
     return(responses)
 }
 
