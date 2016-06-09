@@ -45,6 +45,9 @@ body <- dashboardBody(
                        ),
               tabPanel(h5("text appendices"),
                        uiOutput("text_appendices")
+                       ),
+              tabPanel(h5("display logic"),
+                       uiOutput("display_logic")
                        )
               )
       )

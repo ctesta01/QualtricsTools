@@ -246,4 +246,35 @@ uncodeable_questions_message <- function(questions) {
   return(uncodeable_message)
 }
 
+tabelize_display_logic <- function(blocks) {
+  # all the html tables will be saved into the tables list.
+  tables <- list()
+  options(stringsAsFactors = FALSE)
+  for (i in 1:length(blocks)) {
+    if (length(blocks[[i]]$BlockElements) != 0) {
+      for (j in 1:length(blocks[[i]]$BlockElements)) {
+        if (blocks[[i]]$BlockElements[[j]]$Payload$QuestionType != "DB") {
 
+          display_logic <- display_logic_from_question(blocks[[i]]$BlockElements[[j]])
+          if (length(display_logic) > 1) {
+            display_logic <- do.call(rbind.data.frame, t(c(
+              blocks[[i]]$BlockElements[[j]]$Payload$DataExportTag,
+              blocks[[i]]$BlockElements[[j]]$Payload$QuestionTextClean,
+              display_logic
+              )))
+
+            tables = c(tables, capture.output(print(xtable::xtable(display_logic),
+              include.colnames=FALSE,
+              type="html",
+              html.table.attributes='class="data table table-bordered table-condensed"',
+              include.rownames=FALSE
+              )))
+
+            tables <- c(tables, "<br>")
+          }
+        }
+      }
+    }
+  }
+  return(unlist(lapply(tables, paste)))
+}

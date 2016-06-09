@@ -65,11 +65,30 @@ shinyServer(
     }
   })
 
+  display_logic <- reactive({
+    validate(need(length(survey_and_responses()) >= 1, "Please upload survey responses"))
+    if (length(survey_and_responses()) >= 1) {
+      survey <- survey_and_responses()[[1]]
+      blocks <- blocks_from_survey(survey)
+      questions <- questions_from_survey(survey)
+      questions <- remove_trash_questions(questions, blocks)
+      questions <- clean_question_text(questions)
+      blocks <- remove_trash_blocks(blocks)
+      blocks <- questions_into_blocks(questions, blocks)
+      tabelize_display_logic(blocks)
+    }
+  })
+
   # output tabpanels' contents
   output$uncodeable_message <- renderText(uncodeable_message())
   output$results_tables <- renderUI(div(HTML(results_tables()), class="shiny-html-output"))
-  output$question_dictionary <- renderDataTable(question_dictionary())
+  output$question_dictionary <- renderDataTable(question_dictionary(),
+                                                options = list(scrollX = TRUE,
+                                                               pageLength = 10,
+                                                               autoWidth = TRUE
+                                                ))
   output$text_appendices <- renderUI(div(HTML(text_appendices()), class="shiny-html-output"))
+  output$display_logic <- renderUI(div(HTML(display_logic()), class="shiny-html-output"))
 
   # download buttons
   output$downloadResultsTables <- downloadHandler(
