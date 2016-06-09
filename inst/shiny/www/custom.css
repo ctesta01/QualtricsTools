@@ -17,3 +17,8 @@ ul.treeview-menu.menu-open {
 .sidebar-menu a.btn {
 	margin-left: 20px;
 }
+
+.question_description tr:nth-child(n+3) {
+  color: red;
+  font-weight: bold;
+}

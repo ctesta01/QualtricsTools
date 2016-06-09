@@ -9,46 +9,58 @@ tabelize_blocks <- function(blocks) {
   # all the html tables will be saved into the tables list.
   tables <- list()
   options(stringsAsFactors = FALSE)
-
-  # loop through every block element that has a results table,
-  # and for each add to the tables list the results table,
-  # with a caption containing the Question Data Export Tag,
-  # and the question text. The results tables will be
-  # processed with xtable and converted to HTML so they can
-  # be displayed in the UI. After each results table and its
-  # caption, add a <br> (an html break) to separate the next
-  # results table.
   for (i in 1:length(blocks)) {
     if (length(blocks[[i]]$BlockElements) != 0) {
       for (j in 1:length(blocks[[i]]$BlockElements)) {
-        if (is.null(blocks[[i]]$BlockElements[[j]]$Table) == FALSE) {
-
-          tables = c(tables,
-                     capture.output(
-                       print(xtable::xtable(
-                               blocks[[i]]$BlockElements[[j]]$Table,
-                               caption=paste0(
-                                 "Question ",
-                                 blocks[[i]]$BlockElements[[j]]$Payload$DataExportTag,
-                                 ": ",
-                                 blocks[[i]]$BlockElements[[j]]$Payload$QuestionTextClean)
-                               ),
-                             type="html",
-                             html.table.attributes='class="data table table-bordered table-condensed"',
-                             caption.placement="top",
-                             include.rownames=FALSE)))
-          tables = c(tables, "<br>")
-
-        } else if ("Payload" %in% names(blocks[[i]]$BlockElements[[j]])) {
-          tables = c(tables, HTML(paste0("<br><p style='color: #777;'>The results table for Question ",
-                                   blocks[[i]]$BlockElements[[j]]$Payload$DataExportTag,
-                                   " could not be automatically processed.")))
-          tables = c(tables, "<br>")
+        if (blocks[[i]]$BlockElements[[j]]$Payload$QuestionType != "DB") {
+          tables <- c(tables, question_description(blocks[[i]]$BlockElements[[j]]))
         }
       }
     }
   }
   return(unlist(lapply(tables, paste)))
+}
+
+
+
+question_description <- function(question) {
+  tables <- list()
+  display_logic <- display_logic_from_question(question)
+  if (length(display_logic) > 3) {
+    display_logic <- list("This question contains complex display logic. Please refer to the Question Dictionary.")
+  }
+  question_header <- do.call(rbind.data.frame,
+                             t(c(question$Payload$DataExportTag,
+                                 question$Payload$QuestionTextClean,
+                                 display_logic)))
+  tables = c(tables, capture.output(
+    print(xtable::xtable(question_header),
+          include.colnames=FALSE,
+          type="html",
+          caption.placement="top",
+          html.table.attributes='class="question_description data table table-bordered table-condensed"',
+          include.rownames=FALSE)))
+  tables = c(tables, "<br>")
+
+  if ("Table" %in% names(question)) {
+    tables = c(tables, capture.output(
+      print(xtable::xtable(question$Table),
+            type="html",
+            html.table.attributes='class="data table table-bordered table-condensed"',
+            include.rownames=FALSE)))
+  } else if ("Payload" %in% names(question)) {
+    if (question$Payload$QuestionType == "TE") {
+      tables = c(tables, paste0("<br><p style='color: #777;'>Question ",
+                                question$Payload$DataExportTag,
+                                " was a text entry question. See Appendix.</p>"))
+    } else {
+      tables = c(tables, paste0("<br><p style='color: #777;'>The results table for Question ",
+                                question$Payload$DataExportTag,
+                                " could not be automatically processed.</p>"))
+    }
+  }
+  tables = c(tables, "<br><br>")
+  return(tables)
 }
 
 

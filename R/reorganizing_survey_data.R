@@ -489,7 +489,7 @@ lean_responses <- function(panel_columns) {
     "Respondent ID",
     "Question Data Export Tag",
     "Question Response Column",
-    "Question Text",
+    "Question Text 1",
     "Question Text 2",
     "Question Type 1",
     "Question Type 2",
