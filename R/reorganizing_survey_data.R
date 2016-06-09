@@ -318,17 +318,16 @@ create_question_dictionary <- function(blocks) {
   # - "QuestionType", the qualtrics supplied question type,
   # - "Selector", the qualtrics defined question selector
   create_entry <- function(i, j) {
+    if (!"SubSelector" %in% names(blocks[[i]]$BlockElements[[j]]$Payload)) {
+      blocks[[i]]$BlockElements[[j]]$Payload$SubSelector <- ""
+    }
     return(c(
-      # data export tag
       blocks[[i]]$BlockElements[[j]]$Payload$DataExportTag,
-      # question text
       blocks[[i]]$BlockElements[[j]]$Payload$QuestionTextClean,
-      # human readable question type
-      blocks[[i]]$BlockElements[[j]]$Payload$QuestionTypeHuman,
-      # qualtrics question type
       blocks[[i]]$BlockElements[[j]]$Payload$QuestionType,
-      # qualtrics question selector
-      blocks[[i]]$BlockElements[[j]]$Payload$Selector
+      blocks[[i]]$BlockElements[[j]]$Payload$Selector,
+      blocks[[i]]$BlockElements[[j]]$Payload$SubSelector,
+      blocks[[i]]$BlockElements[[j]]$Payload$QuestionTypeHuman
     ))
   }
 
@@ -350,11 +349,12 @@ create_question_dictionary <- function(blocks) {
   if (length(entries) > 0) {
     question_dictionary <- list_of_rows_to_df(entries)
     colnames(question_dictionary) <-
-      c("DataExportTag",
-        "QuestionText",
-        "QuestionType",
-        "QuestionType2",
-        "QuestionType3")
+      c("Question Export Tag",
+        "Question Text",
+        "Question Type 1",
+        "Question Type 2",
+        "Question Type 3",
+        "Response Type")
   } else {
     question_dictionary <- NULL
   }
@@ -413,18 +413,6 @@ lean_responses <- function(panel_columns) {
       question$Payload$SubSelector <- ""
     }
 
-    # check the question_text_2 field to see if it includes anything not already
-    # in the Question Text 1 field -- if so, set question_text_2 to ""
-    question_text_2 <- gsub("#", ".", names(question$Responses)[[response_column]])
-    question_text_2 <- choices_from_first_row[[question_text_2]]
-    if (is.null(question_text_2)) question_text_2 <- ""
-    question_text_2 <- gsub("\\.\\.\\.$", "", question_text_2)
-    if (gdata::startsWith(question$Payload$QuestionText, question_text_2)) {
-      question_text_2 <- ""
-    } else {
-      question_text_2 <- clean_html(question_text_2)
-    }
-
     return(c(
       # Respondent ID:
       as.character(responses[,1][[response_row]]),
@@ -434,8 +422,6 @@ lean_responses <- function(panel_columns) {
       names(question$Responses)[[response_column]],
       # Question Text:
       question$Payload$QuestionTextClean,
-      # Question Text 2:
-      question_text_2,
       # Question Type 1:
       question$Payload$QuestionType,
       # Question Type 2:
@@ -489,8 +475,7 @@ lean_responses <- function(panel_columns) {
     "Respondent ID",
     "Question Data Export Tag",
     "Question Response Column",
-    "Question Text 1",
-    "Question Text 2",
+    "Question Text",
     "Question Type 1",
     "Question Type 2",
     "Question Type 3",
