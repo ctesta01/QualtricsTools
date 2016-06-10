@@ -13,4 +13,7 @@ The function uses formatC from the R base package and
 defaults to formatting the number with 1 digit and with the "f" format
 in the formatC argument.
 }
+\details{
+This function is mostly a function for aiding in formatting results tables.
+}
 

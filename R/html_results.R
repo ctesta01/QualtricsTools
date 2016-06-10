@@ -12,6 +12,8 @@ tabelize_blocks <- function(blocks) {
   for (i in 1:length(blocks)) {
     if (length(blocks[[i]]$BlockElements) != 0) {
       for (j in 1:length(blocks[[i]]$BlockElements)) {
+
+        #if a question isn't a descriptive block, insert the question description for it
         if (blocks[[i]]$BlockElements[[j]]$Payload$QuestionType != "DB") {
           tables <- c(tables, question_description(blocks[[i]]$BlockElements[[j]]))
         }
@@ -22,13 +24,28 @@ tabelize_blocks <- function(blocks) {
 }
 
 
-
+#' Create Question Description and Results Table Entry
+#'
+#' @param question A qualtrics survey question
+#'
+#' @return A list of HTML with a description table for the question,
+#' and either the generated results, or a note saying why there are
+#' no results.
 question_description <- function(question) {
   tables <- list()
+
+  # get display logic for the question
   display_logic <- display_logic_from_question(question)
+
+  # if the display logic is too long, write a note saying
+  # that there is complex display logic, and to refer to the
+  # Display Logic output.
   if (length(display_logic) > 3) {
-    display_logic <- list("This question contains complex display logic. Please refer to the Question Dictionary.")
+    display_logic <- list("This question contains complex display logic. Please refer to the Display Logic panel.")
   }
+
+  # the question header is the data export tag, the question text (stripped of html),
+  # and then display logic.
   question_header <- do.call(rbind.data.frame,
                              t(c(question$Payload$DataExportTag,
                                  question$Payload$QuestionTextClean,
@@ -42,6 +59,7 @@ question_description <- function(question) {
           include.rownames=FALSE)))
   tables = c(tables, "<br>")
 
+  # if the question has a results table, insert it here.
   if ("Table" %in% names(question)) {
     tables = c(tables, capture.output(
       print(xtable::xtable(question$Table),
@@ -49,10 +67,16 @@ question_description <- function(question) {
             html.table.attributes='class="data table table-bordered table-condensed"',
             include.rownames=FALSE)))
   } else if ("Payload" %in% names(question)) {
+
+    # if the question doesn't have a results table, and is a
+    # text entry question, write a note saying so.
     if (question$Payload$QuestionType == "TE") {
       tables = c(tables, paste0("<br><p style='color: #777;'>Question ",
                                 question$Payload$DataExportTag,
                                 " was a text entry question. See Appendix.</p>"))
+
+    # if the question doesn't have a results table, and it's not a text entry question,
+    # write a note saying the results table wasn't automatically generated.
     } else {
       tables = c(tables, paste0("<br><p style='color: #777;'>The results table for Question ",
                                 question$Payload$DataExportTag,
@@ -246,6 +270,18 @@ uncodeable_questions_message <- function(questions) {
   return(uncodeable_message)
 }
 
+#' Generate Tables for Each Question with Display Logic
+#'
+#' This function loops through every block, and checks if
+#' each block element has display logic (and is not a descriptive box).
+#' The descriptive boxes aren't included.
+#' If it has display logic, it's inserted into the tables returned by
+#' this function.
+#'
+#' @param blocks Survey blocks with questions substituted for the blockelements
+#'
+#' @return a list of html tables detailing the display logic for each question
+#' containing display logic.
 tabelize_display_logic <- function(blocks) {
   # all the html tables will be saved into the tables list.
   tables <- list()
@@ -255,6 +291,11 @@ tabelize_display_logic <- function(blocks) {
       for (j in 1:length(blocks[[i]]$BlockElements)) {
         if (blocks[[i]]$BlockElements[[j]]$Payload$QuestionType != "DB") {
 
+          # if the display logic isn't trivial, include it.
+          # each table should have the structure:
+          #   - Data Export Tag
+          #   - Question Text (stripped of HTML)
+          #   - Display logic ...
           display_logic <- display_logic_from_question(blocks[[i]]$BlockElements[[j]])
           if (length(display_logic) > 1) {
             display_logic <- do.call(rbind.data.frame, t(c(
@@ -262,7 +303,6 @@ tabelize_display_logic <- function(blocks) {
               blocks[[i]]$BlockElements[[j]]$Payload$QuestionTextClean,
               display_logic
               )))
-
             tables = c(tables, capture.output(print(xtable::xtable(display_logic),
               include.colnames=FALSE,
               type="html",

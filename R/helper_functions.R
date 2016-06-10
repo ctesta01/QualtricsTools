@@ -107,7 +107,7 @@ choice_text_from_question <- function(question, choice) {
 #'
 #' @usage qualtrics::app()
 app <- function() {
-  shiny::runApp(system.file('shiny', package = 'qualtrics'))
+  shiny::runApp(system.file('shiny', package = 'qualtricsautomation'))
 }
 
 #' Setup the Global Environment for a Survey
@@ -180,9 +180,34 @@ find_question_index <- function(questions, exporttag) {
   return(matched_question_index)
 }
 
+
+#' Return a list of a Question's Display Logic Components
+#'
+#' For each question, if they appear, go through the
+#' Question's DisplayLogic, each Choice's DisplayLogic, and
+#' each Answer's DisplayLogic. For each of them, use clean_html
+#' to format them, and then add them to the list. If a question
+#' has any of these display logic components, insert before
+#' adding any display logic a line detailing what part of the
+#' question the following display logic corresponds to.
+#'
+#' @param question A qualtrics survey question
+#' @return an ordered list of display logic messages
 display_logic_from_question <- function(question) {
+
+  # display_logic is a list for storing display logic messages,
+  # e will be the index we use to increment as we add to display_logic.
   display_logic <- list()
   e <- 1
+
+  # if there is "DisplayLogic" in the question's payload,
+  # add a message saying "Question Display Logic:", and then increment once.
+  # Next, since DisplayLogic has many components, not all of which we are looking
+  # to examine, we select the elements that are numeric.
+  # DisplayLogic looks something like this:
+  # question$Payload$DisplayLogic$`0`$`1`$Description
+  # Determining the first and second indices within the DisplayLogic is the goal
+  # of the operations used to define the dl_indices_1 and dl_indices_2.
   if ("DisplayLogic" %in% names(question$Payload)) {
     display_logic[[e]] <- "Question Display Logic:"
     e <- e+1
@@ -198,6 +223,9 @@ display_logic_from_question <- function(question) {
     }
   }
 
+  # we do the same process for the
+  # choices, but including a message before each display logic describing which
+  # choice it corresponds to.
   if ("Choices" %in% names(question$Payload)) {
     choices_with_logic <- sapply(question$Payload$Choices, function(x) "DisplayLogic" %in% names(x))
     has_choice_logic <- any(choices_with_logic)
@@ -222,6 +250,7 @@ display_logic_from_question <- function(question) {
     }
   }
 
+  # for the answers, we do the exact same as the choices.
   if ("Answers" %in% names(question$Payload)) {
     answers_with_logic <- sapply(question$Payload$Answers, function(x) "DisplayLogic" %in% names(x))
     has_answer_logic <- any(answers_with_logic)

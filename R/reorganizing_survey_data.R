@@ -12,15 +12,38 @@
 #' @return a list with two elements, the first being the survey questions,
 #' and the second being the survey blocks
 get_coded_questions_and_blocks <- function(survey, responses) {
+  # select the block elements from the survey
   blocks <- blocks_from_survey(survey)
+
+  # select the questions from the survey
   questions <- questions_from_survey(survey)
+
+  # remove the questions that were found in the trash block
   questions <- remove_trash_questions(questions, blocks)
+
+  # clean the question text of HTML and CSS tags
   questions <- clean_question_text(questions)
+
+  # categorize each question's Response Type
+  # (Single Answer, Multiple Answer,
+  #  Text Entry, Rank Order)
   questions <- human_readable_qtype(questions)
+
+  # remove the trash block from the blocks
   blocks <- remove_trash_blocks(blocks)
+
+  # insert the response columns into their corresponding
+  # question under question$Responses
   questions <- link_responses_to_questions(questions, responses)
+
+  # generate each question's results table and insert it
+  # in question$Table
   questions <- generate_results(questions)
+
+  # insert the questions into the blocks
   blocks <- questions_into_blocks(questions, blocks)
+
+  # return questions and blocks as a list of 2 elements
   questions_and_blocks <- list()
   questions_and_blocks[['questions']] <- questions
   questions_and_blocks[['blocks']] <- blocks
@@ -80,12 +103,17 @@ questions_from_survey <- function(survey) {
 #' provided except without any questions listed in the Trash
 #' block of the blocks list provided.
 remove_trash_questions <- function(questions, blocks) {
+    # select the trash block
     trash <- Filter(function(x) x$Type == "Trash", blocks)
+
+    # retrieve the trash questions
     trash_questions <- list()
     for (i in trash[[1]]$BlockElements) {
         trash_questions <- c(i$QuestionID, trash_questions)
     }
 
+    # remove the questions that were found among the
+    # trash questions
     delete_if_in_trash <- function(x) {
         if (x$Payload$QuestionID %in% trash_questions) {
             return(NULL)
@@ -363,6 +391,21 @@ create_question_dictionary <- function(blocks) {
 
 
 #' Create Uncodeable Question Dictionary
+#'
+#' The "uncodeable" questions are the questions that
+#' do not have results tables inserted into them. This
+#' function is meant to run on a list of blocks that have
+#' had questions with their results tables inserted into them.
+#' For any that do not have results tables, this function
+#' assumes they were not successfully processed, adds them to the
+#' list of uncodeable questions, and then returns a
+#' question dictionary detailing them.
+#'
+#' @param blocks A list of blocks with questions that have been
+#' processed with generate_results(questions). The questions can be inserted
+#' into the blocks from a survey by using questions_into_blocks(questions, blocks).
+#' @return A data frame providing the details of the questions that were not
+#' successfully processed by generate_results(questions).
 uncodeable_question_dictionary <- function(blocks) {
 
   # loop through each question,
@@ -399,11 +442,24 @@ uncodeable_question_dictionary <- function(blocks) {
 
 
 #' Create Long and Lean Response Dictionary
+#'
+#' lean_responses() creates a data frame where each row corresponds to
+#' an individual response to the survey. Each response contains
+#' the respondents' id, the question data export tag, the response column's name,
+#' the question text, the question type(s), the variable response, and the coded
+#' response, and then that individual's responses to any questions chosen for inclusion
+#' as panel data.
+#' @param panel_columns A list of names of response columns to include in the
+#' output formatted as panel data.
+#' @return a data frame with each row detailing an individual survey response.
 lean_responses <- function(panel_columns) {
+  # get the blocks and responses from the global environment
+  # TODO: these should also be optionally passed as direct parameters
   blocks <- get("blocks", envir=1)
-  choices_from_first_row <- get("choices_from_first_row", envir=1)
   responses <- get("responses", envir=1)
 
+  # this create_entry function returns an entry (a row)
+  # to be used in the lean_responses output.
   create_entry <- function(question, response_column, response_row) {
     responses <- get("responses", envir=1)
 
@@ -437,6 +493,10 @@ lean_responses <- function(panel_columns) {
     ))
   }
 
+  # create a dictionary as a list to store row-entries in.
+  # for each block element, try to create an entry and add it
+  # to the dictionary.
+  # TODO: does this fail well?
   dictionary <- list()
   e <- 0
   for (b in 1:length(blocks)) {
@@ -449,18 +509,25 @@ lean_responses <- function(panel_columns) {
             for (c in 1:coln) {
               if (rown > 0) {
                 for (r in 1:rown) {
+
+                  # if a block element has responses,
+                  # for each response increment the dictionary index e once,
+                  # and try to add to the dictionary the entry for that
+                  # question. If creating the entry fails, return to the
+                  # console a message saying
                   e <- e+1
-                  dictionary[[e]] <- tryCatch(create_entry(blocks[[b]]$BlockElements[[be]], c, r),
-                                              error = function(e) {
-                                                cat(print0("DataExportTag: "
-                                                           , blocks[[b]]$BlockElements[[be]]$Payload$DataExportTag
-                                                           , "Response Column: "
-                                                           , c
-                                                           , "Response Row: "
-                                                           , r
-                                                           ))
-                                                return(NULL)
-                                              })
+                  dictionary[[e]] <-
+                    tryCatch(create_entry(blocks[[b]]$BlockElements[[be]], c, r),
+                             error = function(e) {
+                               cat(paste0("\nCreating an entry for the following question failed. \nDataExportTag: "
+                                          , blocks[[b]]$BlockElements[[be]]$Payload$DataExportTag
+                                          , "\nResponse Column: "
+                                          , c
+                                          , "\nResponse Row: "
+                                          , r
+                               ))
+                               return(NULL)
+                             })
                 }
               }
             }
@@ -470,6 +537,7 @@ lean_responses <- function(panel_columns) {
     }
   }
 
+  # list_of_rows_to_df turns the rows into a data frame
   dictionary <- list_of_rows_to_df(dictionary)
   names(dictionary) <- c(
     "Respondent ID",
@@ -484,6 +552,10 @@ lean_responses <- function(panel_columns) {
     "Coded Response"
   )
 
+  # if there is a list of panel data included, for each
+  # use answers_from_response_column to turn that column name
+  # into panel data, then merge all the panel data together,
+  # then merge it all into the dictionary.
   if (!missing(panel_columns)) {
     panel_data <- list()
     for (i in 1:length(panel_columns)) {
@@ -496,7 +568,22 @@ lean_responses <- function(panel_columns) {
 }
 
 
+#' Get the Survey Respondents Answers from a Specific Response Column
+#'
+#' This function is to help in selecting the response data to a specific response
+#' column. It selects that data from the lean_responses data (if it's available),
+#' or the responses data frame. If it selects the response data from the lean_responses
+#' data frame, the returned data frame includes a "Raw Response" and a "Coded Response"
+#' column. If not, it includes exactly the response column as it appears in the responses.
+#'
+#' @param response_column The name of a response column that appears in the response set.
+#' @param responses the data frame of responses
+#' @param lean_responses responses reshaped with the lean_responses() function
+#' @return a data frame with 2-3 columns, the first being "Respondent ID", the next 1-2 being the
+#' response data for each respondent.
 answers_from_response_column <- function(response_column, responses, lean_responses) {
+  # if the lean_responses are included as an argument, and the response_column given as an
+  # argument appears in the "Question Response Column" -- use the lean_responses
   if (!missing(lean_responses) && response_column %in% lean_responses$`Question Response Column`) {
     selected_df <- lean_responses[lean_responses$`Question Response Column` == response_column,
                                   c(1, 10, 11)]
@@ -508,6 +595,7 @@ answers_from_response_column <- function(response_column, responses, lean_respon
                                    lean_responses[lean_responses$`Question Response Column` == response_column, 4][[1]]
                                    )
                             )
+  # otherwise, use the responses
   } else {
     selected_df <- responses[c(1,which(names(responses) == response_column))]
     names(selected_df) <- c("Respondent ID", response_column)

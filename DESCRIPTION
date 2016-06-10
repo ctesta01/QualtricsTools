@@ -1,10 +1,10 @@
-Package: qualtrics
+Package: qualtricsautomation
 Type: Package
 Title: Automating Qualtrics Data Reshaping
 Version: 0.1.0
 Author: Christian Testa
 Maintainer: Christian Testa <christian.testa@tufts.edu>
-Description:
+Description: This package is for automating the processing of Qualtrics surveys. The Shiny app included serves as an easy-to-use interface for generating reports from survey data from Qualtrics. Further, other functions allow the user to generate data frames detailing the questions or the responses in a long data format.
 License: BSD
 LazyData: true
 Imports:

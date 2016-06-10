@@ -5,6 +5,8 @@
 #' The function uses formatC from the R base package and
 #' defaults to formatting the number with 1 digit and with the "f" format
 #' in the formatC argument.
+#'
+#' This function is mostly a function for aiding in formatting results tables.
 percent0 <- function(x, digits = 1, format = "f", ...) {
   paste0(formatC(100 * x, format = format, digits = digits, ...), "%")
 }
@@ -20,17 +22,19 @@ percent0 <- function(x, digits = 1, format = "f", ...) {
 #' @return a table with an N, Percent, and choice column, detailing the number of responses for each
 #' choice.
 mc_single_answer_results <- function(question) {
-    # the factors are the variable codes that users could choose between
-    # if a question has been recoded, the variable names are in $Payload$RecodeValues
-    # and if not, they are in $Payload$Choices
+    # If a question's response options were given recoded values
+    # during the survey's creation, the variables for the recoded values
+    # are used as the factors a response could match. If there was no
+    # recoding of values, then the choices are directly use as the factors
+    # a response can match.
     if ("RecodeValues" %in% names(question$Payload)) {
         factors <- unlist(question$Payload$RecodeValues)
     } else {
         factors <- names(question$Payload$Choices)
     }
 
-    # the responses to single answer questions are only one column, so they are always the first column.
-    # take the responses and sort them by the factors to get responses_tabled.
+    # the responses to single answer questions are only one column.
+    # first, take the responses and sort them by the factors to get responses_tabled.
     # the second column of the responses_tabled are the numbers of responses for each factor, our Ns.
     # total number of responses to a question is counted by all the answers that aren't -99
     # use Ns and respondent_count to calculate the percents for each factor.
@@ -69,7 +73,7 @@ mc_single_answer_results <- function(question) {
 #' Create the Results Table for a Multiple Choice Single Answer Question
 #'
 #' The mc_multiple_answer_results function uses the definition of the choices in the QSF file
-#' and their potentially recoded values to determine how to table the results paired to that question.
+#' and their (if present) recoded values to determine how to table the results paired to that question.
 #'
 #' @inheritParams mc_single_answer_results
 #' @return a table with an N, Percent, and choice column, detailing the number of responses for each
@@ -97,17 +101,18 @@ mc_multiple_answer_results <- function(question) {
   data_export_tag <- question$Payload$DataExportTag
   names(N) <- gsub(paste0(data_export_tag, "_"), "", names(orig_responses))
 
-  # this is kinda sketchy...
-  # Qualtrics Insights uses the RecodeValues, but
-  # Qualtrics Pre-Insights uses the Choice index directly.
-  # Hopefully checking if all the choices from the response data
-  # are in the recode values is a good measure of whether we're using Qualtrics Insights
-  # or not.
+  # Qualtrics Insights' platform uses the recoded values for the column names
+  # in the response data. However, Qualtrics only used the choice values
+  # before their insights platform. The condition used for recoding the columns
+  # is that "RecodeValues" appears in the question's payload, and that
+  # all the column names (after having their data export tag removed) are
+  # contained in the RecodeValues list.
   if ("RecodeValues" %in% names(question$Payload) && all(names(N) %in% question$Payload$RecodeValues)) {
     names(N) <- sapply(names(N), function(x) which(question$Payload$RecodeValues == x))
   }
 
-
+  # After recoding the choices, grab their choice text.
+  # Clean the choice text of HTML, and format the data as percents.
   choices <- sapply(names(N), function(x) question$Payload$Choices[[x]][[1]])
   choices <- unlist(choices, use.names = FALSE)
   choices <- sapply(choices, clean_html)
@@ -144,7 +149,7 @@ matrix_single_answer_results <- function(question) {
   }
 
   # create the responses table, a table detailing the
-  # number of times each choice was chosen for each sub-question.
+  # number of times each answer was chosen for each sub-question (choice).
   # N is a list with as many elements as there are questions, with the number
   # of respondents for each matrix sub-question in each entry.
   # the responses table is iterated over and turned into percents according to the
@@ -213,13 +218,14 @@ matrix_single_answer_results <- function(question) {
       question$Payload$Choices[[gsub(export_tag_with_underscore, "", x)]][[1]])
   }
 
-  # sometimes what we get back isn't going to be
-  # the length we want. If it is, we go ahead and
-  # unlist the choices. If not, we
-  # try to lower the dimension if the dimension is 2,
+  # The choices can contain information like DisplayLogic and
+  # Text Entry components, so sometimes unlisting choices will
+  # give us more elements than we need. If the choices are longer
+  # than we need, we
+  # try to lower the dimension,
   # and we try to select only the display parts of the
   # choices.
-  # last, we run the HTML cleaner on the choices
+  # Then we run the HTML cleaner on the choices
   # so that the choice text appears nicely.
   if (length(choices) == length(N)) {
     choices <- unlist(choices, use.names = FALSE)
@@ -255,6 +261,7 @@ matrix_multiple_answer_results <- function(question) {
   vector_to_dataframe <- function(vector) {
     df <- data.frame(names = names(vector), value = as.numeric(vector))
     `%>%` <- magrittr::`%>%`
+
     # the regular expression used in this line is a
     # positive lookbehind for a "_", followed by
     # a positive lookahead for a string of
@@ -262,7 +269,8 @@ matrix_multiple_answer_results <- function(question) {
     # this separate command splits the column header into the
     # first part, and the last part, where the last part is always
     # the answer variable.
-    df <- tidyr::separate(df, names, into=c("Choices", "Answers"), sep = "(?<=_) ?(?=([0-9]+$))") %>% tidyr::spread(Answers, value)
+    df <- tidyr::separate(df, names, into=c("Choices", "Answers"),
+                          sep = "(?<=_) ?(?=([0-9]+$))") %>% tidyr::spread(Answers, value)
 
     # when the separated results are spread, they list the
     # first part of the separation in the first column.
