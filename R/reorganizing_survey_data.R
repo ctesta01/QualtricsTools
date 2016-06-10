@@ -584,15 +584,15 @@ lean_responses <- function(panel_columns) {
 answers_from_response_column <- function(response_column, responses, lean_responses) {
   # if the lean_responses are included as an argument, and the response_column given as an
   # argument appears in the "Question Response Column" -- use the lean_responses
-  if (!missing(lean_responses) && response_column %in% lean_responses$`Question Response Column`) {
-    selected_df <- lean_responses[lean_responses$`Question Response Column` == response_column,
-                                  c(1, 10, 11)]
+  if (!missing(lean_responses) && response_column %in% lean_responses[[3]]) {
+    selected_df <- lean_responses[lean_responses[[3]] == response_column,
+                                  c(1, 9, 10)]
     names(selected_df) <- c("Respondent ID",
                             paste0("Raw Response: ",
-                                   lean_responses[lean_responses$`Question Response Column` == response_column, 4][[1]]
+                                   lean_responses[lean_responses[[3]] == response_column, 4][[1]]
                                    ),
                             paste0("Coded Response: ",
-                                   lean_responses[lean_responses$`Question Response Column` == response_column, 4][[1]]
+                                   lean_responses[lean_responses[[3]] == response_column, 4][[1]]
                                    )
                             )
   # otherwise, use the responses
