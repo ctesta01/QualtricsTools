@@ -1,4 +1,4 @@
-Package: qualtricsautomation
+Package: QualtricsTools
 Type: Package
 Title: Automating Qualtrics Data Reshaping
 Version: 0.1.0

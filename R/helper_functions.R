@@ -107,7 +107,7 @@ choice_text_from_question <- function(question, choice) {
 #'
 #' @usage qualtrics::app()
 app <- function() {
-  shiny::runApp(system.file('shiny', package = 'qualtricsautomation'))
+  shiny::runApp(system.file('shiny', package = 'QualtricsTools'))
 }
 
 #' Setup the Global Environment for a Survey
