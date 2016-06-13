@@ -4,4 +4,3 @@ $("document").ready(function() {
         $("li.treeview").children("a").first().click();
     },5);
 });
-

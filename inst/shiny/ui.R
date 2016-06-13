@@ -21,7 +21,9 @@ sidebar <- dashboardSidebar(
              h5(""),
              downloadButton('downloadQuestionDictionary', 'Question Dictionary', class="btn-primary"),
              h5(""),
-             downloadButton('downloadTextAppendices', 'Text Appendices', class="btn-primary")
+             downloadButton('downloadTextAppendices', 'Text Appendices', class="btn-primary"),
+             h5(""),
+             actionButton("quit", "Stop App")
              )
 )
 

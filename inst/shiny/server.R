@@ -111,5 +111,12 @@ shinyServer(
       file.copy(html_to_docx(text_appendices()), file)
     }
   )
+
+  observe({
+    # If input$quit is unset (NULL) do nothing; if it's anything else, quit
+    # and return input$n
+    if (input$quit == 0) return()
+    else stopApp("Have a great day!")
+  })
   }
 )

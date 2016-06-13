@@ -22,3 +22,11 @@ ul.treeview-menu.menu-open {
   color: red;
   font-weight: bold;
 }
+
+#quit {
+  position:fixed;
+  bottom:0;
+  left:0;
+  margin-left: 20px;
+  margin-bottom: 10px;
+}  
