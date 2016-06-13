@@ -264,10 +264,11 @@ questions_into_blocks <- function(questions, blocks) {
 #' @return A list of questions which now include in their Payload a QuestionTextClean
 #' element, a copy of the QuestionText but cleaned of any HTML tags and HTML entities.
 clean_question_text <- function(questions) {
+  remove_css_style <- function(x) gsub("<style.*style>", "", x)
 
   for (i in 1:length(questions)) {
     questions[[i]][['Payload']][['QuestionTextClean']] <-
-      clean_html(questions[[i]][['Payload']][['QuestionText']])
+      clean_html(remove_css_style(questions[[i]][['Payload']][['QuestionText']]))
   }
 
   return(questions)
