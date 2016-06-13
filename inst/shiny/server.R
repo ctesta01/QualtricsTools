@@ -80,7 +80,7 @@ shinyServer(
   })
 
   # output tabpanels' contents
-  output$uncodeable_message <- renderText(uncodeable_message())
+  output$uncodeable_message <- renderUI(HTML(uncodeable_message()))
   output$results_tables <- renderUI(div(HTML(results_tables()), class="shiny-html-output"))
   output$question_dictionary <- renderDataTable(question_dictionary(),
                                                 options = list(scrollX = TRUE,

@@ -39,7 +39,7 @@ body <- dashboardBody(
     column(width = 12,
       tabBox( width = NULL,
               tabPanel(h5("results tables"),
-                       textOutput("uncodeable_message"),
+                       uiOutput("uncodeable_message"),
                        uiOutput("results_tables")
                       ),
               tabPanel(h5("question dictionary"),

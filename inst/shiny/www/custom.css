@@ -19,7 +19,6 @@ ul.treeview-menu.menu-open {
 }
 
 .question_description tr:nth-child(n+3) {
-  color: red;
   font-weight: bold;
 }
 

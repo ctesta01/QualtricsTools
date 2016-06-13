@@ -8,6 +8,7 @@
 tabelize_blocks <- function(blocks) {
   # all the html tables will be saved into the tables list.
   tables <- list()
+  tables[[1]] <- "<br>"
   options(stringsAsFactors = FALSE)
   for (i in 1:length(blocks)) {
     if (length(blocks[[i]]$BlockElements) != 0) {
@@ -46,10 +47,52 @@ question_description <- function(question) {
 
   # the question header is the data export tag, the question text (stripped of html),
   # and then display logic.
+  description <- c(question$Payload$DataExportTag,
+                   question$Payload$QuestionTextClean,
+                   display_logic)
+
+  # if there's no results table, append a message to the question
+  # description accordingly.
+  # - text entry -> "Question XX is a text entry question. See Appendix."
+  # - otherwise -> "The results table for Question XX could not be
+  #                 automatically processed."
+  if ("Payload" %in% names(question)) {
+    if (!"Table" %in% names(question) && question$Payload$QuestionType == "TE") {
+      description <- c(description, paste0(
+        "Question ",
+        question$Payload$DataExportTag,
+        " is a text entry question. See Appendix."))
+    } else if (!"Table" %in% names(question)) {
+      description <- c(description, paste0(
+        "The results table for Question ",
+        question$Payload$DataExportTag,
+        " could not be automatically processed."))
+    }
+  }
+
+  # if the question isn't a text entry question, but has
+  # columns in which "TEXT" appears, print one of the following
+  # messages, depending on how many text entry columns are in the
+  # question:
+  #  1 - "This question has a text entry component. See Appendix."
+  # >1 - "This question has multiple text entry components. See Appendices."
+  if ("Payload" %in% names(question)) {
+    if (question$Payload$QuestionType != "TE") {
+      if (length(grep("TEXT", names(question$Responses))) == 1) {
+        description <- c(description, paste0(
+          "This question has a text entry component. See Appendix."))
+      } else if (length(grep("TEXT", names(question$Responses))) > 1) {
+        description <- c(description, paste0(
+          "This question has multiple text entry components. See Appendices."))
+      }
+    }
+  }
+
+  # reshape the data into a data frame
   question_header <- do.call(rbind.data.frame,
-                             t(c(question$Payload$DataExportTag,
-                                 question$Payload$QuestionTextClean,
-                                 display_logic)))
+                             t(description))
+
+  # append the question description printed as an html table
   tables = c(tables, capture.output(
     print(xtable::xtable(question_header),
           include.colnames=FALSE,
@@ -59,34 +102,18 @@ question_description <- function(question) {
           include.rownames=FALSE)))
   tables = c(tables, "<p style='line-height:0px;'>&emsp;</p>")
 
-  # if the question has a results table, insert it here.
+  # if the question has a results table, append it as an html table.
   if ("Table" %in% names(question)) {
     tables = c(tables, capture.output(
       print(xtable::xtable(question$Table),
             type="html",
             html.table.attributes='class="data table table-bordered table-condensed"',
             include.rownames=FALSE)))
-  } else if ("Payload" %in% names(question)) {
-
-    # if the question doesn't have a results table, and is a
-    # text entry question, write a note saying so.
-    if (question$Payload$QuestionType == "TE") {
-      tables = c(tables, paste0("<p style='color: #777;'>Question ",
-                                question$Payload$DataExportTag,
-                                " was a text entry question. See Appendix.</p>"))
-
-    # if the question doesn't have a results table, and it's not a text entry question,
-    # write a note saying the results table wasn't automatically generated.
-    } else {
-      tables = c(tables, paste0("<p style='color: #777;'>The results table for Question ",
-                                question$Payload$DataExportTag,
-                                " could not be automatically processed.</p>"))
-    }
   }
+
   tables = c(tables, "<br><br>")
   return(tables)
 }
-
 
 
 
@@ -267,6 +294,7 @@ uncodeable_questions_message <- function(questions) {
   } else {
     uncodeable_message <- "All questions were successfully processed!"
   }
+  uncodeable_message <- paste0("<b>", uncodeable_message, "</b>")
   return(uncodeable_message)
 }
 
