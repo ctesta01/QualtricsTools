@@ -57,7 +57,7 @@ question_description <- function(question) {
           caption.placement="top",
           html.table.attributes='class="question_description data table table-bordered table-condensed"',
           include.rownames=FALSE)))
-  tables = c(tables, "<br>")
+  tables = c(tables, "<p style='line-height:0px;'>&emsp;</p>")
 
   # if the question has a results table, insert it here.
   if ("Table" %in% names(question)) {
@@ -71,14 +71,14 @@ question_description <- function(question) {
     # if the question doesn't have a results table, and is a
     # text entry question, write a note saying so.
     if (question$Payload$QuestionType == "TE") {
-      tables = c(tables, paste0("<br><p style='color: #777;'>Question ",
+      tables = c(tables, paste0("<p style='color: #777;'>Question ",
                                 question$Payload$DataExportTag,
                                 " was a text entry question. See Appendix.</p>"))
 
     # if the question doesn't have a results table, and it's not a text entry question,
     # write a note saying the results table wasn't automatically generated.
     } else {
-      tables = c(tables, paste0("<br><p style='color: #777;'>The results table for Question ",
+      tables = c(tables, paste0("<p style='color: #777;'>The results table for Question ",
                                 question$Payload$DataExportTag,
                                 " could not be automatically processed.</p>"))
     }
