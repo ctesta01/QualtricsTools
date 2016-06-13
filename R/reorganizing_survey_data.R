@@ -452,12 +452,23 @@ uncodeable_question_dictionary <- function(blocks) {
 #' as panel data.
 #' @param panel_columns A list of names of response columns to include in the
 #' output formatted as panel data.
+#' @param question_blocks A list of blocks, with questions inserted in place of the
+#' BlockElements representing them.
+#' @param survey_responses The responses to the survey, as imported by ask_for_csv()
 #' @return a data frame with each row detailing an individual survey response.
-lean_responses <- function(panel_columns) {
+lean_responses <- function(panel_columns, question_blocks, survey_responses) {
   # get the blocks and responses from the global environment
   # TODO: these should also be optionally passed as direct parameters
-  blocks <- get("blocks", envir=1)
-  responses <- get("responses", envir=1)
+  if (missing(question_blocks)) {
+    blocks <- get("blocks", envir=1)
+  } else {
+    blocks <- question_blocks
+  }
+  if (missing(survey_responses)) {
+    responses <- get("responses", envir=1)
+  } else {
+    responses <- survey_responses
+  }
 
   # this create_entry function returns an entry (a row)
   # to be used in the lean_responses output.
@@ -562,8 +573,12 @@ lean_responses <- function(panel_columns) {
     for (i in 1:length(panel_columns)) {
       panel_data[[i]] <- answers_from_response_column(panel_columns[[i]], responses, dictionary)
     }
-    panel_data <- reshape::merge_recurse(panel_data)
-    dictionary <- merge(x = dictionary, y = panel_data, by = "Respondent ID", all = TRUE)
+    if (length(panel_columns) > 1) {
+      panel_data <- reshape::merge_recurse(panel_data)
+      dictionary <- merge(x = dictionary, y = panel_data, by = "Respondent ID", all = TRUE)
+    } else if (length(panel_columns) == 1) {
+      dictionary <- merge(x = dictionary, y = panel_data[[1]], by = "Respondent ID", all = TRUE)
+    }
   }
   return(dictionary)
 }
