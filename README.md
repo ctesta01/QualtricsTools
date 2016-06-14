@@ -1,13 +1,22 @@
-### the qualtrics R package project
+### the QualtricsTools project
 
-This is a project I'm working on to make it easier to create reports from 
-Qualtrics survey data and responses. The project is an R package, and 
-comes with a Shiny application that can be used as an interface for 
-some automatic report generation. 
+This is a project I'm working on to automate creating reports from 
+Qualtrics survey data and responses. This is an R package that 
+comes with a Shiny application that can be used for automatic report generation. 
 
-![constructing a question dictionary](https://giant.gfycat.com/ThoughtfulCreamyKoalabear.gif)
+![carosel of views](https://zippy.gfycat.com/ImmaterialNastyAnkolewatusi.gif)
 
-More details will come soon!
+#### installing
 
-<img align="middle" src="https://media.giphy.com/media/22zIpaS7fhqU/giphy.gif" alt="diving penguins">
+To get setup, you'll need to have R or [Rstudio](https://www.rstudio.com/), [devtools](https://github.com/hadley/devtools), and [Pandoc](http://pandoc.org/installing.html).
+
+    devtools::install_github("ctesta01/QualtricsTools")
+    library(QualtricsTools)
+    QualtricsTools::app()
+
+The QualtricsTools Shiny app should now be running! Enjoy!
+
+#### more to come soon!
+
+If you have questions, please feel free to email me at christian.testa@tufts.edu. Otherwise, the [wiki](https://github.com/ctesta01/QualtrisTools/wiki/) has some neat stuff. 
 
