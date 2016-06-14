@@ -92,14 +92,14 @@ shinyServer(
 
   # download buttons
   output$downloadResultsTables <- downloadHandler(
-    filename = 'results_tables.docx',
+    filename = 'results-tables.docx',
     content = function(file) {
       file.copy(html_to_docx(results_tables()), file)
     }
   )
 
   output$downloadQuestionDictionary <- downloadHandler(
-    filename = 'question_dictionary.csv',
+    filename = 'question-dictionary.csv',
     content = function(file) {
       write.csv(question_dictionary(), file, row.names=F)
     }
@@ -109,6 +109,13 @@ shinyServer(
     filename = 'appendices.docx',
     content = function(file) {
       file.copy(html_to_docx(text_appendices()), file)
+    }
+  )
+
+  output$downloadDisplayLogic <- downloadHandler(
+    filename = 'display-logic.docx',
+    content = function(file) {
+      file.copy(html_to_docx(display_logic()), file)
     }
   )
 

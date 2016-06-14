@@ -23,6 +23,8 @@ sidebar <- dashboardSidebar(
              h5(""),
              downloadButton('downloadTextAppendices', 'Text Appendices', class="btn-primary"),
              h5(""),
+             downloadButton('downloadDisplayLogic', 'Display Logic', class="btn-primary"),
+             h5(""),
              actionButton("quit", "Stop App")
              )
 )
