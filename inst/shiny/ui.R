@@ -13,9 +13,9 @@ sidebar <- dashboardSidebar(
                        'Choose CSV Response Set File',
                        accept=c('text/csv', 'text/comma-separated-values', '.csv')
              ),
-             numericInput("headerrows", "How many header rows are there in the responses?", 2, min = 1)
+             numericInput("headerrows", "How many header rows are there in the responses?", 3, min = 1)
              ),
-             menuItem("View Processed Results", tabName="report", icon=icon("tasks")),
+             menuItem("Processed Results", tabName="report", icon=icon("tasks")),
              h5(""),
              downloadButton('downloadResultsTables', 'Results Table', class="btn-primary"),
              h5(""),
