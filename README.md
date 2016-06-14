@@ -18,5 +18,5 @@ The QualtricsTools Shiny app should now be running! Enjoy!
 
 #### more to come soon!
 
-If you have questions, please feel free to email me at christian.testa@tufts.edu. Otherwise, the [wiki](https://github.com/ctesta01/QualtrisTools/wiki/) has some neat stuff. 
+If you have questions, please feel free to email me at christian.testa@tufts.edu. Otherwise, the [wiki](https://github.com/ctesta01/QualtricsTools/wiki/) has some neat stuff. 
 
