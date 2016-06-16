@@ -278,3 +278,55 @@ display_logic_from_question <- function(question) {
   return(display_logic)
 }
 
+
+#' Get the Choice Text from the First Row of the Responses
+#'
+#' This function uses the first row of the response data from Qualtrics
+#' to determine the choice text a response column corresponds to.
+#'
+#' @param response_column The name of a response column from the response set
+#' @param original_first_row The first row of the original response set, with names
+#' @param blocks A list of the survey blocks, with the questions included in them
+#' @return The choice text corresponding to a response column
+choice_text_from_response_column <- function(response_column, original_first_row, blocks) {
+
+  # get the question's place in the blocks from the response column,
+  # save the indices needed to refer to the question in the blocks list,
+  # save the raw question text,
+  # and clean it of HTML tags
+  question_indices <- question_from_response_column(blocks, response_column)
+  i <- question_indices[[1]]
+  j <- question_indices[[2]]
+  question_text <- blocks[[i]]$BlockElements[[j]]$Payload$QuestionText
+  question_text <- clean_html(question_text)
+
+  # get the first-row-entry from the responses for the given response column,
+  # count the number of dashes in the cleaned question text,
+  # and count the number of dashes in the first-row-entry.
+  # NOTE: counting the dashes in the question text is limited to the first 99
+  # characters, since the question is cut off in the first row after 99
+  # characters.
+  first_row_entry <- as.character(original_first_row[response_column][[1]])
+  stem_dashes <- gregexpr("-", substr(question_text, 1, 99))[[1]]
+  stem_dash_n <- length(which(stem_dashes > 0))
+  first_row_dashes <- gregexpr("-", first_row_entry)[[1]]
+  first_row_dash_n <- length(which(first_row_dashes > 0))
+
+  # if the number of dashes in the first-row-entry is the same as
+  # the number of dashes in the question stem, then the choice text
+  # for the response column can be set to blank.
+  # if the number of dashes in the first-row-entry is greater
+  # than the number of dashes in the question stem, then
+  # the choice text for that response column should be set to
+  # the text of the first-row-entry after the appropriate
+  # number of dashes
+  if (first_row_dash_n > stem_dash_n) {
+    choice_text <- substr(first_row_entry, first_row_dashes[[stem_dash_n + 1]] + 1, nchar(first_row_entry))
+  } else {
+    choice_text <- ""
+  }
+
+  return(choice_text)
+}
+
+

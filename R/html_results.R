@@ -136,7 +136,7 @@ question_description <- function(question) {
 #' @return an html string containing a title,
 #' question text, and the text responses for each
 #' text appendix.
-text_appendices_table <- function(blocks) {
+text_appendices_table <- function(blocks, original_first_row) {
 
   # appendix_lettering takes a number
   # and returns the corresponding lettered index.
@@ -227,6 +227,19 @@ text_appendices_table <- function(blocks) {
             # the next text appendix.
           } else if (length(text_columns) > 0) {
             for (k in 1:length(text_columns)) {
+
+              if (!missing(original_first_row)) {
+                response_column <- names(blocks[[i]]$BlockElements[[j]]$Responses)[text_columns[[k]]]
+                choice_text <- choice_text_from_response_column(response_column, original_first_row, blocks)
+                if (choice_text != "") {
+                  question_text <- paste0(blocks[[i]]$BlockElements[[j]]$Payload$QuestionTextClean,
+                                          "-",
+                                          choice_text)
+                } else {
+                  question_text <- blocks[[i]]$BlockElements[[j]]$Payload$QuestionTextClean
+                }
+              }
+
               responses <- blocks[[i]]$BlockElements[[j]]$Responses[text_columns[[k]]]
               responses <- as.data.frame(responses[!apply(responses, 1, function(x) any(x=="")),])
               responses <- as.data.frame(responses[!apply(responses, 1, function(x) any(x==-99)),])
@@ -237,7 +250,7 @@ text_appendices_table <- function(blocks) {
                 tables <- c(tables, capture.output(print(xtable::xtable(
                   rbind(
                     paste0("Appendix ", appendix_lettering(e)),
-                    blocks[[i]]$BlockElements[[j]]$Payload$QuestionTextClean,
+                    question_text,
 		    "Verbatim responses -- these have not been edited in any way.",
                     "",
                     paste0("Responses: (",
