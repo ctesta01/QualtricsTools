@@ -18,3 +18,4 @@ Imports:
     xtable
 Remotes: talgalili/installr
 RoxygenNote: 5.0.1
+Suggests: testthat
