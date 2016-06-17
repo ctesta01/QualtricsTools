@@ -135,9 +135,19 @@ get_setup <- function(headerrows, already_loaded) {
   }
 
   if (already_loaded == TRUE) {
-    if (!exists("survey", where = -1)) survey <<- sample_survey
-    if (!exists("responses", where = -1)) responses <<- sample_responses
+    if (!exists("survey", where = -1)) {
+      survey <- sample_survey
+    } else {
+      survey <- get("survey", envir=-1)
+    }
+
+    if (!exists("responses", where = -1)) {
+      responses <- sample_responses
+    } else {
+      responses <- get("responses", envir=-1)
+    }
   }
+
   try(blocks <<- blocks_from_survey(survey))
   try(questions <<- questions_from_survey(survey))
   try(questions <<- remove_trash_questions(questions, blocks))
