@@ -360,7 +360,7 @@ generate_results <- function(questions) {
     if (is.null(questions[[i]]$Responses)) {
       has_responses <- FALSE
     } else {
-      has_responses <- ncol(questions[[i]]$Responses != 0)
+      has_responses <- ncol(questions[[i]]$Responses) != 0
     }
 
     if (has_responses) {

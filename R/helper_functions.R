@@ -340,3 +340,75 @@ choice_text_from_response_column <- function(response_column, original_first_row
 }
 
 
+#' Split Respondents by a Response Column
+#'
+#' This function splits the respondents into separate respondent groups
+#' based on the values in the specified response column. Then, for each
+#' respondent group, the blocks with questions are duplicated. Each set of
+#' blocks has a different responent group inserted into its questions, and
+#' then each set of blocks is processed. The output is a list of blocks with
+#' the results processed and inserted into each BlockElement.
+#'
+#'  @param response_column The response column that will be used to split the respondents
+#'  @param headerrows the number of rows in the response csv before the response data starts
+#'  @param already_loaded This can be set to TRUE to indicate that the survey and responses
+#'  should be sourced from the global scope; in other words that the survey and its responses
+#'  have are "already loaded."
+#'
+#'  @return A list of a list of blocks. The same question, but with different respondent groups,
+#'  might look something like split_blocks[[1]][[1]]$BlockElements[[1]] and
+#'  split_blocks[[2]][[1]]$BlockElements[[1]]. These refer to the first and second respondent
+#'  groups, the first block, and the first block element.
+split_respondents <- function(response_column, headerrows, already_loaded) {
+  if (missing(headerrows)) {
+    headerrows <- 3
+  }
+  if (missing(already_loaded)) {
+    already_loaded <- FALSE
+  }
+
+  if (already_loaded != TRUE) {
+    try(survey <<- ask_for_qsf())
+    try(responses <<- ask_for_csv(headerrows = headerrows))
+  }
+
+  if (already_loaded == TRUE) {
+    if (!exists("survey", where = -1)) {
+      survey <- sample_survey
+    } else {
+      survey <- get("survey", envir=-1)
+    }
+
+    if (!exists("responses", where = -1)) {
+      responses <- sample_responses
+    } else {
+      responses <- get("responses", envir=-1)
+    }
+  }
+
+  # split the respondents by their responses to in the response_column
+  split_responses <- split(responses, responses[response_column])
+
+  # process the blocks and questions as per usual
+  blocks <- blocks_from_survey(survey)
+  questions <- questions_from_survey(survey)
+  questions <- remove_trash_questions(questions, blocks)
+  questions <- clean_question_text(questions)
+  questions <- human_readable_qtype(questions)
+  blocks <- remove_trash_blocks(blocks)
+
+  # duplicate the blocks and questions once for every respondent group
+  split_blocks <- rep(list(blocks), times = length(split_responses))
+  split_questions <- rep(list(questions), times = length(split_responses))
+
+  # for each of the respondent groups, insert the responses into the
+  # questions for that respondent group, generate the question's results,
+  # and then insert the questions into the blocks for that respondent group.
+  for (i in 1:length(split_responses)) {
+    split_questions[[i]] <- link_responses_to_questions(split_questions[[i]], split_responses[[i]])
+    split_questions[[i]] <- generate_results(split_questions[[i]])
+    split_blocks[[i]] <- questions_into_blocks(split_questions[[i]], split_blocks[[i]])
+  }
+
+  return(split_blocks)
+}
