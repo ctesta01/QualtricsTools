@@ -1,7 +1,7 @@
 #' Create a List of HTML Versions of the Results Tables
 #'
 #' @param questions A list of questions with the relevant results tables
-#' stored as data frames under the questions[[i]]$Table element. Create
+#' stored as data frames under the questions[[i]][['Table']] element. Create
 #' such a list of questions by using generate_results function
 #'
 #' @return A list of HTML results tables for each question
@@ -11,12 +11,12 @@ tabelize_blocks <- function(blocks) {
   tables[[1]] <- "<br>"
   options(stringsAsFactors = FALSE)
   for (i in 1:length(blocks)) {
-    if (length(blocks[[i]]$BlockElements) != 0) {
-      for (j in 1:length(blocks[[i]]$BlockElements)) {
+    if (length(blocks[[i]][['BlockElements']]) != 0) {
+      for (j in 1:length(blocks[[i]][['BlockElements']])) {
 
         #if a question isn't a descriptive block, insert the question description for it
-        if (blocks[[i]]$BlockElements[[j]]$Payload$QuestionType != "DB") {
-          tables <- c(tables, question_description(blocks[[i]]$BlockElements[[j]]))
+        if (blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionType']] != "DB") {
+          tables <- c(tables, question_description(blocks[[i]][['BlockElements']][[j]]))
         }
       }
     }
@@ -47,8 +47,8 @@ question_description <- function(question) {
 
   # the question header is the data export tag, the question text (stripped of html),
   # and then display logic.
-  description <- c(question$Payload$DataExportTag,
-                   question$Payload$QuestionTextClean,
+  description <- c(question[['Payload']][['DataExportTag']],
+                   question[['Payload']][['QuestionTextClean']],
                    display_logic)
 
   # if there's no results table, append a message to the question
@@ -57,15 +57,15 @@ question_description <- function(question) {
   # - otherwise -> "The results table for Question XX could not be
   #                 automatically processed."
   if ("Payload" %in% names(question)) {
-    if (!"Table" %in% names(question) && question$Payload$QuestionType == "TE") {
+    if (!"Table" %in% names(question) && question[['Payload']][['QuestionType']] == "TE") {
       description <- c(description, paste0(
         "Question ",
-        question$Payload$DataExportTag,
+        question[['Payload']][['DataExportTag']],
         " is a text entry question. See Appendix."))
     } else if (!"Table" %in% names(question)) {
       description <- c(description, paste0(
         "The results table for Question ",
-        question$Payload$DataExportTag,
+        question[['Payload']][['DataExportTag']],
         " could not be automatically processed."))
     }
   }
@@ -77,11 +77,11 @@ question_description <- function(question) {
   #  1 - "This question has a text entry component. See Appendix."
   # >1 - "This question has multiple text entry components. See Appendices."
   if ("Payload" %in% names(question)) {
-    if (question$Payload$QuestionType != "TE") {
-      if (length(grep("TEXT", names(question$Responses))) == 1) {
+    if (question[['Payload']][['QuestionType']] != "TE") {
+      if (length(grep("TEXT", names(question[['Responses']]))) == 1) {
         description <- c(description, paste0(
           "This question has a text entry component. See Appendix."))
-      } else if (length(grep("TEXT", names(question$Responses))) > 1) {
+      } else if (length(grep("TEXT", names(question[['Responses']]))) > 1) {
         description <- c(description, paste0(
           "This question has multiple text entry components. See Appendices."))
       }
@@ -105,7 +105,7 @@ question_description <- function(question) {
   # if the question has a results table, append it as an html table.
   if ("Table" %in% names(question)) {
     tables = c(tables, capture.output(
-      print(xtable::xtable(question$Table),
+      print(xtable::xtable(question[['Table']]),
             type="html",
             html.table.attributes='class="data table table-bordered table-condensed"',
             include.rownames=FALSE)))
@@ -170,13 +170,13 @@ text_appendices_table <- function(blocks, original_first_row) {
   # 1) the only response column to a TextEntry question, or
   # 2) a response column containing the string "TEXT".
   for (i in 1:length(blocks)) {
-    if (length(blocks[[i]]$BlockElements) != 0) {
-      for (j in 1:length(blocks[[i]]$BlockElements)) {
-        if (!(is.null(blocks[[i]]$BlockElements[[j]]$Responses))) {
+    if (length(blocks[[i]][['BlockElements']]) != 0) {
+      for (j in 1:length(blocks[[i]][['BlockElements']])) {
+        if (!(is.null(blocks[[i]][['BlockElements']][[j]][['Responses']]))) {
 
           # save the indexes of the response columns which contain
           # the string "TEXT"
-          text_columns <- which(sapply(colnames(blocks[[i]]$BlockElements[[j]]$Responses),
+          text_columns <- which(sapply(colnames(blocks[[i]][['BlockElements']][[j]][['Responses']]),
                                        function(x) grepl("TEXT", x)))
 
           # if the question is a TextEntry question,
@@ -187,17 +187,17 @@ text_appendices_table <- function(blocks, original_first_row) {
           # number of responses,
           # and last add a <br> (html line break) to separate the next
           # text appendix
-          if (blocks[[i]]$BlockElements[[j]]$Payload$QuestionType == "TE") {
-            responses <- blocks[[i]]$BlockElements[[j]]$Responses
+          if (blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionType']] == "TE") {
+            responses <- blocks[[i]][['BlockElements']][[j]][['Responses']]
             responses <- as.data.frame(responses[!apply(responses, 1, function(x) any(x=="")),])
             responses <- as.data.frame(responses[!apply(responses, 1, function(x) any(x==-99)),])
-            colnames(responses) <- colnames(blocks[[i]]$BlockElements[[j]]$Responses)
+            colnames(responses) <- colnames(blocks[[i]][['BlockElements']][[j]][['Responses']])
             if (length(as.list(responses)) > 0) {
               e <- e+1
               tables <- c(tables, capture.output(print(xtable::xtable(
                 rbind(
                   paste0("Appendix ", appendix_lettering(e)),
-                  blocks[[i]]$BlockElements[[j]]$Payload$QuestionTextClean,
+                  blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
 		  "Verbatim responses -- these have not been edited in any way.",
                   "",
                   paste0("Responses: (",
@@ -229,21 +229,21 @@ text_appendices_table <- function(blocks, original_first_row) {
             for (k in 1:length(text_columns)) {
 
               if (!missing(original_first_row)) {
-                response_column <- names(blocks[[i]]$BlockElements[[j]]$Responses)[text_columns[[k]]]
+                response_column <- names(blocks[[i]][['BlockElements']][[j]][['Responses']])[text_columns[[k]]]
                 choice_text <- choice_text_from_response_column(response_column, original_first_row, blocks)
                 if (choice_text != "") {
-                  question_text <- paste0(blocks[[i]]$BlockElements[[j]]$Payload$QuestionTextClean,
+                  question_text <- paste0(blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
                                           "-",
                                           choice_text)
                 } else {
-                  question_text <- blocks[[i]]$BlockElements[[j]]$Payload$QuestionTextClean
+                  question_text <- blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']]
                 }
               }
 
-              responses <- blocks[[i]]$BlockElements[[j]]$Responses[text_columns[[k]]]
+              responses <- blocks[[i]][['BlockElements']][[j]][['Responses']][text_columns[[k]]]
               responses <- as.data.frame(responses[!apply(responses, 1, function(x) any(x=="")),])
               responses <- as.data.frame(responses[!apply(responses, 1, function(x) any(x==-99)),])
-              colnames(responses) <- colnames(blocks[[i]]$BlockElements[[j]]$Responses[text_columns[[k]]])
+              colnames(responses) <- colnames(blocks[[i]][['BlockElements']][[j]][['Responses']][text_columns[[k]]])
               if (length(as.list(responses)) > 0) {
                 e <- e+1
 
@@ -290,12 +290,12 @@ uncodeable_questions_message <- function(questions) {
   # aren't a text entry question or a descriptive box.
   uncodeable_questions <- which(sapply(questions, function(x)
     !("Table" %in% names(x)) &&
-      (x$Payload$QuestionType != "TE") &&
-      (x$Payload$QuestionType != "DB")))
+      (x[['Payload']][['QuestionType']] != "TE") &&
+      (x[['Payload']][['QuestionType']] != "DB")))
 
   # get the data export tags of the uncodeable questions
   uncodeable_questions <- sapply(uncodeable_questions, function(x)
-    questions[[x]]$Payload$DataExportTag)
+    questions[[x]][['Payload']][['DataExportTag']])
 
   # write the message (ex. "The following questions could not be
   # automatically coded: Q1, Q2, ...")
@@ -328,20 +328,20 @@ tabelize_display_logic <- function(blocks) {
   tables <- list()
   options(stringsAsFactors = FALSE)
   for (i in 1:length(blocks)) {
-    if (length(blocks[[i]]$BlockElements) != 0) {
-      for (j in 1:length(blocks[[i]]$BlockElements)) {
-        if (blocks[[i]]$BlockElements[[j]]$Payload$QuestionType != "DB") {
+    if (length(blocks[[i]][['BlockElements']]) != 0) {
+      for (j in 1:length(blocks[[i]][['BlockElements']])) {
+        if (blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionType']] != "DB") {
 
           # if the display logic isn't trivial, include it.
           # each table should have the structure:
           #   - Data Export Tag
           #   - Question Text (stripped of HTML)
           #   - Display logic ...
-          display_logic <- display_logic_from_question(blocks[[i]]$BlockElements[[j]])
+          display_logic <- display_logic_from_question(blocks[[i]][['BlockElements']][[j]])
           if (length(display_logic) > 1) {
             display_logic <- do.call(rbind.data.frame, t(c(
-              blocks[[i]]$BlockElements[[j]]$Payload$DataExportTag,
-              blocks[[i]]$BlockElements[[j]]$Payload$QuestionTextClean,
+              blocks[[i]][['BlockElements']][[j]][['Payload']][['DataExportTag']],
+              blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
               display_logic
               )))
             tables = c(tables, capture.output(print(xtable::xtable(display_logic),

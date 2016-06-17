@@ -33,11 +33,11 @@ get_coded_questions_and_blocks <- function(survey, responses) {
   blocks <- remove_trash_blocks(blocks)
 
   # insert the response columns into their corresponding
-  # question under question$Responses
+  # question under question[['Responses']]
   questions <- link_responses_to_questions(questions, responses)
 
   # generate each question's results table and insert it
-  # in question$Table
+  # in question[['Table']]
   questions <- generate_results(questions)
 
   # insert the questions into the blocks
@@ -65,8 +65,8 @@ get_coded_questions_and_blocks <- function(survey, responses) {
 #' each a type, description, ID, and BlockElements (which contains the
 #' list of questions included in a given block).
 blocks_from_survey <- function(survey) {
-    blocks <- Filter(function(x) x$Element == "BL", survey$SurveyElements)
-    blocks <- blocks[[1]]$Payload
+    blocks <- Filter(function(x) x[['Element']] == "BL", survey[['SurveyElements']])
+    blocks <- blocks[[1]][['Payload']]
     return(blocks)
 }
 
@@ -83,9 +83,9 @@ blocks_from_survey <- function(survey) {
 #' @inheritParams blocks_from_survey
 #' @return A list of questions from the uploaded QSF file
 questions_from_survey <- function(survey) {
-    questions <- survey$SurveyElements
+    questions <- survey[['SurveyElements']]
     for (i in length(questions):1) {
-        if (questions[[i]]$Element != "SQ") {
+        if (questions[[i]][['Element']] != "SQ") {
             questions[[i]] <- NULL
         }
     }
@@ -104,18 +104,18 @@ questions_from_survey <- function(survey) {
 #' block of the blocks list provided.
 remove_trash_questions <- function(questions, blocks) {
     # select the trash block
-    trash <- Filter(function(x) x$Type == "Trash", blocks)
+    trash <- Filter(function(x) x[['Type']] == "Trash", blocks)
 
     # retrieve the trash questions
     trash_questions <- list()
-    for (i in trash[[1]]$BlockElements) {
-        trash_questions <- c(i$QuestionID, trash_questions)
+    for (i in trash[[1]][['BlockElements']]) {
+        trash_questions <- c(i[['QuestionID']], trash_questions)
     }
 
     # remove the questions that were found among the
     # trash questions
     delete_if_in_trash <- function(x) {
-        if (x$Payload$QuestionID %in% trash_questions) {
+        if (x[['Payload']][['QuestionID']] %in% trash_questions) {
             return(NULL)
         } else {
             return(x)
@@ -128,7 +128,7 @@ remove_trash_questions <- function(questions, blocks) {
 
 #' Remove the Trash Block from the list of Blocks
 #'
-#' This function finds among the trash blocks which has its $Type value
+#' This function finds among the trash blocks which has its [['Type']] value
 #' set to "Trash" and then removes it from the blocks list. The iteration
 #' in this function is backwards because it assigns NULL to any list
 #' items which need to be removed. Therefore, if it assigns NULL
@@ -140,12 +140,12 @@ remove_trash_questions <- function(questions, blocks) {
 #' @inheritParams remove_trash_questions
 #' @return The list of blocks is returned without any Trash blocks
 remove_trash_blocks <- function(blocks) {
-    blocks[which(sapply(blocks, function(x) x$Type == "Trash"))] = NULL
+    blocks[which(sapply(blocks, function(x) x[['Type']] == "Trash"))] = NULL
     for (i in 1:length(blocks)) {
-      if (length(blocks[[i]]$BlockElements) != 0) {
-        for (j in length(blocks[[i]]$BlockElements):1) {
-          if(blocks[[i]]$BlockElements[[j]]$Type != "Question") {
-            blocks[[i]]$BlockElements[[j]] <- NULL
+      if (length(blocks[[i]][['BlockElements']]) != 0) {
+        for (j in length(blocks[[i]][['BlockElements']]):1) {
+          if(blocks[[i]][['BlockElements']][[j]][['Type']] != "Question") {
+            blocks[[i]][['BlockElements']][[j]] <- NULL
           }
         }
       }
@@ -166,11 +166,11 @@ remove_trash_blocks <- function(blocks) {
 #' starting with the DataExportTag, followed by an underscore, and then more details.
 #' Sometimes they are exactly the DataExportTag without any modification. Lastly,
 #' if the user sets their own variable naming in Qualtrics, then the question
-#' contains in its $Payload the $ChoiceDataExportTags list, which contains
+#' contains in its [['Payload']] the [['ChoiceDataExportTags']] list, which contains
 #' these user defined variables. This function goes through each question,
 #' determines the DataExportTag and ChoiceDataExportTags, and uses each to select
 #' the matching columns of the responses. Those are then inserted into that specific
-#' question under $Responses, and the whole questions list is returned. One small
+#' question under [['Responses']], and the whole questions list is returned. One small
 #' caveat is that if the column name starts with an integer, then R
 #' will prepend it with an "X", so there is a helper function included here to include
 #' those columns with prepended "X"s as well.
@@ -179,22 +179,22 @@ remove_trash_blocks <- function(blocks) {
 #' @param responses A data frame of responses from a Qualtrics survey
 #'
 #' @return The updated list of questions, each including its relevant response columns
-#' as a data frame stored in $Responses.
+#' as a data frame stored in [['Responses']].
 link_responses_to_questions <- function (questions, responses) {
     for (i in 1:length(questions)) {
         # create a string with the data export tag and an underscore
         # create a string with the data export tag and a period
-        export_tag_with_underscore <- paste0( questions[[i]]$Payload$DataExportTag, "_" )
-        export_tag_with_period <- paste0( questions[[i]]$Payload$DataExportTag, "." )
-        export_tag_with_hashtag <- paste0( questions[[i]]$Payload$DataExportTag, "#" )
+        export_tag_with_underscore <- paste0( questions[[i]][['Payload']][['DataExportTag']], "_" )
+        export_tag_with_period <- paste0( questions[[i]][['Payload']][['DataExportTag']], "." )
+        export_tag_with_hashtag <- paste0( questions[[i]][['Payload']][['DataExportTag']], "#" )
 
         # there's also the possibility that a response column starts
         # with a choice data export tag from a question.
         # this unlists the choice data export tags and creates
         # a list of response columns that start with a choice data export tag.
         starts_with_choice_export_tags <- vector('integer')
-        if ("ChoiceDataExportTags" %in% names(questions[[i]]$Payload)) {
-          choice_export_tags <- unlist(questions[[i]]$Payload$ChoiceDataExportTags)
+        if ("ChoiceDataExportTags" %in% names(questions[[i]][['Payload']])) {
+          choice_export_tags <- unlist(questions[[i]][['Payload']][['ChoiceDataExportTags']])
           choice_export_tags <- sapply(choice_export_tags, function(x) gsub("-", "_", x))
           for (j in choice_export_tags) {
             starts_with_choice_export_tags <- c(starts_with_choice_export_tags,
@@ -207,13 +207,13 @@ link_responses_to_questions <- function (questions, responses) {
         # - start with a data export tag followed by a period,
         # - match the data export tag exactly,
         # - start with a choice data export tag.
-        # take those matching response columns and join them to the question under $Responses
+        # take those matching response columns and join them to the question under [['Responses']]
         matching_responses <- c(which(gdata::startsWith(names(responses), export_tag_with_underscore)),
                                 which(gdata::startsWith(names(responses), export_tag_with_period)),
                                 which(gdata::startsWith(names(responses), export_tag_with_hashtag)),
-                                which(names(responses) == questions[[i]]$Payload$DataExportTag),
+                                which(names(responses) == questions[[i]][['Payload']][['DataExportTag']]),
                                 starts_with_choice_export_tags)
-        questions[[i]]$Responses <- as.data.frame(responses[unique(matching_responses)])
+        questions[[i]][['Responses']] <- as.data.frame(responses[unique(matching_responses)])
     }
     questions
 }
@@ -224,27 +224,27 @@ link_responses_to_questions <- function (questions, responses) {
 #' This function takes a blocks list (create this with blocks_from_survey and
 #' then remove_trash_blocks), inserts the questions from a survey
 #' appropriately into the blocks element, and then returns the
-#' blocks list including the questions as elements in the blocks[[i]]$BlockElements.
+#' blocks list including the questions as elements in the blocks[[i]][['BlockElements']].
 #'
 #' @inheritParams remove_trash_questions
-#' @return a list of blocks including questions under blocks[[i]]$BlockElements
+#' @return a list of blocks including questions under blocks[[i]][['BlockElements']]
 #' for each index i.
 questions_into_blocks <- function(questions, blocks) {
   for (i in 1:length(blocks)) {
     # loop through each block, and in each block, loop through the BlockElements
-    if (length(blocks[[i]]$BlockElements) != 0) {
-      for (j in 1:length(blocks[[i]]$BlockElements)) {
+    if (length(blocks[[i]][['BlockElements']]) != 0) {
+      for (j in 1:length(blocks[[i]][['BlockElements']])) {
 
         # create matching_question as a list of indices of questions which
         # have the corresponding QuestionID
         matching_question <- which(sapply(questions,
-                                    function(x) isTRUE(x$Payload$QuestionID ==
-                                      blocks[[i]]$BlockElements[[j]]$QuestionID)))
+                                    function(x) isTRUE(x[['Payload']][['QuestionID']] ==
+                                      blocks[[i]][['BlockElements']][[j]][['QuestionID']])))
 
         # if matching_question is a list of length 1 then we've matched the
         # question uniquely and can replace the BlockElement with the actual question
         if (length(matching_question) == 1) {
-          blocks[[i]]$BlockElements[[j]] <- questions[[matching_question]]
+          blocks[[i]][['BlockElements']][[j]] <- questions[[matching_question]]
         }
       }
     }
@@ -325,7 +325,7 @@ human_readable_qtype <- function(questions) {
   }
 
   for (i in 1:length(questions)) {
-    questions[[i]]$Payload$QuestionTypeHuman <- create_qtype(questions[[i]])
+    questions[[i]][['Payload']][['QuestionTypeHuman']] <- create_qtype(questions[[i]])
   }
 
   return(questions)
@@ -347,16 +347,16 @@ create_question_dictionary <- function(blocks) {
   # - "QuestionType", the qualtrics supplied question type,
   # - "Selector", the qualtrics defined question selector
   create_entry <- function(i, j) {
-    if (!"SubSelector" %in% names(blocks[[i]]$BlockElements[[j]]$Payload)) {
-      blocks[[i]]$BlockElements[[j]]$Payload$SubSelector <- ""
+    if (!"SubSelector" %in% names(blocks[[i]][['BlockElements']][[j]][['Payload']])) {
+      blocks[[i]][['BlockElements']][[j]][['Payload']][['SubSelector']] <- ""
     }
     return(c(
-      blocks[[i]]$BlockElements[[j]]$Payload$DataExportTag,
-      blocks[[i]]$BlockElements[[j]]$Payload$QuestionTextClean,
-      blocks[[i]]$BlockElements[[j]]$Payload$QuestionType,
-      blocks[[i]]$BlockElements[[j]]$Payload$Selector,
-      blocks[[i]]$BlockElements[[j]]$Payload$SubSelector,
-      blocks[[i]]$BlockElements[[j]]$Payload$QuestionTypeHuman
+      blocks[[i]][['BlockElements']][[j]][['Payload']][['DataExportTag']],
+      blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
+      blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionType']],
+      blocks[[i]][['BlockElements']][[j]][['Payload']][['Selector']],
+      blocks[[i]][['BlockElements']][[j]][['Payload']][['SubSelector']],
+      blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTypeHuman']]
     ))
   }
 
@@ -367,8 +367,8 @@ create_question_dictionary <- function(blocks) {
   entries <- list()
   e <- 0
   for (i in 1:length(blocks)) {
-    if (length(blocks[[i]]$BlockElements) != 0) {
-      for (j in 1:length(blocks[[i]]$BlockElements)) {
+    if (length(blocks[[i]][['BlockElements']]) != 0) {
+      for (j in 1:length(blocks[[i]][['BlockElements']])) {
         e <- e + 1
         entries[[e]] <- create_entry(i, j)
       }
@@ -418,17 +418,17 @@ uncodeable_question_dictionary <- function(blocks) {
   # move the next question to our current iterator, and then
   # skip it.
   for (i in 1:length(blocks)) {
-    if (length(blocks[[i]]$BlockElements) != 0) {
-      for (j in length(blocks[[i]]$BlockElements):1) {
-        if (!("Element" %in% names(blocks[[i]]$BlockElements[[j]]))) {
-          blocks[[i]]$BlockElements[[j]] <- NULL
+    if (length(blocks[[i]][['BlockElements']]) != 0) {
+      for (j in length(blocks[[i]][['BlockElements']]):1) {
+        if (!("Element" %in% names(blocks[[i]][['BlockElements']][[j]]))) {
+          blocks[[i]][['BlockElements']][[j]] <- NULL
         }
-        else if ("Element" %in% names(blocks[[i]]$BlockElements[[j]])) {
-          if ("Table" %in% names(blocks[[i]]$BlockElements[[j]]) ||
-              blocks[[i]]$BlockElements[[j]]$Payload$QuestionType == "TE" ||
-              blocks[[i]]$BlockElements[[j]]$Payload$QuestionType == "DB"
+        else if ("Element" %in% names(blocks[[i]][['BlockElements']][[j]])) {
+          if ("Table" %in% names(blocks[[i]][['BlockElements']][[j]]) ||
+              blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionType']] == "TE" ||
+              blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionType']] == "DB"
               ) {
-            blocks[[i]]$BlockElements[[j]] <- NULL
+            blocks[[i]][['BlockElements']][[j]] <- NULL
           }
         }
       }
@@ -477,31 +477,31 @@ lean_responses <- function(panel_columns, question_blocks, survey_responses) {
 
     # make sure that the subselector either exists or is set to "", so that
     # including it in an entry doesn't error
-    if (!("SubSelector" %in% names(question$Payload))) {
-      question$Payload$SubSelector <- ""
+    if (!("SubSelector" %in% names(question[['Payload']]))) {
+      question[['Payload']][['SubSelector']] <- ""
     }
 
     return(c(
       # Respondent ID:
       as.character(responses[,1][[response_row]]),
       # Question Data Export Tag:
-      question$Payload$DataExportTag,
+      question[['Payload']][['DataExportTag']],
       # Question Response Column:
-      names(question$Responses)[[response_column]],
+      names(question[['Responses']])[[response_column]],
       # Question Text:
-      question$Payload$QuestionTextClean,
+      question[['Payload']][['QuestionTextClean']],
       # Question Type 1:
-      question$Payload$QuestionType,
+      question[['Payload']][['QuestionType']],
       # Question Type 2:
-      question$Payload$Selector,
+      question[['Payload']][['Selector']],
       # Question Type 3:
-      question$Payload$SubSelector,
+      question[['Payload']][['SubSelector']],
       # Response Type:
-      question$Payload$QuestionTypeHuman,
+      question[['Payload']][['QuestionTypeHuman']],
       # Raw Response:
-      toString(question$Responses[[response_column]][[response_row]]),
+      toString(question[['Responses']][[response_column]][[response_row]]),
       # Coded Response:
-      choice_text_from_question(question, question$Responses[[response_column]][[response_row]])
+      choice_text_from_question(question, question[['Responses']][[response_column]][[response_row]])
     ))
   }
 
@@ -513,10 +513,10 @@ lean_responses <- function(panel_columns, question_blocks, survey_responses) {
   e <- 0
   for (b in 1:length(blocks)) {
     if (length(blocks[[b]]) > 0) {
-      for (be in 1:length(blocks[[b]]$BlockElements)) {
-        if ("Responses" %in% names(blocks[[b]]$BlockElements[[be]])) {
-          coln <- ncol(blocks[[b]]$BlockElements[[be]]$Responses)
-          rown <- nrow(blocks[[b]]$BlockElements[[be]]$Responses)
+      for (be in 1:length(blocks[[b]][['BlockElements']])) {
+        if ("Responses" %in% names(blocks[[b]][['BlockElements']][[be]])) {
+          coln <- ncol(blocks[[b]][['BlockElements']][[be]][['Responses']])
+          rown <- nrow(blocks[[b]][['BlockElements']][[be]][['Responses']])
           if (coln > 0) {
             for (c in 1:coln) {
               if (rown > 0) {
@@ -529,10 +529,10 @@ lean_responses <- function(panel_columns, question_blocks, survey_responses) {
                   # console a message saying
                   e <- e+1
                   dictionary[[e]] <-
-                    tryCatch(create_entry(blocks[[b]]$BlockElements[[be]], c, r),
+                    tryCatch(create_entry(blocks[[b]][['BlockElements']][[be]], c, r),
                              error = function(e) {
                                cat(paste0("\nCreating an entry for the following question failed. \nDataExportTag: "
-                                          , blocks[[b]]$BlockElements[[be]]$Payload$DataExportTag
+                                          , blocks[[b]][['BlockElements']][[be]][['Payload']][['DataExportTag']]
                                           , "\nResponse Column: "
                                           , c
                                           , "\nResponse Row: "

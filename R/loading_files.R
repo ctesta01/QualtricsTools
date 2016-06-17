@@ -4,7 +4,7 @@
 #' on whether or not the user has uploaded data.
 #'
 #' @param file1 This should be a CSV received from a file upload made in the Shiny UI,
-#' which includes a file1$datapath where the data can be located.
+#' which includes a file1[['datapath']] where the data can be located.
 #'
 #'
 #' @return The return value is the responses data frame
@@ -14,7 +14,7 @@ load_csv_data <- function(file2, file1, headerrows) {
     } else if (is.null(file2)) {
       responses <- NULL
     } else {
-        responses <- ask_for_csv(file2$datapath, headerrows)
+        responses <- ask_for_csv(file2[['datapath']], headerrows)
     }
     return(responses)
 }
@@ -25,7 +25,7 @@ load_csv_data <- function(file2, file1, headerrows) {
 #' on whether or not the user has uploaded data.
 #'
 #' @param file2 This should be a QSF file received from a file upload made in the Shiny UI,
-#' which includes a file1$datapath where the data can be located.
+#' which includes a file1[['datapath']] where the data can be located.
 #'
 #' @return The return value is the survey list object
 
@@ -33,7 +33,7 @@ load_qsf_data <- function(file1) {
     if (is.null(file1)) {
         survey <- sample_survey
     } else {
-        survey <- ask_for_qsf(file1$datapath)
+        survey <- ask_for_qsf(file1[['datapath']])
     }
 }
 
@@ -90,7 +90,7 @@ ask_for_csv <- function(responsesfile, headerrows) {
 #'
 #' @param questions A list of questions from a Qualtrics survey
 validate_data_export_tags <- function(questions) {
-    dataexporttags <- sapply(questions, function(x) x$Payload$DataExportTag)
+    dataexporttags <- sapply(questions, function(x) x[['Payload']][['DataExportTag']])
     if (any(duplicated(dataexporttags))) {
         FALSE
     } else {

@@ -20,9 +20,9 @@ question_from_response_column <- function(blocks, response_name) {
   responses_to_indexes <- list()
   for (i in 1:length(blocks)) {
     if (length(blocks[[i]]) > 0) {
-      for (j in 1:length(blocks[[i]]$BlockElements)) {
-        if ("Responses" %in% names(blocks[[i]]$BlockElements[[j]])) {
-          for (k in names(blocks[[i]]$BlockElements[[j]]$Responses)) {
+      for (j in 1:length(blocks[[i]][['BlockElements']])) {
+        if ("Responses" %in% names(blocks[[i]][['BlockElements']][[j]])) {
+          for (k in names(blocks[[i]][['BlockElements']][[j]][['Responses']])) {
           responses_to_indexes[[k]] <- c(i, j)
           }
         }
@@ -56,39 +56,39 @@ choice_text_from_question <- function(question, choice) {
     # if the question is a single answer multiple choice
     # question, then it either has recode values, or
     # the choice given is directly correspondent with
-    # the index of the choice in the $Payload$Choices
+    # the index of the choice in the [['Payload']][['Choices']]
     # list. if the choice given doesn't match any
     # of the recode values, try getting it directly from
     # the choices.
   } else if (is_mc_single_answer(question)) {
-    if ("RecodeValues" %in% names(question$Payload)) {
-      recoded_value <- which(question$Payload$RecodeValues == choice)
+    if ("RecodeValues" %in% names(question[['Payload']])) {
+      recoded_value <- which(question[['Payload']][['RecodeValues']] == choice)
       if (length(recoded_value) != 0)
         choice <- recoded_value
-      if (choice %in% names(question$Payload$Choices))
-        choice <- question$Payload$Choices[[choice]][[1]]
+      if (choice %in% names(question[['Payload']][['Choices']]))
+        choice <- question[['Payload']][['Choices']][[choice]][[1]]
     } else {
-      if (choice %in% names(question$Payload$Choices))
-        choice <- question$Payload$Choices[[choice]][[1]]
+      if (choice %in% names(question[['Payload']][['Choices']]))
+        choice <- question[['Payload']][['Choices']][[choice]][[1]]
     }
 
 
     # if the question is a single answer matrix question,
     # the question will either have recode values, or not.
     # if the question has recode values, attempt to use the
-    # $Payload$RecodeValues list to retrieve the recoded_value.
+    # [['Payload']][['RecodeValues']] list to retrieve the recoded_value.
     # If that doesn't work, just use the original choice given.
   } else if (is_matrix_single_answer(question)) {
-    if ("RecodeValues" %in% names(question$Payload)) {
-      recoded_value <- which(question$Payload$RecodeValues == choice)
+    if ("RecodeValues" %in% names(question[['Payload']])) {
+      recoded_value <- which(question[['Payload']][['RecodeValues']] == choice)
       if (length(recoded_value) != 0) {
-        choice <- names(question$Payload$RecodeValues[recoded_value])[[1]]
+        choice <- names(question[['Payload']][['RecodeValues']][recoded_value])[[1]]
       }
-      if (choice %in% names(question$Payload$Answers))
-        choice <- question$Payload$Answers[[choice]][[1]]
+      if (choice %in% names(question[['Payload']][['Answers']]))
+        choice <- question[['Payload']][['Answers']][[choice]][[1]]
     } else {
-      if (choice %in% names(question$Payload$Answers))
-        choice <- question$Payload$Answers[[choice]][[1]]
+      if (choice %in% names(question[['Payload']][['Answers']]))
+        choice <- question[['Payload']][['Answers']][[choice]][[1]]
     }
   }
 
@@ -175,7 +175,7 @@ get_setup <- function(headerrows, already_loaded) {
 #' looks for the matching question. It will try to select
 #' the question uniquely.
 find_question <- function(questions, exporttag) {
-  matched_question_index <- which(sapply(questions, function(x) x$Payload$DataExportTag == exporttag))
+  matched_question_index <- which(sapply(questions, function(x) x[['Payload']][['DataExportTag']] == exporttag))
   return(questions[[matched_question_index]])
 }
 
@@ -186,7 +186,7 @@ find_question <- function(questions, exporttag) {
 #' looks for the matching question. It returns the index(es) of
 #' the questions with that Question Data Export Tag.
 find_question_index <- function(questions, exporttag) {
-  matched_question_index <- which(sapply(questions, function(x) x$Payload$DataExportTag == exporttag))
+  matched_question_index <- which(sapply(questions, function(x) x[['Payload']][['DataExportTag']] == exporttag))
   return(matched_question_index)
 }
 
@@ -215,18 +215,18 @@ display_logic_from_question <- function(question) {
   # Next, since DisplayLogic has many components, not all of which we are looking
   # to examine, we select the elements that are numeric.
   # DisplayLogic looks something like this:
-  # question$Payload$DisplayLogic$`0`$`1`$Description
+  # question[['Payload']][['DisplayLogic']]$`0`$`1`[['Description']]
   # Determining the first and second indices within the DisplayLogic is the goal
   # of the operations used to define the dl_indices_1 and dl_indices_2.
-  if ("DisplayLogic" %in% names(question$Payload)) {
+  if ("DisplayLogic" %in% names(question[['Payload']])) {
     display_logic[[e]] <- "Question Display Logic:"
     e <- e+1
-    dl_indices_1 <- suppressWarnings(which(!is.na(as.numeric(names(question$Payload$DisplayLogic)))))
+    dl_indices_1 <- suppressWarnings(which(!is.na(as.numeric(names(question[['Payload']][['DisplayLogic']])))))
     for (i in dl_indices_1) {
-      dl_indices_2 <- suppressWarnings(which(!is.na(as.numeric(names(question$Payload$DisplayLogic[[i]])))))
+      dl_indices_2 <- suppressWarnings(which(!is.na(as.numeric(names(question[['Payload']][['DisplayLogic']][[i]])))))
       for (j in dl_indices_2) {
-        if ("Description" %in% names(question$Payload$DisplayLogic[[i]][[j]])) {
-          display_logic[[e]] <- clean_html(question$Payload$DisplayLogic[[i]][[j]]$Description)
+        if ("Description" %in% names(question[['Payload']][['DisplayLogic']][[i]][[j]])) {
+          display_logic[[e]] <- clean_html(question[['Payload']][['DisplayLogic']][[i]][[j]][['Description']])
           e <- e+1
         }
       }
@@ -236,22 +236,22 @@ display_logic_from_question <- function(question) {
   # we do the same process for the
   # choices, but including a message before each display logic describing which
   # choice it corresponds to.
-  if ("Choices" %in% names(question$Payload)) {
-    choices_with_logic <- sapply(question$Payload$Choices, function(x) "DisplayLogic" %in% names(x))
+  if ("Choices" %in% names(question[['Payload']])) {
+    choices_with_logic <- sapply(question[['Payload']][['Choices']], function(x) "DisplayLogic" %in% names(x))
     has_choice_logic <- any(choices_with_logic)
     choices_with_logic <- which(choices_with_logic)
     if (has_choice_logic) {
       display_logic[[e]] <- "Choice Display Logic:"
       e <- e+1
       for (i in choices_with_logic) {
-        display_logic[[e]] <- paste0("Display Logic for ", question$Payload$Choices[[i]]$Display, ":")
+        display_logic[[e]] <- paste0("Display Logic for ", question[['Payload']][['Choices']][[i]][['Display']], ":")
         e <- e+1
-        dl_indices_1 <- suppressWarnings(which(!is.na(as.numeric(names(question$Payload$Choices[[i]]$DisplayLogic)))))
+        dl_indices_1 <- suppressWarnings(which(!is.na(as.numeric(names(question[['Payload']][['Choices']][[i]][['DisplayLogic']])))))
         for (j in dl_indices_1) {
-          dl_indices_2 <- suppressWarnings(which(!is.na(as.numeric(names(question$Payload$Choices[[i]]$DisplayLogic[[j]])))))
+          dl_indices_2 <- suppressWarnings(which(!is.na(as.numeric(names(question[['Payload']][['Choices']][[i]][['DisplayLogic']][[j]])))))
           for (k in dl_indices_2) {
-            if ("Description" %in% names(question$Payload$Choices[[i]]$DisplayLogic[[j]][[k]])) {
-              display_logic[[e]] <- clean_html(question$Payload$Choices[[i]]$DisplayLogic[[j]][[k]]$Description)
+            if ("Description" %in% names(question[['Payload']][['Choices']][[i]][['DisplayLogic']][[j]][[k]])) {
+              display_logic[[e]] <- clean_html(question[['Payload']][['Choices']][[i]][['DisplayLogic']][[j]][[k]][['Description']])
               e <- e+1
             }
           }
@@ -261,22 +261,22 @@ display_logic_from_question <- function(question) {
   }
 
   # for the answers, we do the exact same as the choices.
-  if ("Answers" %in% names(question$Payload)) {
-    answers_with_logic <- sapply(question$Payload$Answers, function(x) "DisplayLogic" %in% names(x))
+  if ("Answers" %in% names(question[['Payload']])) {
+    answers_with_logic <- sapply(question[['Payload']][['Answers']], function(x) "DisplayLogic" %in% names(x))
     has_answer_logic <- any(answers_with_logic)
     answers_with_logic <- which(answers_with_logic)
     if (has_answer_logic) {
       display_logic[[e]] <- "Answer Display Logic:"
       e <- e+1
       for (i in answers_with_logic) {
-        display_logic[[e]] <- paste0("Display Logic for ", question$Payload$Answers[[i]]$Display, ":")
+        display_logic[[e]] <- paste0("Display Logic for ", question[['Payload']][['Answers']][[i]][['Display']], ":")
         e <- e+1
-        dl_indices_1 <- suppressWarnings(which(!is.na(as.numeric(names(question$Payload$Answers[[i]]$DisplayLogic)))))
+        dl_indices_1 <- suppressWarnings(which(!is.na(as.numeric(names(question[['Payload']][['Answers']][[i]][['DisplayLogic']])))))
         for (j in dl_indices_1) {
-          dl_indices_2 <- suppressWarnings(which(!is.na(as.numeric(names(question$Payload$Answers[[i]]$DisplayLogic[[j]])))))
+          dl_indices_2 <- suppressWarnings(which(!is.na(as.numeric(names(question[['Payload']][['Answers']][[i]][['DisplayLogic']][[j]])))))
           for (k in dl_indices_2) {
-            if ("Description" %in% names(question$Payload$Answers[[i]]$DisplayLogic[[j]][[k]])) {
-              display_logic[[e]] <- clean_html(question$Payload$Answers[[i]]$DisplayLogic[[j]][[k]]$Description)
+            if ("Description" %in% names(question[['Payload']][['Answers']][[i]][['DisplayLogic']][[j]][[k]])) {
+              display_logic[[e]] <- clean_html(question[['Payload']][['Answers']][[i]][['DisplayLogic']][[j]][[k]][['Description']])
               e <- e+1
             }
           }
@@ -307,7 +307,7 @@ choice_text_from_response_column <- function(response_column, original_first_row
   question_indices <- question_from_response_column(blocks, response_column)
   i <- question_indices[[1]]
   j <- question_indices[[2]]
-  question_text <- blocks[[i]]$BlockElements[[j]]$Payload$QuestionText
+  question_text <- blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionText']]
   question_text <- clean_html(question_text)
 
   # get the first-row-entry from the responses for the given response column,
@@ -356,8 +356,8 @@ choice_text_from_response_column <- function(response_column, original_first_row
 #'  have are "already loaded."
 #'
 #'  @return A list of a list of blocks. The same question, but with different respondent groups,
-#'  might look something like split_blocks[[1]][[1]]$BlockElements[[1]] and
-#'  split_blocks[[2]][[1]]$BlockElements[[1]]. These refer to the first and second respondent
+#'  might look something like split_blocks[[1]][[1]][['BlockElements']][[1]] and
+#'  split_blocks[[2]][[1]][['BlockElements']][[1]]. These refer to the first and second respondent
 #'  groups, the first block, and the first block element.
 split_respondents <- function(response_column, headerrows, already_loaded) {
   if (missing(headerrows)) {
