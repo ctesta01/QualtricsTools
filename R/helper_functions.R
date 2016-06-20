@@ -19,7 +19,7 @@ question_from_response_column <- function(blocks, response_name) {
   # values as pairs of block and blockelement indexes.
   responses_to_indexes <- list()
   for (i in 1:number_of_blocks(blocks)) {
-    if (length(blocks[[i]]) > 0) {
+    if ('BlockElements' %in% names(blocks[[i]])) {
       for (j in 1:length(blocks[[i]][['BlockElements']])) {
         if ("Responses" %in% names(blocks[[i]][['BlockElements']][[j]])) {
           for (k in names(blocks[[i]][['BlockElements']][[j]][['Responses']])) {
@@ -442,9 +442,15 @@ split_respondents <- function(response_column, headerrows, already_loaded) {
 
 
 blocks_header_to_html <- function(blocks) {
-  paste(blocks[['header']], collapse="<br>")
+  return(c("<br>",
+           paste(blocks[['header']], collapse="<br>"),
+           "<br>"))
 }
 
 number_of_blocks <- function(blocks) {
-  length(which(names(blocks) == ""))
+  if (is.null(names(blocks))) {
+    return(length(blocks))
+  } else {
+    return(length(which(names(blocks) == "")))
+  }
 }

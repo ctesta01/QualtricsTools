@@ -11,12 +11,14 @@ tabelize_blocks <- function(blocks) {
   tables[[1]] <- "<br>"
   options(stringsAsFactors = FALSE)
   for (i in 1:number_of_blocks(blocks)) {
-    if (length(blocks[[i]][['BlockElements']]) != 0) {
-      for (j in 1:length(blocks[[i]][['BlockElements']])) {
+    if ('BlockElements' %in% names(blocks[[i]])) {
+      if (length(blocks[[i]][['BlockElements']]) != 0) {
+        for (j in 1:length(blocks[[i]][['BlockElements']])) {
 
-        #if a question isn't a descriptive block, insert the question description for it
-        if (blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionType']] != "DB") {
-          tables <- c(tables, question_description(blocks[[i]][['BlockElements']][[j]]))
+          #if a question isn't a descriptive block, insert the question description for it
+          if (blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionType']] != "DB") {
+            tables <- c(tables, question_description(blocks[[i]][['BlockElements']][[j]]))
+          }
         }
       }
     }
@@ -170,7 +172,7 @@ text_appendices_table <- function(blocks, original_first_row) {
   # 1) the only response column to a TextEntry question, or
   # 2) a response column containing the string "TEXT".
   for (i in 1:number_of_blocks(blocks)) {
-    if (length(blocks[[i]][['BlockElements']]) != 0) {
+    if ('BlockElements' %in% names(blocks[[i]])) {
       for (j in 1:length(blocks[[i]][['BlockElements']])) {
         if (!(is.null(blocks[[i]][['BlockElements']][[j]][['Responses']]))) {
 
@@ -328,31 +330,30 @@ tabelize_display_logic <- function(blocks) {
   tables <- list()
   options(stringsAsFactors = FALSE)
   for (i in 1:number_of_blocks(blocks)) {
-    if (length(blocks[[i]][['BlockElements']]) != 0) {
+    if ('BlockElements' %in% names(blocks[[i]])) {
       for (j in 1:length(blocks[[i]][['BlockElements']])) {
-        if (blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionType']] != "DB") {
 
-          # if the display logic isn't trivial, include it.
-          # each table should have the structure:
-          #   - Data Export Tag
-          #   - Question Text (stripped of HTML)
-          #   - Display logic ...
-          display_logic <- display_logic_from_question(blocks[[i]][['BlockElements']][[j]])
-          if (length(display_logic) > 1) {
-            display_logic <- do.call(rbind.data.frame, t(c(
-              blocks[[i]][['BlockElements']][[j]][['Payload']][['DataExportTag']],
-              blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
-              display_logic
-              )))
-            tables = c(tables, capture.output(print(xtable::xtable(display_logic),
-              include.colnames=FALSE,
-              type="html",
-              html.table.attributes='class="data table table-bordered table-condensed"',
-              include.rownames=FALSE
-              )))
 
-            tables <- c(tables, "<br>")
-          }
+        # if the display logic isn't trivial, include it.
+        # each table should have the structure:
+        #   - Data Export Tag
+        #   - Question Text (stripped of HTML)
+        #   - Display logic ...
+        display_logic <- display_logic_from_question(blocks[[i]][['BlockElements']][[j]])
+        if (length(display_logic) > 1) {
+          display_logic <- do.call(rbind.data.frame, t(c(
+            blocks[[i]][['BlockElements']][[j]][['Payload']][['DataExportTag']],
+            blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
+            display_logic
+          )))
+          tables = c(tables, capture.output(print(xtable::xtable(display_logic),
+                                                  include.colnames=FALSE,
+                                                  type="html",
+                                                  html.table.attributes='class="data table table-bordered table-condensed"',
+                                                  include.rownames=FALSE
+          )))
+
+          tables <- c(tables, "<br>")
         }
       }
     }

@@ -46,7 +46,7 @@ get_coded_questions_and_blocks <- function(survey, responses) {
   # insert the header into the blocks
   blocks[['header']] <- c(paste0("Survey Name: ",
                                  survey[['SurveyEntry']][['SurveyName']]),
-                          paste0("Total Number of Original Respondents: ",
+                          paste0("Number of Respondents: ",
                                  nrow(responses)))
 
   # return questions and blocks as a list of 2 elements
@@ -146,8 +146,13 @@ remove_trash_questions <- function(questions, blocks) {
 #' @inheritParams remove_trash_questions
 #' @return The list of blocks is returned without any Trash blocks
 remove_trash_blocks <- function(blocks) {
-    blocks[which(sapply(blocks, function(x) x[['Type']] == "Trash"))] = NULL
-    for (i in 1:number_of_blocks(blocks)) {
+  for (i in number_of_blocks(blocks):1) {
+    if ('Type' %in% names(blocks[[i]])) {
+      if (blocks[[i]][['Type']] == "Trash") {
+        blocks[[i]] <- NULL
+      }
+    }
+    if ('BlockElements' %in% names(blocks[[i]])) {
       if (length(blocks[[i]][['BlockElements']]) != 0) {
         for (j in length(blocks[[i]][['BlockElements']]):1) {
           if(blocks[[i]][['BlockElements']][[j]][['Type']] != "Question") {
@@ -156,7 +161,8 @@ remove_trash_blocks <- function(blocks) {
         }
       }
     }
-    return(blocks)
+  }
+  return(blocks)
 }
 
 
@@ -518,7 +524,7 @@ lean_responses <- function(panel_columns, question_blocks, survey_responses) {
   dictionary <- list()
   e <- 0
   for (b in 1:number_of_blocks(blocks)) {
-    if (length(blocks[[b]]) > 0) {
+    if ('BlockElements' %in% names(blocks[[b]])) {
       for (be in 1:length(blocks[[b]][['BlockElements']])) {
         if ("Responses" %in% names(blocks[[b]][['BlockElements']][[be]])) {
           coln <- ncol(blocks[[b]][['BlockElements']][[be]][['Responses']])
