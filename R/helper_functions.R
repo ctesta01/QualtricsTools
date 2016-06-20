@@ -419,7 +419,16 @@ split_respondents <- function(response_column, headerrows, already_loaded) {
     split_questions[[i]] <- link_responses_to_questions(split_questions[[i]], split_responses[[i]])
     split_questions[[i]] <- generate_results(split_questions[[i]])
     split_blocks[[i]] <- questions_into_blocks(split_questions[[i]], split_blocks[[i]])
+    split_blocks[[i]][['header']] <- c(paste0("Survey Respondents who had ",
+                                              responses[[response_column]][[1]],
+                                              " in the ",
+                                              response_column,
+                                              " column"),
+                                       paste0("Number of Respondents: ",
+                                              nrow(split_responses[[i]])))
   }
+
+
 
   return(split_blocks)
 }
