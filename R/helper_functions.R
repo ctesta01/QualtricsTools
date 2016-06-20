@@ -18,7 +18,7 @@ question_from_response_column <- function(blocks, response_name) {
   # construct a list, with keys as the response column names, and
   # values as pairs of block and blockelement indexes.
   responses_to_indexes <- list()
-  for (i in 1:length(blocks)) {
+  for (i in 1:number_of_blocks(blocks)) {
     if (length(blocks[[i]]) > 0) {
       for (j in 1:length(blocks[[i]][['BlockElements']])) {
         if ("Responses" %in% names(blocks[[i]][['BlockElements']][[j]])) {
@@ -122,7 +122,7 @@ app <- function() {
 #' headerrows in the response csv.
 get_setup <- function(headerrows, already_loaded) {
   if (missing(headerrows)) {
-    headerrows <- 3
+    headerrows <- 2
   }
 
   if (missing(already_loaded)) {
@@ -408,6 +408,12 @@ split_respondents <- function(response_column, headerrows, already_loaded) {
   questions <- human_readable_qtype(questions)
   blocks <- remove_trash_blocks(blocks)
 
+  # insert the header into the blocks
+  blocks[['header']] <- c(paste0("Survey Name: ",
+                                 survey[['SurveyEntry']][['SurveyName']]),
+                          paste0("Total Number of Original Respondents: ",
+                                 nrow(responses)))
+
   # duplicate the blocks and questions once for every respondent group
   split_blocks <- rep(list(blocks), times = length(split_responses))
   split_questions <- rep(list(questions), times = length(split_responses))
@@ -419,7 +425,8 @@ split_respondents <- function(response_column, headerrows, already_loaded) {
     split_questions[[i]] <- link_responses_to_questions(split_questions[[i]], split_responses[[i]])
     split_questions[[i]] <- generate_results(split_questions[[i]])
     split_blocks[[i]] <- questions_into_blocks(split_questions[[i]], split_blocks[[i]])
-    split_blocks[[i]][['header']] <- c(paste0("Survey Respondents who had ",
+    split_blocks[[i]][['header']] <- c(split_blocks[[i]][['header']],
+                                       paste0("Survey Respondents who had ",
                                               responses[[response_column]][[1]],
                                               " in the ",
                                               response_column,
@@ -431,4 +438,13 @@ split_respondents <- function(response_column, headerrows, already_loaded) {
 
 
   return(split_blocks)
+}
+
+
+blocks_header_to_html <- function(blocks) {
+  paste(blocks[['header']], collapse="<br>")
+}
+
+number_of_blocks <- function(blocks) {
+  length(which(names(blocks) == ""))
 }

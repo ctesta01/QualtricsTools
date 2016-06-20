@@ -41,7 +41,8 @@ shinyServer(
       survey <- survey_and_responses()[[1]]
       responses <- survey_and_responses()[[2]]
       blocks <- get_coded_questions_and_blocks(survey, responses)[[2]]
-      tabelize_blocks(blocks)
+      c(blocks_header_to_html(blocks),
+        tabelize_blocks(blocks))
     }
   })
 
@@ -65,7 +66,8 @@ shinyServer(
       responses <- survey_and_responses()[[2]]
       original_first_row <- survey_and_responses()[[3]]
       blocks <- get_coded_questions_and_blocks(survey, responses)[[2]]
-      text_appendices_table(blocks, original_first_row)
+      c(blocks_header_to_html(blocks),
+        text_appendices_table(blocks, original_first_row))
     }
   })
 

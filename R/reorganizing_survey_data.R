@@ -43,6 +43,12 @@ get_coded_questions_and_blocks <- function(survey, responses) {
   # insert the questions into the blocks
   blocks <- questions_into_blocks(questions, blocks)
 
+  # insert the header into the blocks
+  blocks[['header']] <- c(paste0("Survey Name: ",
+                                 survey[['SurveyEntry']][['SurveyName']]),
+                          paste0("Total Number of Original Respondents: ",
+                                 nrow(responses)))
+
   # return questions and blocks as a list of 2 elements
   questions_and_blocks <- list()
   questions_and_blocks[['questions']] <- questions
@@ -141,7 +147,7 @@ remove_trash_questions <- function(questions, blocks) {
 #' @return The list of blocks is returned without any Trash blocks
 remove_trash_blocks <- function(blocks) {
     blocks[which(sapply(blocks, function(x) x[['Type']] == "Trash"))] = NULL
-    for (i in 1:length(blocks)) {
+    for (i in 1:number_of_blocks(blocks)) {
       if (length(blocks[[i]][['BlockElements']]) != 0) {
         for (j in length(blocks[[i]][['BlockElements']]):1) {
           if(blocks[[i]][['BlockElements']][[j]][['Type']] != "Question") {
@@ -230,7 +236,7 @@ link_responses_to_questions <- function (questions, responses) {
 #' @return a list of blocks including questions under blocks[[i]][['BlockElements']]
 #' for each index i.
 questions_into_blocks <- function(questions, blocks) {
-  for (i in 1:length(blocks)) {
+  for (i in 1:number_of_blocks(blocks)) {
     # loop through each block, and in each block, loop through the BlockElements
     if (length(blocks[[i]][['BlockElements']]) != 0) {
       for (j in 1:length(blocks[[i]][['BlockElements']])) {
@@ -366,7 +372,7 @@ create_question_dictionary <- function(blocks) {
   # and create an entry using "create_entry"
   entries <- list()
   e <- 0
-  for (i in 1:length(blocks)) {
+  for (i in 1:number_of_blocks(blocks)) {
     if (length(blocks[[i]][['BlockElements']]) != 0) {
       for (j in 1:length(blocks[[i]][['BlockElements']])) {
         e <- e + 1
@@ -417,7 +423,7 @@ uncodeable_question_dictionary <- function(blocks) {
   # make sure we run backwards so that we don't
   # move the next question to our current iterator, and then
   # skip it.
-  for (i in 1:length(blocks)) {
+  for (i in 1:number_of_blocks(blocks)) {
     if (length(blocks[[i]][['BlockElements']]) != 0) {
       for (j in length(blocks[[i]][['BlockElements']]):1) {
         if (!("Element" %in% names(blocks[[i]][['BlockElements']][[j]]))) {
@@ -511,7 +517,7 @@ lean_responses <- function(panel_columns, question_blocks, survey_responses) {
   # TODO: does this fail well?
   dictionary <- list()
   e <- 0
-  for (b in 1:length(blocks)) {
+  for (b in 1:number_of_blocks(blocks)) {
     if (length(blocks[[b]]) > 0) {
       for (be in 1:length(blocks[[b]][['BlockElements']])) {
         if ("Responses" %in% names(blocks[[b]][['BlockElements']][[be]])) {

@@ -10,7 +10,7 @@ tabelize_blocks <- function(blocks) {
   tables <- list()
   tables[[1]] <- "<br>"
   options(stringsAsFactors = FALSE)
-  for (i in 1:length(blocks)) {
+  for (i in 1:number_of_blocks(blocks)) {
     if (length(blocks[[i]][['BlockElements']]) != 0) {
       for (j in 1:length(blocks[[i]][['BlockElements']])) {
 
@@ -169,7 +169,7 @@ text_appendices_table <- function(blocks, original_first_row) {
   # loop through every response column that is EITHER
   # 1) the only response column to a TextEntry question, or
   # 2) a response column containing the string "TEXT".
-  for (i in 1:length(blocks)) {
+  for (i in 1:number_of_blocks(blocks)) {
     if (length(blocks[[i]][['BlockElements']]) != 0) {
       for (j in 1:length(blocks[[i]][['BlockElements']])) {
         if (!(is.null(blocks[[i]][['BlockElements']][[j]][['Responses']]))) {
@@ -327,7 +327,7 @@ tabelize_display_logic <- function(blocks) {
   # all the html tables will be saved into the tables list.
   tables <- list()
   options(stringsAsFactors = FALSE)
-  for (i in 1:length(blocks)) {
+  for (i in 1:number_of_blocks(blocks)) {
     if (length(blocks[[i]][['BlockElements']]) != 0) {
       for (j in 1:length(blocks[[i]][['BlockElements']])) {
         if (blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionType']] != "DB") {
