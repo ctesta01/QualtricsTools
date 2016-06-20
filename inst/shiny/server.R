@@ -17,11 +17,12 @@ shinyServer(
                   paste(duplicate_tags, collapse=", ")))
       )
     responses <- load_csv_data(input$file2, input$file1, input$headerrows)
+    original_first_row <- NULL
     if (!is.null(input$file2)) original_first_row <- read.csv(input$file2$datapath, check.names=F)[1,]
     list_survey_and_responses <- list()
     list_survey_and_responses[[1]] <- survey
     list_survey_and_responses[[2]] <- responses
-    if (!is.null(original_first_row)) list_survey_and_responses[[3]] <- original_first_row
+    list_survey_and_responses[[3]] <- original_first_row
     return(list_survey_and_responses)
     })
 
@@ -64,7 +65,8 @@ shinyServer(
     if (length(survey_and_responses()) >= 2) {
       survey <- survey_and_responses()[[1]]
       responses <- survey_and_responses()[[2]]
-      original_first_row <- survey_and_responses()[[3]]
+      original_first_row <- NULL
+      if (length(survey_and_responses()) >= 3) original_first_row <- survey_and_responses()[[3]]
       blocks <- get_coded_questions_and_blocks(survey, responses)[[2]]
       c(blocks_header_to_html(blocks),
         text_appendices_table(blocks, original_first_row))
