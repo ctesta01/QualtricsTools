@@ -387,7 +387,18 @@ split_respondents <- function(response_column, headerrows, already_loaded) {
   }
 
   # split the respondents by their responses to in the response_column
-  split_responses <- split(responses, responses[response_column])
+  split_responses <- split(responses, responses[response_column], drop=TRUE)
+
+  # print the respondent levels to console and wait for input
+  preview <- c(nrow(responses),
+               table(factor(responses[[response_column]])))
+  names(preview)[1] <- "Total"
+  print(preview,
+        row.names = FALSE)
+
+  cat ("\nPress [enter] to continue")
+  line <- readline()
+
 
   # process the blocks and questions as per usual
   blocks <- blocks_from_survey(survey)
