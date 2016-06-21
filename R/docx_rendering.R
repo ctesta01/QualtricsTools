@@ -9,9 +9,10 @@
 #' @param html an html body contents string. Do not include the <html><body> ... tags,
 #' the html parameter will automatically have those kinds of tags added within this
 #' function.
+#' @param output_dir an optional parameter for specifying an output folder
 #'
 #' @return the path to the docx file created from converting the html.
-html_to_docx <- function(html) {
+html_to_docx <- function(html, output_dir) {
   # it is necessary that we save the file in UTF-8 format, otherwise Pandoc
   # will not be able to read it.
   options("encoding" = "UTF-8")
@@ -39,6 +40,14 @@ html_to_docx <- function(html) {
 	system(pandoc_command)
 	setwd(orig_directory)
 	options("encoding" = "native.enc")
-	return(temp_docx_full)
+
+	# if they included an output_dir, copy the file there
+	# if that works, return "Success!"
+	# otherwise, return the temporary file path.
+	if (!missing(output_dir)) {
+	  if (file.copy(from=temp_docx_full, to=output_dir)) {
+	    return("Success!")
+	  } else return(temp_docx_full)
+	} else return(temp_docx_full)
 }
 
