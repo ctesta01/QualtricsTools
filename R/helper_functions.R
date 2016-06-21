@@ -442,7 +442,7 @@ split_respondents <- function(response_column, headerrows, already_loaded) {
 
 
 blocks_header_to_html <- function(blocks) {
-  return(c("<br><h4>",
+  return(c("<h4>",
            paste(blocks[['header']], collapse="<br>"),
            "</h4><br>"))
 }
