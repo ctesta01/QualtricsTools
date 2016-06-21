@@ -431,7 +431,7 @@ split_respondents <- function(response_column, headerrows, already_loaded) {
                                               " in the ",
                                               response_column,
                                               " column"),
-                                       paste0("Number of Respondents: ",
+                                       paste0("Number of Respondents in Respondent Group: ",
                                               nrow(split_responses[[i]])))
   }
 
@@ -442,15 +442,19 @@ split_respondents <- function(response_column, headerrows, already_loaded) {
 
 
 blocks_header_to_html <- function(blocks) {
-  return(c("<br>",
+  return(c("<br><h4>",
            paste(blocks[['header']], collapse="<br>"),
-           "<br>"))
+           "</h4><br>"))
 }
 
 number_of_blocks <- function(blocks) {
   if (is.null(names(blocks))) {
     return(length(blocks))
   } else {
-    return(length(which(names(blocks) == "")))
+    as_ints <- sapply(names(blocks), function(x) {
+      (!is.na(suppressWarnings(as.integer(x)))) || (x == "")
+      })
+    block_length <- length(which(as_ints))
+    return(block_length)
   }
 }
