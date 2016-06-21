@@ -174,7 +174,7 @@ text_appendices_table <- function(blocks, original_first_row) {
   for (i in 1:number_of_blocks(blocks)) {
     if ('BlockElements' %in% names(blocks[[i]])) {
       for (j in 1:length(blocks[[i]][['BlockElements']])) {
-        if (!(is.null(blocks[[i]][['BlockElements']][[j]][['Responses']]))) {
+        if (ncol(blocks[[i]][['BlockElements']][[j]][['Responses']]) > 0) {
 
           # save the indexes of the response columns which contain
           # the string "TEXT"
