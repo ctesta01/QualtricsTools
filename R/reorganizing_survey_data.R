@@ -32,6 +32,11 @@ get_coded_questions_and_blocks <- function(survey, responses) {
   # remove the trash block from the blocks
   blocks <- remove_trash_blocks(blocks)
 
+  # split side by side questions into their component questions
+  questions_and_blocks <- split_side_by_sides(questions, blocks)
+  questions <- questions_and_blocks[[1]]
+  blocks <- questions_and_blocks[[2]]
+
   # insert the response columns into their corresponding
   # question under question[['Responses']]
   questions <- link_responses_to_questions(questions, responses)
@@ -150,6 +155,7 @@ remove_trash_blocks <- function(blocks) {
     if ('Type' %in% names(blocks[[i]])) {
       if (blocks[[i]][['Type']] == "Trash") {
         blocks[[i]] <- NULL
+        break
       }
     }
     if ('BlockElements' %in% names(blocks[[i]])) {
@@ -630,4 +636,42 @@ answers_from_response_column <- function(response_column, responses, lean_respon
   }
 
   return(selected_df)
+}
+
+
+
+split_side_by_sides <- function(questions, blocks) {
+  for (i in length(questions):1) {
+    if (questions[[i]][['Payload']][['QuestionType']] == 'SBS') {
+      split_questions <- list()
+      for (j in 1:questions[[i]][['Payload']][['NumberOfQuestions']]) {
+        split_questions[[j]] <- list()
+        split_questions[[j]][['Payload']] <- questions[[i]][['Payload']][['AdditionalQuestions']][[as.character(j)]]
+        split_questions[[j]][['Payload']][['QuestionTextClean']] <- paste0(
+          questions[[i]][['Payload']][['QuestionText']],
+          "-",
+          clean_html(questions[[i]][['Payload']][['AdditionalQuestions']][[as.character(j)]][['QuestionText']])
+        )
+      }
+
+      orig_question_id <- questions[[i]][['Payload']][['QuestionID']]
+      split_question_ids <- lapply(split_questions, function(x) x[['Payload']][['QuestionID']])
+      split_block_elements <- lapply(split_question_ids, function(x) list("Type"="Question", "QuestionID"=x))
+      for (k in 1:length(blocks)) {
+        for (j in 1:length(blocks[[k]][['BlockElements']])) {
+          block_elmt_question_id <- blocks[[k]][['BlockElements']][[j]][['QuestionID']]
+          if (block_elmt_question_id == orig_question_id) {
+            blocks[[k]][['BlockElements']][[j]] <- NULL
+            blocks[[k]][['BlockElements']] <- append(blocks[[k]][['BlockElements']], split_block_elements, after=(j-1))
+            break
+          }
+        }
+      }
+
+      questions[[i]] <- NULL
+      questions <- append(questions, value=split_questions, after=(i-1))
+    }
+  }
+
+  return(list(questions, blocks))
 }
