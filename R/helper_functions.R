@@ -154,7 +154,10 @@ get_setup <- function(headerrows, already_loaded) {
   try(questions <<- clean_question_text(questions))
   try(questions <<- human_readable_qtype(questions))
   try(blocks <<- remove_trash_blocks(blocks))
-  try(questions <<- link_responses_to_questions(questions, responses))
+  try(questions_and_blocks <- split_side_by_sides(questions, blocks))
+  questions <- questions_and_blocks[[1]]
+  blocks <- questions_and_blocks[[2]]
+  questions <- link_responses_to_questions(questions, responses)
   try(questions <<- generate_results(questions))
   try(blocks <<- questions_into_blocks(questions, blocks))
 
