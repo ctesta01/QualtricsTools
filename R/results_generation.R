@@ -8,7 +8,7 @@
 #'
 #' This function is mostly a function for aiding in formatting results tables.
 percent0 <- function(x, digits = 1, format = "f", ...) {
-  paste0(formatC(100 * x, format = format, digits = digits, ...), "%")
+  paste0(formatC(round(100 * x, digits=1), format = format, digits = digits, ...), "%")
 }
 
 
