@@ -61,7 +61,7 @@ choice_text_from_question <- function(question, choice) {
     # of the recode values, try getting it directly from
     # the choices.
   } else if (is_mc_single_answer(question)) {
-    if ("RecodeValues" %in% names(question[['Payload']])) {
+    if ("RecodeValues" %in% names(question[['Payload']]) && length(question[['Payload']][['RecodeValues']]) > 0) {
       recoded_value <- which(question[['Payload']][['RecodeValues']] == choice)
       if (length(recoded_value) != 0)
         choice <- recoded_value
@@ -79,7 +79,7 @@ choice_text_from_question <- function(question, choice) {
     # [['Payload']][['RecodeValues']] list to retrieve the recoded_value.
     # If that doesn't work, just use the original choice given.
   } else if (is_matrix_single_answer(question)) {
-    if ("RecodeValues" %in% names(question[['Payload']])) {
+    if ("RecodeValues" %in% names(question[['Payload']]) && length(question[['Payload']][['RecodeValues']]) > 0) {
       recoded_value <- which(question[['Payload']][['RecodeValues']] == choice)
       if (length(recoded_value) != 0) {
         choice <- names(question[['Payload']][['RecodeValues']][recoded_value])[[1]]

@@ -27,7 +27,7 @@ mc_single_answer_results <- function(question) {
     # are used as the factors a response could match. If there was no
     # recoding of values, then the choices are directly use as the factors
     # a response can match.
-    if ("RecodeValues" %in% names(question[['Payload']])) {
+    if ("RecodeValues" %in% names(question[['Payload']]) && length(question[['Payload']][['RecodeValues']]) > 0) {
         factors <- unlist(question[['Payload']][['RecodeValues']])
     } else {
         factors <- names(question[['Payload']][['Choices']])
@@ -50,7 +50,7 @@ mc_single_answer_results <- function(question) {
     # which are then used to recover the original choice text from the Choices list,
     # and then the choices are flattened to a cleaner list.
     # if the choice variables are not recoded, then they can be retrieved directly from the responses_table
-    if ("RecodeValues" %in% names(question[['Payload']])) {
+    if ("RecodeValues" %in% names(question[['Payload']]) && length(question[['Payload']][['RecodeValues']]) > 0) {
         choices_recoded <- responses_tabled[,1]
         choices_uncoded <- sapply(choices_recoded, function(x) which(question[['Payload']][['RecodeValues']] == x))
         choices <- sapply(choices_uncoded, function(x) question[['Payload']][['Choices']][[x]][[1]])
@@ -142,10 +142,12 @@ matrix_single_answer_results <- function(question) {
   # the factors are the variable codes that users could choose between
   # if a question has been recoded, the variable names are in [['Payload']][['RecodeValues']]
   # and if not, they are in [['Payload']][['Choices']]
-  if ("RecodeValues" %in% names(question[['Payload']])) {
+  if ("RecodeValues" %in% names(question[['Payload']]) && length(question[['Payload']][['RecodeValues']]) > 0) {
     factors <- unlist(question[['Payload']][['RecodeValues']])
-  } else {
+  } else if ("AnswerOrder" %in% names(question[['Payload']]) && length(question[['Payload']][['AnswerOrder']]) > 0){
     factors <- unlist(question[['Payload']][['AnswerOrder']])
+  } else {
+    factors <- names(question[['Payload']][['Answers']])
   }
 
   # create the responses table, a table detailing the
@@ -175,7 +177,7 @@ matrix_single_answer_results <- function(question) {
   # choice texts.
   # replace the column names with the choice text.
   responses <- t(responses)
-  if ("RecodeValues" %in% names(question[['Payload']])) {
+  if ("RecodeValues" %in% names(question[['Payload']]) && length(question[['Payload']][['RecodeValues']]) > 0) {
     answers_uncoded <- sapply(colnames(responses), function(x) names(question[['Payload']][['RecodeValues']][which(question[['Payload']][['RecodeValues']] == x)])[[1]])
     answers <- sapply(answers_uncoded, function(x) question[['Payload']][['Answers']][[x]][[1]])
     answers <- unlist(answers, use.names = FALSE)
