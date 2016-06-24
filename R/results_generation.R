@@ -8,7 +8,18 @@
 #'
 #' This function is mostly a function for aiding in formatting results tables.
 percent0 <- function(x, digits = 1, format = "f", ...) {
-  paste0(formatC(round(100 * x, digits=1), format = format, digits = digits, ...), "%")
+  # always rounding 5 up
+  # taken from the following stackoverflow post
+  # http://stackoverflow.com/questions/12688717/round-up-from-5-in-r
+  round2 = function(x, n) {
+    posneg = sign(x)
+    z = abs(x)*10^n
+    z = z + 0.5
+    z = trunc(z)
+    z = z/10^n
+    z*posneg
+  }
+  paste0(formatC(round2(100 * x, 1), format = format, digits = digits, ...), "%")
 }
 
 
