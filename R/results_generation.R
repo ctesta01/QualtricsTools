@@ -161,23 +161,11 @@ matrix_single_answer_results <- function(question) {
     factors <- names(question[['Payload']][['Answers']])
   }
 
-  # create the responses table, a table detailing the
-  # number of times each answer was chosen for each sub-question (choice).
-  # N is a list with as many elements as there are questions, with the number
-  # of respondents for each matrix sub-question in each entry.
-  # the responses table is iterated over and turned into percents according to the
-  # original values in the responses table and the respondents counts in the N variable.
   orig_responses <- question[['Responses']]
   not_text_columns <- which(sapply(colnames(orig_responses), function(x) !(grepl("TEXT", x))))
   orig_responses <- orig_responses[, not_text_columns]
   responses <- sapply(orig_responses, function(x) table(factor(x, factors)))
-  N <- sapply(orig_responses, function(x) strtoi(length(which(x != -99 & x != ""))))
-  for (i in 1:nrow(responses)) {
-    for (j in 1:ncol(responses)) {
-      responses[i,j] <- percent0(strtoi(responses[i,j]) /
-                              N[j])
-    }
-  }
+  N <- sapply(orig_responses, function(x) strtoi(length(which(as.integer(as.character(x)) > 0))))
 
   # flip the responses such that the sub-questions are the rows, and the choices
   # appear on top as columns.
@@ -188,15 +176,6 @@ matrix_single_answer_results <- function(question) {
   # choice texts.
   # replace the column names with the choice text.
   responses <- t(responses)
-  if ("RecodeValues" %in% names(question[['Payload']]) && length(question[['Payload']][['RecodeValues']]) > 0) {
-    answers_uncoded <- sapply(colnames(responses), function(x) names(question[['Payload']][['RecodeValues']][which(question[['Payload']][['RecodeValues']] == x)])[[1]])
-    answers <- sapply(answers_uncoded, function(x) question[['Payload']][['Answers']][[x]][[1]])
-    answers <- unlist(answers, use.names = FALSE)
-  } else {
-    answers <- sapply(colnames(responses), function(x) question[['Payload']][['Answers']][[x]][[1]])
-  }
-  answers <- sapply(answers, clean_html)
-  colnames(responses) <- answers
 
   # in Qualtrics Insights, Qualtrics has improved the naming of the response columns.
   # prior to insights, they did not include the data export tag in the response header.
@@ -206,6 +185,58 @@ matrix_single_answer_results <- function(question) {
   # or if they are the choice export tags prepended with the data export tags.
   choice_export_tags_with_underscores <- sapply(question[['Payload']][['ChoiceDataExportTags']], function(x) gsub("-", "_", x))
   response_names_without_export_tag <- gsub(paste0(question[['Payload']][['DataExportTag']], "_"), "", names(orig_responses))
+
+
+
+  if ("RecodeValues" %in% names(question[['Payload']]) && length(question[['Payload']][['RecodeValues']]) > 0) {
+    if (any(question[['Payload']][['RecodeValues']] < 0)) {
+
+      # if there are RecodeValues that are less than 0,
+      # consider them as "No Opinion" / NA / "Prefer not to Answer"
+      # kinds of responses, and table them separately so that
+      # the rest of the table isn't skewed by the non-respondents.
+      na_choices <- question[['Payload']][['RecodeValues']][which(question[['Payload']][['RecodeValues']] < 0)]
+      na_columns <- responses[, unlist(na_choices), drop=FALSE]
+      responses <- responses[,!(colnames(responses) %in% na_choices)]
+      total_N <- sapply(orig_responses, function(x) strtoi(length(which(x != -99 & x != ""))))
+
+      # calculate the percentages of non-applicable respondents from the
+      # total respondents.
+      for (i in 1:ncol(na_columns)) {
+        for (j in 1:nrow(na_columns)) {
+          na_columns[j,i] <- percent0(strtoi(na_columns[j,i]) /
+                                        total_N[i])
+        }
+      }
+
+      # get the choice names for the non-applicable choices
+      colnames(na_columns) <- sapply(colnames(na_columns), function(x)
+        names(question[['Payload']][['RecodeValues']][which(question[['Payload']][['RecodeValues']] == x)])[[1]])
+      colnames(na_columns) <- sapply(colnames(na_columns), function(x) question[['Payload']][['Answers']][[x]][[1]])
+    }
+
+    # get the answer names for the response table's vertical "answer" components
+    answers_uncoded <- sapply(colnames(responses), function(x)
+      names(question[['Payload']][['RecodeValues']][which(question[['Payload']][['RecodeValues']] == x)])[[1]])
+    answers <- sapply(answers_uncoded, function(x) question[['Payload']][['Answers']][[x]][[1]])
+    answers <- unlist(answers, use.names = FALSE)
+  } else {
+    answers <- sapply(colnames(responses), function(x) question[['Payload']][['Answers']][[x]][[1]])
+  }
+  answers <- sapply(answers, clean_html)
+  colnames(responses) <- answers
+
+  # create the responses table, a table detailing the
+  # percentage of times each answer was chosen for each sub-question (choice).
+  # N is a list that says for each choice how many respondents there were that chose it.
+  # percent0 is used to convert the number of respondents divided
+  # by the total valid respondents to a single decimal point percent.
+  for (i in 1:ncol(responses)) {
+    for (j in 1:nrow(responses)) {
+      responses[j,i] <- percent0(strtoi(responses[j,i]) /
+                                   N[j])
+    }
+  }
 
   # if the response columns are the choice data export tags, then
   # we use the choice data export tags numbering to retrieve the
@@ -253,7 +284,11 @@ matrix_single_answer_results <- function(question) {
   # form a data frame with the first column listing the sub-question text, then
   # include the table of percents for each answer choice for each sub-question,
   # then include as the last column the number of respondents to each sub-question.
-  responses <- data.frame(choices, N, responses, check.names=FALSE, row.names = NULL)
+  if (exists('na_columns') && exists('total_N')) {
+    responses <- data.frame(choices, N, responses, total_N, na_columns, check.names=FALSE, row.names = NULL)
+  } else {
+    responses <- data.frame(choices, N, responses, check.names=FALSE, row.names = NULL)
+  }
   colnames(responses)[1] <- ""
   rownames(responses) <- NULL
   return(responses)
