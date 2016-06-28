@@ -302,83 +302,175 @@ matrix_single_answer_results <- function(question) {
 #' a column with the total number of respondents for each subquestion, and
 #' the percentages for each choice for each sub-question.
 matrix_multiple_answer_results <- function(question) {
-  # this function takes a long vector with the rownames of the response
-  # columns, and turns it into a matrix of the results.
-  # the response column names usually look something like "Q5_1_2",
-  # ie, Question 5, Choice 1, Answer 2.
-  vector_to_dataframe <- function(vector) {
-    df <- data.frame(names = names(vector), value = as.numeric(vector))
-    `%>%` <- magrittr::`%>%`
-
-    # the regular expression used in this line is a
-    # positive lookbehind for a "_", followed by
-    # a positive lookahead for a string of
-    # one or more integers, followed by the end of the string.
-    # this separate command splits the column header into the
-    # first part, and the last part, where the last part is always
-    # the answer variable.
-    df <- tidyr::separate(df, names, into=c("Choices", "Answers"),
-                          sep = "(?<=_) ?(?=([0-9]+$))") %>% tidyr::spread(Answers, value)
-
-    # when the separated results are spread, they list the
-    # first part of the separation in the first column.
-    # we fix that by replacing the rownames with the first column,
-    # and deleting the first column.
-    rownames(df) <- gsub("_$", "", df[,1])
-    df <- df[,-1]
-    return(df)
-  }
-
-  # select only the non-text responses, and save the question's export_tag
+  # remove the text entry columns from the responses
   orig_responses <- question[['Responses']]
-  not_text_columns <- which(sapply(colnames(orig_responses), function(x) !(grepl("TEXT", x))))
+  not_text_columns <- which(sapply(colnames(orig_responses), function(x) isTRUE(!(grepl("TEXT", x)))))
   orig_responses <- orig_responses[, not_text_columns]
+
+  # remove the data export tag from the column headers of the response data
   export_tag <- question[['Payload']][['DataExportTag']]
+  names(orig_responses) <- gsub(paste0(export_tag, "_"), "", names(orig_responses))
 
-  # Qualtrics Insights prepends every response column with the question's export_tag,
-  # Qualtrics before Insights did not always do so.
-  if (all(gdata::startsWith(names(orig_responses), export_tag))) {
-    names(orig_responses) <- gsub(paste0(export_tag, "_"), "", names(orig_responses))
-  }
+  # responses_by_answers is for separating the responses to
+  # each answer row.
+  # the response columns are split by their names excluding
+  # the last "_[-0-9]+$" part, (an underscore and an integer before the end of the
+  # string).
+  responses_by_answers <- list()
+  answer_codes <- sapply(names(orig_responses), function(x) gsub("_[-0-9]+$", "", x, perl=TRUE))
+  for (ans in unique(answer_codes)) {
 
-  # create the percentage table of results, choices spanning the rows,
-  # answers spanning the columns.
-  ma_matrix_nums <- sapply(orig_responses, function (y) sum(y == 1))
-  respondents_count <- length(which(apply(orig_responses, 1, function(x) any(x == 1))))
-  ma_matrix_nums <- vector_to_dataframe(ma_matrix_nums)
-  for (i in 1:nrow(ma_matrix_nums)) {
-    for (j in 1:ncol(ma_matrix_nums)) {
-      ma_matrix_nums[i, j] <- percent0(strtoi(ma_matrix_nums[i, j]) / (respondents_count))
+    # for each answer, save response columns that start with that answer.
+    responses_by_answers[[ans]] <- list()
+    responses_by_answers[[ans]][['responses']] <- list()
+    responses_by_answers[[ans]][['responses']] <- orig_responses[,
+                                                                 which(gdata::startsWith(names(orig_responses), ans))
+                                                                 ]
+
+    # remove the answer from the column name
+    colnames(responses_by_answers[[ans]][['responses']]) <-
+      sapply(colnames(responses_by_answers[[ans]][['responses']]),
+             function(x) gsub(paste0(ans, "_"), "", x))
+
+    # calculate the total number of valid respondents, N
+    responses_by_answers[[ans]][['N']] <- length(which(apply(
+      responses_by_answers[[ans]][['responses']],
+      1,
+      function(x) any(x==1))))
+
+    # if there are RecodeValues indicating NA like options,
+    # separate them from the valid respondents, recalculate N,
+    # and calculate total_N
+    if ("RecodeValues" %in% names(question[['Payload']]) &&
+        any(question[['Payload']][['RecodeValues']] < 0)) {
+
+      # if the response columns have use recode values
+      # to represent the choices
+      if (all(names(responses_by_answers[[ans]][['responses']]) %in%
+              question[['Payload']][['RecodeValues']])) {
+
+        # separate na_columns from the valid responses
+        responses_by_answers[[ans]][['na_columns']] <- list()
+        responses_by_answers[[ans]][['na_columns']] <- responses_by_answers[[ans]][['responses']][
+          which(names(responses_by_answers[[ans]][['responses']]) < 0)
+          ]
+        responses_by_answers[[ans]][['responses']] <- responses_by_answers[[ans]][['responses']][
+          which(names(responses_by_answers[[ans]][['responses']]) >= 0)
+          ]
+
+
+        # otherwise, if the response columns use the
+        # Choices directly to represent the choices
+      } else if (all(names(responses_by_answers[[ans]][['responses']]) %in%
+                     names(question[['Payload']][['RecodeValues']]))) {
+
+        # separate na_columns from the valid responses
+        na_cols <- which(sapply(
+          names(responses_by_answers[[ans]][['responses']]),
+          function(x) question[['Payload']][['RecodeValues']][[x]] < 0))
+        responses_by_answers[[ans]][['na_columns']] <- list()
+        responses_by_answers[[ans]][['na_columns']] <- responses_by_answers[[ans]][['responses']][na_cols]
+        responses_by_answers[[ans]][['responses']] <- responses_by_answers[[ans]][['responses']][
+          which(!names(responses_by_answers[[ans]][['responses']]) %in% na_cols)
+          ]
+
+
+      }
+
+      # calculate the total_N and recalculate N to be the number of
+      # valid respondents only
+      responses_by_answers[[ans]][['total_N']] <-
+        responses_by_answers[[ans]][['N']]
+      responses_by_answers[[ans]][['N']] <- length(which(apply(
+        responses_by_answers[[ans]][['responses']],
+        1,
+        function(x) any(x==1))))
+
+
+    }
+
+    # turn the responses for this answer into a list of percentages
+    # for each choice
+    responses_by_answers[[ans]][['responses']] <- apply(
+      responses_by_answers[[ans]][['responses']],
+      2,
+      function(x) percent0(sum(x==1) / responses_by_answers[[ans]][['N']]))
+
+    if (all(c('na_columns', 'total_N') %in% names(responses_by_answers[[ans]]))) {
+      # turn the not-applicable columns for this answer into a
+      # list of percentages for each non-applicable choice
+      responses_by_answers[[ans]][['na_columns']] <- apply(
+        responses_by_answers[[ans]][['na_columns']],
+        2,
+        function(x) percent0(sum(x==1) / responses_by_answers[[ans]][['total_N']]))
     }
   }
 
-  # if "RecodeValues" or "ChoiceDataExportTags" appear
-  # in the QSF entry for a question, use those lists
-  # to find and replace the given coded variable with the
-  # variable internal to the QSF -- the actual index of the
-  # answer or choice in the [['Payload']][['Answers']] and [['Payload']][['Choices']]
-  # lists
-  if ("RecodeValues" %in% names(question[['Payload']]) && colnames(ma_matrix_nums) %in% question[['Payload']][['RecodeValues']]) {
-    Answers <- sapply(colnames(ma_matrix_nums), function(x) names(question[['Payload']][['RecodeValues']])[which(question[['Payload']][['RecodeValues']] == x)] )
-  } else {
-    Answers <- colnames(ma_matrix_nums)
-  }
-  if ("ChoiceDataExportTags" %in% names(question[['Payload']]) && rownames(ma_matrix_nums) %in% question[['Payload']][['ChoiceDataExportTags']]) {
-    Choices <- sapply(rownames(ma_matrix_nums), function(x) names(question[['Payload']][['ChoiceDataExportTags']])[which(question[['Payload']][['ChoiceDataExportTags']] == x)] )
-  } else {
-    Choices <- rownames(ma_matrix_nums)
+  # get the list of Ns for every answer, get the percents for each choices
+  # for each answer, and table them.
+  N <- lapply(responses_by_answers, '[[', 'N')
+  choices <- t(as.data.frame(lapply(responses_by_answers, '[[', 'responses'),
+                             optional=TRUE))
+
+  # this is a helper function for renaming the choices based on the
+  # recodevalues, if appropriate. Insights uses the recodevalues reliably,
+  # but legacy didn't. So the test is whether or not all the choices are
+  # in the recodevalues.
+  rename_choices <- function(choice_names, question) {
+    if ("RecodeValues" %in% names(question[['Payload']]) &&
+        all(choice_names %in% question[['Payload']][['RecodeValues']])) {
+
+      sapply(choice_names, function(x) {
+        code <- names(question[['Payload']][['RecodeValues']])[
+          which(question[['Payload']][['RecodeValues']] == x)
+          ]
+        question[['Payload']][['Answers']][[code]][[1]]
+      })
+    } else {
+      sapply(choice_names, function(x) {
+        question[['Payload']][['Answers']][[x]][[1]]
+      })
+    }
   }
 
-  # get the choices and answers from their index,
-  # and clean them of any html strings
-  Answers <- sapply(Answers, function(x) question[['Payload']][['Answers']][[x]][[1]])
-  Choices <- sapply(Choices, function(x) question[['Payload']][['Choices']][[x]][[1]])
-  colnames(ma_matrix_nums) <- clean_html(Answers)
-  Choices <- clean_html(Choices)
+  # relabel the names of the valid choices
+  colnames(choices) <- rename_choices(colnames(choices), question)
 
-  # create the data frame
-  df <- cbind(Choices, N=rep(respondents_count, nrow(ma_matrix_nums)), ma_matrix_nums)
-  return(df)
+
+  # if there were non-applicable options, table them, re-label the choices,
+  # then table the N, choices, total_N, and na_choices together.
+  # if there weren't non-applicable options, just table the
+  # valid N and the choices
+  if (all(c('total_N', 'na_columns') %in% sapply(responses_by_answers, names))) {
+    na_choices <- t(as.data.frame(lapply(responses_by_answers, '[[', 'na_columns'),
+                                  optional=TRUE))
+    total_N <- lapply(responses_by_answers, '[[', 'total_N')
+    colnames(na_choices) <- rename_choices(colnames(na_choices), question)
+    responses_tabled <- cbind(N, choices, total_N, na_choices)
+
+  } else {
+    responses_tabled <- cbind(N, choices)
+  }
+
+  # if the rownames are labeled by the Choice Data Export Tags, use them to convert
+  # their labels to the question parts' names.
+  # if not, just try to use the labels directly to retrieve the part's labeling.
+  if (all(rownames(responses_tabled) %in% question[['Payload']][['ChoiceDataExportTags']])) {
+    rownames(responses_tabled) <- sapply(rownames(responses_tabled), function(x) {
+      code <- names(question[['Payload']][['ChoiceDataExportTags']])[
+        which(question[['Payload']][['ChoiceDataExportTags']] == x)
+        ]
+      question[['Payload']][['Choices']][[code]][[1]]
+    })
+  } else {
+    rownames(responses_tabled) <- sapply(rownames(responses_tabled),
+                                         function(x) question[['Payload']][['Choices']][[x]][[1]])
+  }
+
+  # include the rownames as the first row
+  responses_tabled <- cbind(rownames(responses_tabled), responses_tabled)
+  colnames(responses_tabled)[1] <- " "
+  return(responses_tabled)
 }
 
 
