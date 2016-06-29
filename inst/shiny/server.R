@@ -18,7 +18,7 @@ shinyServer(
       )
     responses <- load_csv_data(input$file2, input$file1, input$headerrows)
     original_first_row <- NULL
-    if (!is.null(input$file2)) original_first_row <- read.csv(input$file2$datapath, check.names=F)[1,]
+    if (!is.null(input$file2)) original_first_row <- read.csv(input$file2$datapath, check.names=FALSE)[1,]
     list_survey_and_responses <- list()
     list_survey_and_responses[[1]] <- survey
     list_survey_and_responses[[2]] <- responses
