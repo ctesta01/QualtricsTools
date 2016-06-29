@@ -131,7 +131,11 @@ get_setup <- function(headerrows, already_loaded) {
 
   if (already_loaded == FALSE) {
     try(survey <<- ask_for_qsf())
-    try(responses <<- ask_for_csv(headerrows = headerrows))
+    print("Select CSV Response File:")
+    responsesfile = file.choose()
+    responses = read.csv(responsesfile, check.names=FALSE)
+    original_first_row <<- responses[1,]
+    responses <<- ask_for_csv(responsesfile, headerrows=headerrows)
   }
 
   if (already_loaded == TRUE) {
@@ -143,6 +147,7 @@ get_setup <- function(headerrows, already_loaded) {
 
     if (!exists("responses", where = -1)) {
       responses <- sample_responses
+      original_first_row <<- sample_original_first_row
     } else {
       responses <- get("responses", envir=-1)
     }
@@ -168,8 +173,7 @@ get_setup <- function(headerrows, already_loaded) {
        exists("questions", 1) &&
        exists("blocks", 1)
   ) {
-    cat("survey, responses, questions, and blocks have all been made
-        globally available in your R session.")
+    cat("The survey, responses, the response set's original_first_row, questions, and blocks variables have all been made globally available in your R session.")
   }
 }
 
