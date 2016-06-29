@@ -148,6 +148,8 @@ get_setup <- function(headerrows, already_loaded) {
     }
   }
 
+  try(survey <<- survey)
+  try(responses <<- responses)
   try(blocks <<- blocks_from_survey(survey))
   try(questions <<- questions_from_survey(survey))
   try(questions <<- remove_trash_questions(questions, blocks))
