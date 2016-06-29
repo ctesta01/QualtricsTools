@@ -506,13 +506,6 @@ lean_responses <- function(panel_columns, question_blocks, survey_responses, ori
     # response column and the original_first_row entry in that column
     rcol <- names(question[['Responses']])[[response_column]]
     choice_text <- choice_text_from_response_column(rcol, original_first_row, blocks)
-    if (choice_text != "") {
-      question_text <- paste0(question[['Payload']][['QuestionTextClean']],
-                              "-",
-                              choice_text)
-    } else {
-      question_text <- question[['Payload']][['QuestionTextClean']]
-    }
 
     return(c(
       # Respondent ID:
@@ -521,8 +514,10 @@ lean_responses <- function(panel_columns, question_blocks, survey_responses, ori
       question[['Payload']][['DataExportTag']],
       # Question Response Column:
       names(question[['Responses']])[[response_column]],
-      # Question Text:
-      question_text,
+      # Question Stem:
+      question[['Payload']][['QuestionTextClean']],
+      # Question Choice:
+      choice_text,
       # Question Type 1:
       question[['Payload']][['QuestionType']],
       # Question Type 2:
@@ -587,12 +582,13 @@ lean_responses <- function(panel_columns, question_blocks, survey_responses, ori
   }
 
   # list_of_rows_to_df turns the rows into a data frame
-  dictionary <- list_of_rows_to_df(dictionary)
+  dictionary <- do.call(rbind.data.frame, dictionary)
   names(dictionary) <- c(
     "Respondent ID",
     "Question Data Export Tag",
     "Question Response Column",
-    "Question Text",
+    "Question Stem",
+    "Question Choice",
     "Question Type 1",
     "Question Type 2",
     "Question Type 3",
