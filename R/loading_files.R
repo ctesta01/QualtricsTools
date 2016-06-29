@@ -71,7 +71,7 @@ ask_for_csv <- function(responsesfile, headerrows) {
     if (missing(headerrows)) {
       headerrows <- 2
     }
-    responses = read.csv(responsesfile, check.names=F)
+    responses = read.csv(responsesfile, check.names=FALSE)
     responses[which(colnames(responses) == "")] <- NULL
     responses <- responses[headerrows:nrow(responses),]
     responses <- responses[apply(responses,1,function(x)any(x != "")),]
