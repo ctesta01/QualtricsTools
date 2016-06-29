@@ -474,9 +474,8 @@ uncodeable_question_dictionary <- function(blocks) {
 #' BlockElements representing them.
 #' @param survey_responses The responses to the survey, as imported by ask_for_csv()
 #' @return a data frame with each row detailing an individual survey response.
-lean_responses <- function(panel_columns, question_blocks, survey_responses) {
-  # get the blocks and responses from the global environment
-  # TODO: these should also be optionally passed as direct parameters
+lean_responses <- function(panel_columns, question_blocks, survey_responses, orig_first_row) {
+  # get the blocks, responses, and original_first_row from the global environment
   if (missing(question_blocks)) {
     blocks <- get("blocks", envir=1)
   } else {
@@ -487,16 +486,32 @@ lean_responses <- function(panel_columns, question_blocks, survey_responses) {
   } else {
     responses <- survey_responses
   }
+  if (missing(orig_first_row)) {
+    original_first_row <- get("original_first_row", envir=1)
+  } else {
+    original_first_row <- orig_first_row
+  }
 
   # this create_entry function returns an entry (a row)
   # to be used in the lean_responses output.
-  create_entry <- function(question, response_column, response_row) {
-    responses <- get("responses", envir=1)
+  create_entry <- function(question, responses, response_column, response_row, original_first_row) {
 
     # make sure that the subselector either exists or is set to "", so that
     # including it in an entry doesn't error
     if (!("SubSelector" %in% names(question[['Payload']]))) {
       question[['Payload']][['SubSelector']] <- ""
+    }
+
+    # get the choice text and append it to the question text based on the
+    # response column and the original_first_row entry in that column
+    rcol <- names(question[['Responses']])[[response_column]]
+    choice_text <- choice_text_from_response_column(rcol, original_first_row, blocks)
+    if (choice_text != "") {
+      question_text <- paste0(question[['Payload']][['QuestionTextClean']],
+                              "-",
+                              choice_text)
+    } else {
+      question_text <- question[['Payload']][['QuestionTextClean']]
     }
 
     return(c(
@@ -507,7 +522,7 @@ lean_responses <- function(panel_columns, question_blocks, survey_responses) {
       # Question Response Column:
       names(question[['Responses']])[[response_column]],
       # Question Text:
-      question[['Payload']][['QuestionTextClean']],
+      question_text,
       # Question Type 1:
       question[['Payload']][['QuestionType']],
       # Question Type 2:
@@ -547,7 +562,11 @@ lean_responses <- function(panel_columns, question_blocks, survey_responses) {
                   # console a message saying
                   e <- e+1
                   dictionary[[e]] <-
-                    tryCatch(create_entry(blocks[[b]][['BlockElements']][[be]], c, r),
+                    tryCatch(create_entry(question=blocks[[b]][['BlockElements']][[be]],
+                                          responses=responses,
+                                          response_column=c,
+                                          response_row=r,
+                                          original_first_row=original_first_row),
                              error = function(e) {
                                cat(paste0("\nCreating an entry for the following question failed. \nDataExportTag: "
                                           , blocks[[b]][['BlockElements']][[be]][['Payload']][['DataExportTag']]
