@@ -155,13 +155,15 @@ remove_trash_blocks <- function(blocks) {
     if ('Type' %in% names(blocks[[i]])) {
       if (blocks[[i]][['Type']] == "Trash") {
         blocks[[i]] <- NULL
-        break
+        i <- i-1
       }
     }
     if ('BlockElements' %in% names(blocks[[i]])) {
       if (length(blocks[[i]][['BlockElements']]) != 0) {
         for (j in length(blocks[[i]][['BlockElements']]):1) {
           if(blocks[[i]][['BlockElements']][[j]][['Type']] != "Question") {
+            cat(paste0(i, " ", j, " deleted
+                       "))
             blocks[[i]][['BlockElements']][[j]] <- NULL
           }
         }
@@ -655,9 +657,9 @@ answers_from_response_column <- function(response_column, responses, lean_respon
 
 
 #' Split Side-by-Side Questions into Multiple Questions
-#' 
+#'
 #' This function updates both the list of questions and list of blocks from a survey
-#' to reflect a side-by-side question as multiple individual questions. 
+#' to reflect a side-by-side question as multiple individual questions.
 #'
 #' @param questions A list of questions from a survey
 #' @param blocks A list of blocks from a survey
@@ -666,7 +668,7 @@ answers_from_response_column <- function(response_column, responses, lean_respon
 split_side_by_sides <- function(questions, blocks) {
   # loop through every question
   for (i in length(questions):1) {
-    # if a question is a side-by-side question, 
+    # if a question is a side-by-side question,
     # use the 'NumberOfQuestions' element from its payload
     # to determine how many questions to turn it into, and then
     # fill those questions with the payload of the 'AdditionalQuestions'
@@ -677,7 +679,7 @@ split_side_by_sides <- function(questions, blocks) {
         split_questions[[j]] <- list()
         split_questions[[j]][['Payload']] <- questions[[i]][['Payload']][['AdditionalQuestions']][[as.character(j)]]
 
-        # question text will include the SBS question's original question text and the 
+        # question text will include the SBS question's original question text and the
         # specific question component's question text.
         split_questions[[j]][['Payload']][['QuestionTextClean']] <- paste0(
           questions[[i]][['Payload']][['QuestionText']],
