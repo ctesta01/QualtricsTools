@@ -654,14 +654,31 @@ answers_from_response_column <- function(response_column, responses, lean_respon
 }
 
 
-
+#' Split Side-by-Side Questions into Multiple Questions
+#' 
+#' This function updates both the list of questions and list of blocks from a survey
+#' to reflect a side-by-side question as multiple individual questions. 
+#'
+#' @param questions A list of questions from a survey
+#' @param blocks A list of blocks from a survey
+#' @return A list of questions and a list of blocks with their SBS questions split
+#' into multiple questions
 split_side_by_sides <- function(questions, blocks) {
+  # loop through every question
   for (i in length(questions):1) {
+    # if a question is a side-by-side question, 
+    # use the 'NumberOfQuestions' element from its payload
+    # to determine how many questions to turn it into, and then
+    # fill those questions with the payload of the 'AdditionalQuestions'
+    # from the SBS question.
     if (questions[[i]][['Payload']][['QuestionType']] == 'SBS') {
       split_questions <- list()
       for (j in 1:questions[[i]][['Payload']][['NumberOfQuestions']]) {
         split_questions[[j]] <- list()
         split_questions[[j]][['Payload']] <- questions[[i]][['Payload']][['AdditionalQuestions']][[as.character(j)]]
+
+        # question text will include the SBS question's original question text and the 
+        # specific question component's question text.
         split_questions[[j]][['Payload']][['QuestionTextClean']] <- paste0(
           questions[[i]][['Payload']][['QuestionText']],
           "-",
@@ -669,6 +686,8 @@ split_side_by_sides <- function(questions, blocks) {
         )
       }
 
+      # use the SBS question's QuestionID to look up the question in the blocks
+      # and replace the original with the split question's QuestionIDs
       orig_question_id <- questions[[i]][['Payload']][['QuestionID']]
       split_question_ids <- lapply(split_questions, function(x) x[['Payload']][['QuestionID']])
       split_block_elements <- lapply(split_question_ids, function(x) list("Type"="Question", "QuestionID"=x))
