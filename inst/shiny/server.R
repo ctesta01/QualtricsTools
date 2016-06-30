@@ -3,6 +3,11 @@ options(shiny.maxRequestSize=30*1024^2)
 shinyServer(
   function(input, output) {
 
+  # the survey_and_responses reactive block reads the input files
+  # and loads them as the survey and responses. It validates that there
+  # are no duplicate data export tags in the survey, and it returns a
+  # list with three elements -- the processed survey, the responses,
+  # and the original_first_row from the response set.
   survey_and_responses <- reactive({
     survey <- try(load_qsf_data(input$file1))
     questions <- try(questions_from_survey(survey))
@@ -26,6 +31,8 @@ shinyServer(
     return(list_survey_and_responses)
     })
 
+  # the uncodeable_message reactive block reacts to the survey_and_responses() block
+  # with a message indicating which, if any, questions were not properly processed.
   uncodeable_message <- reactive({
     validate(need(length(survey_and_responses()) >= 2, "Please upload survey responses"))
     if (length(survey_and_responses()) >= 2) {
@@ -36,6 +43,9 @@ shinyServer(
     }
   })
 
+  # the results_tables reactive block reacts to the survey_and_responses output
+  # by processing the survey and responses into blocks with results tables inserted,
+  # and then converting the results tables to HTML tables.
   results_tables <- reactive({
     validate(need(length(survey_and_responses()) >= 2, ""))
     if (length(survey_and_responses()) >= 2) {
@@ -47,6 +57,8 @@ shinyServer(
     }
   })
 
+  # the question_dictionary block uses the survey from the survey_and_responses output
+  # to create a data frame detailing each survey question.
   question_dictionary <- reactive({
     survey <- survey_and_responses()[[1]]
     blocks <- blocks_from_survey(survey)
@@ -98,7 +110,10 @@ shinyServer(
   output$text_appendices <- renderUI(div(HTML(text_appendices()), class="shiny-html-output"))
   output$display_logic <- renderUI(div(HTML(display_logic()), class="shiny-html-output"))
 
-  # download buttons
+
+  # Download Buttons
+
+  # download results tables
   output$downloadResultsTables <- downloadHandler(
     filename = 'results-tables.docx',
     content = function(file) {
@@ -106,6 +121,7 @@ shinyServer(
     }
   )
 
+  # download question dictionary
   output$downloadQuestionDictionary <- downloadHandler(
     filename = 'question-dictionary.csv',
     content = function(file) {
@@ -113,6 +129,7 @@ shinyServer(
     }
   )
 
+  # download text appendices
   output$downloadTextAppendices <- downloadHandler(
     filename = 'appendices.docx',
     content = function(file) {
@@ -120,6 +137,7 @@ shinyServer(
     }
   )
 
+  # download display logic
   output$downloadDisplayLogic <- downloadHandler(
     filename = 'display-logic.docx',
     content = function(file) {
@@ -127,6 +145,7 @@ shinyServer(
     }
   )
 
+  # Stop App button
   observe({
     # If input$quit is unset (NULL) do nothing; if it's anything else, quit
     # and return input$n
