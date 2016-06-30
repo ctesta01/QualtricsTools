@@ -162,8 +162,6 @@ remove_trash_blocks <- function(blocks) {
       if (length(blocks[[i]][['BlockElements']]) != 0) {
         for (j in length(blocks[[i]][['BlockElements']]):1) {
           if(blocks[[i]][['BlockElements']][[j]][['Type']] != "Question") {
-            cat(paste0(i, " ", j, " deleted
-                       "))
             blocks[[i]][['BlockElements']][[j]] <- NULL
           }
         }
