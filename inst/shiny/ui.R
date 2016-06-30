@@ -16,6 +16,9 @@ sidebar <- dashboardSidebar(
              numericInput("headerrows", "How many header rows are there in the responses?", 3, min = 1)
              ),
              menuItem("Processed Results", tabName="report", icon=icon("tasks")),
+
+             # empty h5 headers below are for spacing
+
              h5(""),
              downloadButton('downloadResultsTables', 'Results Table', class="btn-primary"),
              h5(""),
