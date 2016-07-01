@@ -165,7 +165,7 @@ matrix_single_answer_results <- function(question) {
   not_text_columns <- which(sapply(colnames(orig_responses), function(x) !(grepl("TEXT", x))))
   orig_responses <- orig_responses[, not_text_columns]
   responses <- sapply(orig_responses, function(x) table(factor(x, factors)))
-  N <- sapply(orig_responses, function(x) strtoi(length(which(as.integer(as.character(x)) > 0))))
+  N <- sapply(orig_responses, function(x) suppressWarnings(strtoi(length(which(as.integer(as.character(x)) > 0)))))
 
   # flip the responses such that the sub-questions are the rows, and the choices
   # appear on top as columns.
