@@ -243,6 +243,8 @@ choice_text_from_response_column <- function(response_column, original_first_row
   # number of dashes
   if (first_row_dash_n > stem_dash_n) {
     choice_text <- substr(first_row_entry, first_row_dashes[[stem_dash_n + 1]] + 1, nchar(first_row_entry))
+    choice_text <- clean_html(choice_text)
+
   } else {
     choice_text <- ""
   }
@@ -252,10 +254,10 @@ choice_text_from_response_column <- function(response_column, original_first_row
 
 
 #' Block's Header to HTML
-#' 
+#'
 #' Get an HTML Header for a list of survey blocks. The header
-#' is created by either get_coded_questions_and_blocks or 
-#' by split_respondents. 
+#' is created by either get_coded_questions_and_blocks or
+#' by split_respondents.
 #'
 #' @param blocks A list of blocks with a 'header' inserted.
 #' @return an HTML header for the survey
@@ -268,12 +270,12 @@ blocks_header_to_html <- function(blocks) {
 
 #' Count the Number of Blocks
 #'
-#' Since the blocks list is used to transport some additional information 
-#' beyond the contents of the survey questions, this function is here to 
-#' help in counting how many valid question blocks there are. 
-#' Any real question blocks will be enumerated in R, as opposed to the 
-#' content that's been added which will be named. This means that when 
-#' looking at the names of the blocks list, the integer values or the values which 
+#' Since the blocks list is used to transport some additional information
+#' beyond the contents of the survey questions, this function is here to
+#' help in counting how many valid question blocks there are.
+#' Any real question blocks will be enumerated in R, as opposed to the
+#' content that's been added which will be named. This means that when
+#' looking at the names of the blocks list, the integer values or the values which
 #' have no name are the question blocks, and the values which have names are the
 #' added information. This function counts up the former.
 #'
