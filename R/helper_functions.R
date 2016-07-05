@@ -216,6 +216,7 @@ choice_text_from_response_column <- function(response_column, original_first_row
   # save the raw question text,
   # and clean it of HTML tags
   question_indices <- question_from_response_column(blocks, response_column)
+  if (is.null(question_indices)) return("")
   i <- question_indices[[1]]
   j <- question_indices[[2]]
   question_text <- blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionText']]
@@ -227,6 +228,7 @@ choice_text_from_response_column <- function(response_column, original_first_row
   # NOTE: counting the dashes in the question text is limited to the first 99
   # characters, since the question is cut off in the first row after 99
   # characters.
+  if (!response_column %in% colnames(original_first_row)) return("")
   first_row_entry <- as.character(original_first_row[response_column][[1]])
   stem_dashes <- gregexpr("-", substr(question_text, 1, 99))[[1]]
   stem_dash_n <- length(which(stem_dashes > 0))
