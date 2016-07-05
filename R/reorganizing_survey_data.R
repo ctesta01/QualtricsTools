@@ -444,7 +444,8 @@ uncodeable_question_dictionary <- function(blocks) {
         else if ("Element" %in% names(blocks[[i]][['BlockElements']][[j]])) {
           if ("Table" %in% names(blocks[[i]][['BlockElements']][[j]]) ||
               blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionType']] == "TE" ||
-              blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionType']] == "DB"
+              blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionType']] == "DB" ||
+              all(grepl("TEXT", colnames(blocks[[i]][['BlockElements']][[j]][['Responses']])))
               ) {
             blocks[[i]][['BlockElements']][[j]] <- NULL
           }

@@ -64,7 +64,8 @@ question_description <- function(question) {
         "Question ",
         question[['Payload']][['DataExportTag']],
         " is a text entry question. See Appendix."))
-    } else if (!"Table" %in% names(question)) {
+    } else if (!"Table" %in% names(question) &&
+               !all(grepl("TEXT", names(question[['Responses']])))) {
       description <- c(description, paste0(
         "The results table for Question ",
         question[['Payload']][['DataExportTag']],
