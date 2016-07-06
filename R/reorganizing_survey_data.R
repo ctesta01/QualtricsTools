@@ -155,7 +155,7 @@ remove_trash_blocks <- function(blocks) {
     if ('Type' %in% names(blocks[[i]])) {
       if (blocks[[i]][['Type']] == "Trash") {
         blocks[[i]] <- NULL
-        i <- i-1
+        next
       }
     }
     if ('BlockElements' %in% names(blocks[[i]])) {
