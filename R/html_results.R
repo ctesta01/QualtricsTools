@@ -205,6 +205,16 @@ text_appendices_table <- function(blocks, original_first_row) {
                 response_n <- paste0("Responses: (", nrow(responses), ")")
               } else {
                 response_n <- "No respondents answered this question"
+                No_Respondents <- c(blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
+                                          "Verbatim responses -- these have not been edited in any way.",
+                                          "",
+                                          response_n)
+                tables <- c(tables, capture.output(print(xtable::xtable(as.data.frame(No_Respondents)),
+                                                         type="html",
+                                                         html.table.attributes='class="text_appendices data table table-bordered table-condensed"',
+                                                         include.rownames=FALSE)))
+                e <- e - 1
+                next
               }
 
               # generate the header for the text appendix
@@ -278,6 +288,16 @@ text_appendices_table <- function(blocks, original_first_row) {
                   response_n <- paste0("Responses: (", nrow(responses), ")")
                 } else {
                   response_n <- "No respondents answered this question"
+                  No_Respondents <- c(blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
+                                            "Verbatim responses -- these have not been edited in any way.",
+                                            "",
+                                            response_n)
+                  tables <- c(tables, capture.output(print(xtable::xtable(as.data.frame(No_Respondents)),
+                                                           type="html",
+                                                           html.table.attributes='class="text_appendices data table table-bordered table-condensed"',
+                                                           include.rownames=FALSE)))
+                  e <- e - 1
+                  next
                 }
 
                 # generate the header for the text appendix
