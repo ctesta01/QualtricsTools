@@ -12,6 +12,7 @@ tabelize_blocks <- function(blocks) {
   options(stringsAsFactors = FALSE)
   for (i in 1:number_of_blocks(blocks)) {
     if ('BlockElements' %in% names(blocks[[i]])) {
+      tables <- c(tables, paste0("<h5>", blocks[[i]][['Description']], "</h5><br>"))
       if (length(blocks[[i]][['BlockElements']]) != 0) {
         for (j in 1:length(blocks[[i]][['BlockElements']])) {
 
