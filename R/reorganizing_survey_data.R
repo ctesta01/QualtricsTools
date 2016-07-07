@@ -862,6 +862,20 @@ split_respondents <- function(response_column, headerrows, already_loaded) {
 }
 
 
+#' Create a Response Column Dictionary
+#' 
+#' By providing the questions structured by their blocks and the original first
+#' row of the response CSV from Qualtrics, this function is able to create a 
+#' dictionary where each row is an entry for a response column. The response 
+#' columns are listed along with the data export tag of the question they correspond 
+#' to, their question stem and question choice, the question types (1, 2, and 3 levels 
+#' of question types!), and the response type. 
+#' 
+#' @param question_blocks use questions_into_blocks() to create a list of blocks with 
+#' the survey's questions inserted appropriately into them.
+#' @param orig_first_row this is the first row of the response data CSV, it is 
+#' automatically provided to you when you use get_setup() or in the shiny application.
+#' @return a dataframe detailing in each row the response columns and their description.
 create_response_column_dictionary <- function(question_blocks, orig_first_row) {
   # get the blocks, responses, and original_first_row from the global environment
   if (missing(question_blocks)) {
