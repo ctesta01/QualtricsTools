@@ -570,23 +570,35 @@ lean_responses <- function(question_blocks, survey_responses) {
 #' @param response_column The name of a response column that appears in the response set.
 #' @param responses the data frame of responses
 #' @param lean_responses responses reshaped with the lean_responses() function
+#' @param question_dict a data frame with each question response column, created by
+#' the create_response_column_dictionary() function
 #' @return a data frame with 2-3 columns, the first being "Respondent ID", the next 1-2 being the
 #' response data for each respondent.
-answers_from_response_column <- function(response_column, responses, lean_responses) {
-  # if the lean_responses are included as an argument, and the response_column given as an
-  # argument appears in the "Question Response Column" -- use the lean_responses
-  if (!missing(lean_responses) && response_column %in% lean_responses[[3]]) {
-    selected_df <- lean_responses[lean_responses[[3]] == response_column,
-                                  c(1, 9, 10)]
+answers_from_response_column <- function(response_column, responses, lean_responses, question_dict) {
+  # if the lean_responses are included as an argument, and the response_column appears
+  # in the "Question Response Column" -- use the lean_responses
+  if (!missing(question_dict) &&
+      !missing(lean_responses) &&
+      response_column %in% lean_responses[[2]]) {
+
+    # select the respondent ID, raw response, and coded response
+    # from the lean_responses data frame
+    selected_df <- lean_responses[lean_responses[[2]] == response_column,
+                                  c(1, 3, 4)]
+
+    # paste the question stem and question choice together from the
+    # question dictionary to create the column names
     names(selected_df) <- c("Respondent ID",
                             paste0("Raw Response: ",
-                                   lean_responses[lean_responses[[3]] == response_column, 4][[1]]
-                                   ),
+                                   question_dict[question_dict[[2]] == response_column, 3][[1]],
+                                   question_dict[question_dict[[2]] == response_column, 4][[1]]
+                            ),
                             paste0("Coded Response: ",
-                                   lean_responses[lean_responses[[3]] == response_column, 4][[1]]
-                                   )
-                            )
-  # otherwise, use the responses
+                                   question_dict[question_dict[[2]] == response_column, 3][[1]],
+                                   question_dict[question_dict[[2]] == response_column, 4][[1]])
+    )
+
+    # otherwise, use the responses data frame directly
   } else {
     selected_df <- responses[c(1,which(names(responses) == response_column))]
     names(selected_df) <- c("Respondent ID", response_column)
@@ -848,3 +860,110 @@ split_respondents <- function(response_column, headerrows, already_loaded) {
 
   return(split_blocks)
 }
+
+
+create_response_column_dictionary <- function(question_blocks, orig_first_row) {
+  # get the blocks, responses, and original_first_row from the global environment
+  if (missing(question_blocks)) {
+    blocks <- get("blocks", envir=1)
+  } else {
+    blocks <- question_blocks
+  }
+  if (missing(orig_first_row)) {
+    original_first_row <- get("original_first_row", envir=1)
+  } else {
+    original_first_row <- orig_first_row
+  }
+
+  # this create_entry function returns an entry (a row)
+  # to be used in the lean_responses output.
+  create_entry <- function(question, response_column, original_first_row) {
+
+    # make sure that the subselector either exists or is set to "", so that
+    # including it in an entry doesn't error
+    if (!("SubSelector" %in% names(question[['Payload']]))) {
+      question[['Payload']][['SubSelector']] <- ""
+    }
+
+    # get the choice text and append it to the question text based on the
+    # response column and the original_first_row entry in that column
+    rcol <- names(question[['Responses']])[[response_column]]
+    choice_text <- choice_text_from_response_column(rcol, original_first_row, blocks)
+
+    return(c(
+      # Question Data Export Tag:
+      question[['Payload']][['DataExportTag']],
+      # Question Response Column:
+      names(question[['Responses']])[[response_column]],
+      # Question Stem:
+      question[['Payload']][['QuestionTextClean']],
+      # Question Choice:
+      choice_text,
+      # Question Type 1:
+      question[['Payload']][['QuestionType']],
+      # Question Type 2:
+      question[['Payload']][['Selector']],
+      # Question Type 3:
+      question[['Payload']][['SubSelector']],
+      # Response Type:
+      question[['Payload']][['QuestionTypeHuman']]
+    ))
+  }
+
+  # create a dictionary as a list to store row-entries in.
+  # for each block element, try to create an entry and add it
+  # to the dictionary.
+  # TODO: does this fail well?
+  dictionary <- list()
+  e <- 0
+  for (b in 1:number_of_blocks(blocks)) {
+    if ('BlockElements' %in% names(blocks[[b]])) {
+      for (be in 1:length(blocks[[b]][['BlockElements']])) {
+        if ("Responses" %in% names(blocks[[b]][['BlockElements']][[be]])) {
+          coln <- ncol(blocks[[b]][['BlockElements']][[be]][['Responses']])
+          rown <- nrow(blocks[[b]][['BlockElements']][[be]][['Responses']])
+          if (coln > 0) {
+            for (c in 1:coln) {
+                  # if a block element has responses,
+                  # for each response column increment the dictionary index e once,
+                  # and try to add to the dictionary the entry for that
+                  # response column. If creating the entry fails, return to the
+                  # console a message saying so. 
+                  e <- e+1
+                  dictionary[[e]] <-
+                    tryCatch(create_entry(question=blocks[[b]][['BlockElements']][[be]],
+                                          response_column=c,
+                                          original_first_row=original_first_row),
+                             error = function(e) {
+                               cat(paste0("\nCreating an entry for the following question failed. \nDataExportTag: "
+                                          , blocks[[b]][['BlockElements']][[be]][['Payload']][['DataExportTag']]
+                                          , "\nResponse Column: "
+                                          , c
+                               ))
+                               return(NULL)
+                             })
+            }
+          }
+        }
+      }
+    }
+  }
+
+  # list_of_rows_to_df turns the rows into a data frame
+  dictionary <- do.call(rbind.data.frame, dictionary)
+
+  # rename the dictionary with the appropriate column names
+  names(dictionary) <- c(
+    "Question Data Export Tag",
+    "Question Response Column",
+    "Question Stem",
+    "Question Choice",
+    "Question Type 1",
+    "Question Type 2",
+    "Question Type 3",
+    "Response Type"
+  )
+
+  return(dictionary)
+}
+
