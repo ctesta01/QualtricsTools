@@ -64,7 +64,7 @@ body <- dashboardBody(
 )
 
 dashboardPage(
-  dashboardHeader(title = "Qualtrics Automation"),
+  dashboardHeader(title = "Qualtrics Tools"),
   sidebar,
   body
 )
