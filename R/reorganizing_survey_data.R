@@ -465,17 +465,14 @@ uncodeable_question_dictionary <- function(blocks) {
 #'
 #' lean_responses() creates a data frame where each row corresponds to
 #' an individual response to the survey. Each response contains
-#' the respondents' id, the question data export tag, the response column's name,
-#' the question text, the question type(s), the variable response, and the coded
-#' response, and then that individual's responses to any questions chosen for inclusion
-#' as panel data.
-#' @param panel_columns A list of names of response columns to include in the
-#' output formatted as panel data.
+#' the respondents' id, the response column's name,
+#' the variable response, and the coded
+#' response.
 #' @param question_blocks A list of blocks, with questions inserted in place of the
 #' BlockElements representing them.
 #' @param survey_responses The responses to the survey, as imported by ask_for_csv()
 #' @return a data frame with each row detailing an individual survey response.
-lean_responses <- function(panel_columns, question_blocks, survey_responses, orig_first_row) {
+lean_responses <- function(question_blocks, survey_responses) {
   # get the blocks, responses, and original_first_row from the global environment
   if (missing(question_blocks)) {
     blocks <- get("blocks", envir=1)
@@ -487,46 +484,15 @@ lean_responses <- function(panel_columns, question_blocks, survey_responses, ori
   } else {
     responses <- survey_responses
   }
-  if (missing(orig_first_row)) {
-    original_first_row <- get("original_first_row", envir=1)
-  } else {
-    original_first_row <- orig_first_row
-  }
 
   # this create_entry function returns an entry (a row)
   # to be used in the lean_responses output.
-  create_entry <- function(question, responses, response_column, response_row, original_first_row) {
-
-    # make sure that the subselector either exists or is set to "", so that
-    # including it in an entry doesn't error
-    if (!("SubSelector" %in% names(question[['Payload']]))) {
-      question[['Payload']][['SubSelector']] <- ""
-    }
-
-    # get the choice text and append it to the question text based on the
-    # response column and the original_first_row entry in that column
-    rcol <- names(question[['Responses']])[[response_column]]
-    choice_text <- choice_text_from_response_column(rcol, original_first_row, blocks)
-
+  create_entry <- function(question, responses, response_column, response_row) {
     return(c(
       # Respondent ID:
       as.character(responses[,1][[response_row]]),
-      # Question Data Export Tag:
-      question[['Payload']][['DataExportTag']],
       # Question Response Column:
       names(question[['Responses']])[[response_column]],
-      # Question Stem:
-      question[['Payload']][['QuestionTextClean']],
-      # Question Choice:
-      choice_text,
-      # Question Type 1:
-      question[['Payload']][['QuestionType']],
-      # Question Type 2:
-      question[['Payload']][['Selector']],
-      # Question Type 3:
-      question[['Payload']][['SubSelector']],
-      # Response Type:
-      question[['Payload']][['QuestionTypeHuman']],
       # Raw Response:
       toString(question[['Responses']][[response_column]][[response_row]]),
       # Coded Response:
@@ -561,8 +527,7 @@ lean_responses <- function(panel_columns, question_blocks, survey_responses, ori
                     tryCatch(create_entry(question=blocks[[b]][['BlockElements']][[be]],
                                           responses=responses,
                                           response_column=c,
-                                          response_row=r,
-                                          original_first_row=original_first_row),
+                                          response_row=r),
                              error = function(e) {
                                cat(paste0("\nCreating an entry for the following question failed. \nDataExportTag: "
                                           , blocks[[b]][['BlockElements']][[be]][['Payload']][['DataExportTag']]
@@ -586,34 +551,10 @@ lean_responses <- function(panel_columns, question_blocks, survey_responses, ori
   dictionary <- do.call(rbind.data.frame, dictionary)
   names(dictionary) <- c(
     "Respondent ID",
-    "Question Data Export Tag",
     "Question Response Column",
-    "Question Stem",
-    "Question Choice",
-    "Question Type 1",
-    "Question Type 2",
-    "Question Type 3",
-    "Response Type",
     "Raw Response",
     "Coded Response"
   )
-
-  # if there is a list of panel data included, for each
-  # use answers_from_response_column to turn that column name
-  # into panel data, then merge all the panel data together,
-  # then merge it all into the dictionary.
-  if (!missing(panel_columns)) {
-    panel_data <- list()
-    for (i in 1:length(panel_columns)) {
-      panel_data[[i]] <- answers_from_response_column(panel_columns[[i]], responses, dictionary)
-    }
-    if (length(panel_columns) > 1) {
-      panel_data <- reshape::merge_recurse(panel_data)
-      dictionary <- merge(x = dictionary, y = panel_data, by = "Respondent ID", all = TRUE)
-    } else if (length(panel_columns) == 1) {
-      dictionary <- merge(x = dictionary, y = panel_data[[1]], by = "Respondent ID", all = TRUE)
-    }
-  }
   return(dictionary)
 }
 
