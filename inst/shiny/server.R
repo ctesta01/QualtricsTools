@@ -24,6 +24,7 @@ shinyServer(
     responses <- load_csv_data(input$file2, input$file1, input$headerrows)
     original_first_row <- NULL
     if (!is.null(input$file2)) original_first_row <- read.csv(input$file2$datapath, check.names=FALSE)[1,]
+    if (is.null(input$file2)) original_first_row <- sample_original_first_row
     list_survey_and_responses <- list()
     list_survey_and_responses[[1]] <- survey
     list_survey_and_responses[[2]] <- responses
@@ -60,15 +61,12 @@ shinyServer(
   # the question_dictionary block uses the survey from the survey_and_responses output
   # to create a data frame detailing each survey question.
   question_dictionary <- reactive({
+    validate(need(length(survey_and_responses()) >= 3, "Please upload survey responses"))
     survey <- survey_and_responses()[[1]]
-    blocks <- blocks_from_survey(survey)
-    questions <- questions_from_survey(survey)
-    questions <- remove_trash_questions(questions, blocks)
-    questions <- clean_question_text(questions)
-    questions <- human_readable_qtype(questions)
-    blocks <- remove_trash_blocks(blocks)
-    blocks <- questions_into_blocks(questions, blocks)
-    create_question_dictionary(blocks)
+    original_first_row <- survey_and_responses()[[3]]
+    responses <- survey_and_responses()[[2]]
+    blocks <- get_coded_questions_and_blocks(survey, responses)[[2]]
+    create_response_column_dictionary(blocks, original_first_row)
 
   })
 
