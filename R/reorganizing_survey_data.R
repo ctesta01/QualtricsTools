@@ -850,7 +850,7 @@ split_respondents <- function(response_column, headerrows, already_loaded) {
     split_blocks[[i]] <- questions_into_blocks(split_questions[[i]], split_blocks[[i]])
     split_blocks[[i]][['header']] <- c(split_blocks[[i]][['header']],
                                        paste0("Survey Respondents who had ",
-                                              names(split_responses)[[1]],
+                                              names(split_responses)[[i]],
                                               " in the ",
                                               response_column,
                                               " column"),
