@@ -9,6 +9,9 @@ License: BSD
 LazyData: true
 Imports:
     gdata,
+    gtools,
+    httptools,
+    httpuv,
     magrittr,
     reshape,
     rjson,
