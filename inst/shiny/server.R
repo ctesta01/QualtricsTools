@@ -21,7 +21,9 @@ shinyServer(
            The following questions were duplicated: ",
                   paste(duplicate_tags, collapse=", ")))
       )
-    responses <- load_csv_data(input$file2, input$file1, input$headerrows)
+    if (input$insights_or_not == TRUE) headerrows <- 3
+    if (input$insights_or_not == FALSE) headerrows <- 2
+    responses <- load_csv_data(input$file2, input$file1, headerrows)
     original_first_row <- NULL
     if (!is.null(input$file2)) original_first_row <- read.csv(input$file2$datapath, check.names=FALSE)[1,]
     if (is.null(input$file2)) original_first_row <- sample_original_first_row

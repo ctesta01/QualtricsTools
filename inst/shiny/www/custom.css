@@ -1,9 +1,18 @@
-// text appendices are more readable
-// this way.
+/* text appendices are more readable
+ * this way. */
 .text_appendices tr:nth-child(-n+4) {
 	text-align: center;
 }
 
+/* format the question_description of 
+ * the text appendices to have a bolded
+ * header */
+.question_description tr:nth-child(n+3) {
+  font-weight: bold;
+}
+
+/* style the sidebar to have 
+ * uniform padding */ 
 ul.treeview-menu.menu-open {
   padding-bottom: 10px;
 }
@@ -12,10 +21,8 @@ ul.treeview-menu.menu-open {
 	margin-left: 20px;
 }
 
-.question_description tr:nth-child(n+3) {
-  font-weight: bold;
-}
-
+/* style the quit button to stay 
+ * at the bottom of the window */ 
 #quit {
   position:fixed;
   bottom:0;
@@ -23,3 +30,11 @@ ul.treeview-menu.menu-open {
   margin-left: 20px;
   margin-bottom: 10px;
 }  
+
+/* styling for the sidebar text describing 
+ * the Insights? button */
+.sidebar-text {
+  white-space:normal!important;
+  padding-left:12px;
+  padding-right:12px;
+}

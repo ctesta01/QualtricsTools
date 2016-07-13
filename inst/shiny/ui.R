@@ -13,7 +13,9 @@ sidebar <- dashboardSidebar(
                        'Choose CSV Response Set File',
                        accept=c('text/csv', 'text/comma-separated-values', '.csv')
              ),
-             numericInput("headerrows", "How many header rows are there in the responses?", 3, min = 1)
+             div(class="sidebar-text",
+                 HTML("Was the CSV exported using the <a href=''>Insights format</a>?")),
+             checkboxInput("insights_or_not", "Insights?", value = TRUE, width = NULL)
              ),
              menuItem("Processed Results", tabName="report", icon=icon("tasks")),
 
