@@ -18,6 +18,7 @@ sidebar <- dashboardSidebar(
              checkboxInput("insights_or_not", "Insights?", value = TRUE, width = NULL)
              ),
              menuItem("Processed Results", tabName="report", icon=icon("tasks")),
+             menuItem("Include/Exclude Responses", tabName="include_exclude", icon=icon("toggle-on")),
 
              # empty h5 headers below are for spacing
 
@@ -61,8 +62,15 @@ body <- dashboardBody(
               )
       )
     )
-  )
-  )
+  ),
+  tabItem(tabName = "include_exclude",
+          fluidRow(
+            column(width=12,
+            h2('Include or Exclude Specific Response Columns'),
+            actionButton("selectAll", "Unselect/Select All"),
+              dataTableOutput("select_qdict")
+              )
+  )))
 )
 
 dashboardPage(

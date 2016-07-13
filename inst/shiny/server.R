@@ -21,9 +21,10 @@ shinyServer(
            The following questions were duplicated: ",
                   paste(duplicate_tags, collapse=", ")))
       )
-    if (input$insights_or_not == TRUE) headerrows <- 3
-    if (input$insights_or_not == FALSE) headerrows <- 2
+    if (input[['insights_or_not']] == TRUE) headerrows <- 3
+    if (input[['insights_or_not']] == FALSE) headerrows <- 2
     responses <- load_csv_data(input$file2, input$file1, headerrows)
+    if (!is.null(input[['selected_responses']])) responses <- responses[input[['selected_responses']]]
     original_first_row <- NULL
     if (!is.null(input$file2)) original_first_row <- read.csv(input$file2$datapath, check.names=FALSE)[1,]
     if (is.null(input$file2)) original_first_row <- sample_original_first_row
@@ -63,10 +64,11 @@ shinyServer(
   # the question_dictionary block uses the survey from the survey_and_responses output
   # to create a data frame detailing each survey question.
   question_dictionary <- reactive({
-    validate(need(length(survey_and_responses()) >= 3, "Please upload survey responses"))
-    survey <- survey_and_responses()[[1]]
-    original_first_row <- survey_and_responses()[[3]]
-    responses <- survey_and_responses()[[2]]
+    survey <- try(load_qsf_data(input$file1))
+    original_first_row <- NULL
+    if (!is.null(input$file2)) original_first_row <- read.csv(input$file2$datapath, check.names=FALSE)[1,]
+    if (is.null(input$file2)) original_first_row <- sample_original_first_row
+    responses <- load_csv_data(input[['file2']], input[['file1']], 3)
     blocks <- get_coded_questions_and_blocks(survey, responses)[[2]]
     create_response_column_dictionary(blocks, original_first_row)
 
@@ -109,6 +111,24 @@ shinyServer(
                                                 ))
   output$text_appendices <- renderUI(div(HTML(text_appendices()), class="shiny-html-output"))
   output$display_logic <- renderUI(div(HTML(display_logic()), class="shiny-html-output"))
+
+
+  # Include/Exclude Questions
+  output$select_qdict = renderDataTable({
+    addCheckboxButtons <- paste0('<input type="checkbox" checked name="selected_responses', question_dictionary()[['id']], '" value="', question_dictionary()[['id']], '">',"")
+    #Display table with checkbox buttons
+    cbind(Include=addCheckboxButtons, question_dictionary())
+  }, options = list(orderClasses = TRUE,
+                    lengthMenu = c(5, 25, 50),
+                    pageLength = 25)
+  , escape = FALSE
+  , callback = "function(table) {
+  table.on('change.dt', 'tr td input:checkbox', function() {
+  Shiny.onInputChange('selected_responses', $(this).add('tr td input:checkbox:checked').parent().siblings(':nth-child(3)').map(function() {
+  return $(this).text();
+  }).get())
+  });
+  }")
 
 
   # Download Buttons
