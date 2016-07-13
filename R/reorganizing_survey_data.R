@@ -1119,8 +1119,14 @@ create_merged_response_column <- function(response_columns,
     merged_col[[i]] <- paste(to_merge, collapse=" + ")
   }
 
+  # save the original rownames of the responses, 
+  # cbind the new column in,
+  # if there was an output column name provided, use it to name the added column
+  # and replace the rownames with the original rownames
+  orig_rownames <- rownames(responses)
   responses <- cbind(responses, t(as.data.frame(merged_col)))
   if (!missing(col_name)) names(responses)[length(names(responses))] <- col_name
+  rownames(responses) <- orig_rownames
 
   return(responses)
   }
