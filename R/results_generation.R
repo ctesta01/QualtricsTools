@@ -119,14 +119,14 @@ mc_multiple_answer_results <- function(question) {
   # all the column names (after having their data export tag removed) are
   # contained in the RecodeValues list.
   if ("RecodeValues" %in% names(question[['Payload']]) && all(names(N) %in% question[['Payload']][['RecodeValues']])) {
-    names(N) <- sapply(names(N), function(x) which(question[['Payload']][['RecodeValues']] == x))
+    names(N) <- sapply(names(N), function(x) names(question[['Payload']][['RecodeValues']])[which(question[['Payload']][['RecodeValues']] == x)])
   }
 
   # After recoding the choices, grab their choice text.
   # Clean the choice text of HTML, and format the data as percents.
-  choices <- sapply(names(N), function(x) question[['Payload']][['Choices']][[x]][[1]])
+  choices <- lapply(names(N), function(x) question[['Payload']][['Choices']][[x]][[1]])
+  choices <- lapply(choices, clean_html)
   choices <- unlist(choices, use.names = FALSE)
-  choices <- sapply(choices, clean_html)
   N <- unlist(N, use.names = FALSE)
   Percent <- percent0(N / respondents_count)
 
@@ -216,12 +216,12 @@ matrix_single_answer_results <- function(question) {
     }
 
     # get the answer names for the response table's vertical "answer" components
-    answers_uncoded <- sapply(colnames(responses), function(x)
+    answers_uncoded <- sapply(response_names_without_export_tag, function(x)
       names(question[['Payload']][['RecodeValues']][which(question[['Payload']][['RecodeValues']] == x)])[[1]])
     answers <- sapply(answers_uncoded, function(x) question[['Payload']][['Answers']][[x]][[1]])
     answers <- unlist(answers, use.names = FALSE)
   } else {
-    answers <- sapply(colnames(responses), function(x) question[['Payload']][['Answers']][[x]][[1]])
+    answers <- sapply(response_names_without_export_tag, function(x) question[['Payload']][['Answers']][[x]][[1]])
   }
   answers <- sapply(answers, clean_html)
   colnames(responses) <- answers

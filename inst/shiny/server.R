@@ -124,9 +124,11 @@ shinyServer(
   , escape = FALSE
   , callback = "function(table) {
   table.on('change.dt', 'tr td input:checkbox', function() {
+setTimeout(function () {
   Shiny.onInputChange('selected_responses', $(this).add('tr td input:checkbox:checked').parent().siblings(':nth-child(3)').map(function() {
   return $(this).text();
   }).get())
+}, 10);
   });
   }")
 
