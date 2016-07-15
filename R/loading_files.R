@@ -69,7 +69,7 @@ ask_for_csv <- function(responsesfile, headerrows) {
         responsesfile = file.choose()
     }
     if (missing(headerrows)) {
-      headerrows <- 2
+      headerrows <- 3
     }
     responses = read.csv(responsesfile, check.names=FALSE)
     responses[which(colnames(responses) == "")] <- NULL
