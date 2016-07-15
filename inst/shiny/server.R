@@ -41,7 +41,7 @@ shinyServer(
       survey <- survey_and_responses()[[1]]
       responses <- survey_and_responses()[[2]]
       original_first_rows <- survey_and_responses()[[3]]
-      questions <- get_coded_questions_and_blocks(survey, responses)[[1]]
+      questions <- get_coded_questions_and_blocks(survey, responses, original_first_rows)[[1]]
       uncodeable_questions_message(questions)
     }
   })
@@ -55,7 +55,7 @@ shinyServer(
       survey <- survey_and_responses()[[1]]
       responses <- survey_and_responses()[[2]]
       original_first_rows <- survey_and_responses()[[3]]
-      blocks <- get_coded_questions_and_blocks(survey, responses)[[2]]
+      blocks <- get_coded_questions_and_blocks(survey, responses, original_first_rows)[[2]]
       c(blocks_header_to_html(blocks),
         tabelize_blocks(blocks))
     }
@@ -71,7 +71,7 @@ shinyServer(
     original_first_row <- survey_and_responses()[[3]][1, ]
     responses <- survey_and_responses()[[2]]
     original_first_rows <- survey_and_responses()[[3]]
-    blocks <- get_coded_questions_and_blocks(survey, responses)[[2]]
+    blocks <- get_coded_questions_and_blocks(survey, responses, original_first_rows)[[2]]
     create_response_column_dictionary(blocks, original_first_row)
     }
   })
@@ -82,7 +82,7 @@ shinyServer(
       survey <- survey_and_responses()[[1]]
       responses <- survey_and_responses()[[2]]
       original_first_rows <- survey_and_responses()[[3]]
-      blocks <- get_coded_questions_and_blocks(survey, responses)[[2]]
+      blocks <- get_coded_questions_and_blocks(survey, responses, original_first_rows)[[2]]
       original_first_row <- original_first_rows[1,]
       c(blocks_header_to_html(blocks),
         text_appendices_table(blocks, original_first_row))
