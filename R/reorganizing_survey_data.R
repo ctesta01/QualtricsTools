@@ -8,6 +8,7 @@
 #'
 #' @param survey A qualtrics survey, uploaded from a qsf/json file
 #' @param responses Qualtrics responses to a survey, uploaded from csv as a data frame
+#' @param original_first_rows The original header rows to the CSV response set
 #'
 #' @return a list with two elements, the first being the survey questions,
 #' and the second being the survey blocks
@@ -175,7 +176,13 @@ remove_trash_blocks <- function(blocks) {
 #' Link Responses to Questions
 #'
 #' The columns of the response data must be matched up to their corresponding
-#' questions and question-parts in order to analyze them. To do so,
+#' questions and question-parts in order to analyze them. One of two methods is employed, depending 
+#' on whether or not the original_first_rows are from Insights or Legacy data. 
+#' 
+#' If Insights data is used, each question is looped through and the QuestionIDs are used to 
+#' match response columns to a question. 
+#' 
+#' Otherwise, a much more complicated process is used:
 #' each question is looped through, determining the DataExportTag of the question,
 #' and the ChoiceDataExportTags of the question. The DataExportTag might look
 #' like a variable name that has been set by the user in Qualtrics, or an
@@ -195,6 +202,7 @@ remove_trash_blocks <- function(blocks) {
 #'
 #' @param questions A list of questions selected from a Qualtrics survey
 #' @param responses A data frame of responses from a Qualtrics survey
+#' @param original_first_rows The original header rows to the CSV response set
 #'
 #' @return The updated list of questions, each including its relevant response columns
 #' as a data frame stored in [['Responses']].
