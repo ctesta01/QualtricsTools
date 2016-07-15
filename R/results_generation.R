@@ -218,12 +218,12 @@ matrix_single_answer_results <- function(question) {
     # get the answer names for the response table's vertical "answer" components
     answers_uncoded <- sapply(colnames(responses), function(x)
       names(question[['Payload']][['RecodeValues']][which(question[['Payload']][['RecodeValues']] == x)])[[1]])
-    answers <- sapply(answers_uncoded, function(x) question[['Payload']][['Answers']][[x]][[1]])
+    answers <- lapply(answers_uncoded, function(x) question[['Payload']][['Answers']][[x]][[1]])
     answers <- unlist(answers, use.names = FALSE)
   } else {
     answers <- sapply(colnames(responses), function(x) question[['Payload']][['Answers']][[x]][[1]])
   }
-  answers <- sapply(answers, clean_html)
+  answers <- lapply(answers, clean_html)
   colnames(responses) <- answers
 
   # create the responses table, a table detailing the
