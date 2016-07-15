@@ -205,7 +205,7 @@ link_responses_to_questions <- function (questions, responses, original_first_ro
       matching_responses <- which(grepl(paste0(question_id, "[#-_]"), original_first_rows[2,]))
       if (length(matching_responses) > 0) {
         matching_responses <- colnames(original_first_rows)[matching_responses]
-        matching_responses <- responses[matching_responses]
+        matching_responses <- as.data.frame(responses)[, matching_responses]
         questions[[i]][['Responses']] <- as.data.frame(matching_responses)
       }
     }
