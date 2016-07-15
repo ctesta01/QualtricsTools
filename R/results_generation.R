@@ -314,7 +314,12 @@ matrix_multiple_answer_results <- function(question) {
 
   # remove the data export tag from the column headers of the response data
   export_tag <- question[['Payload']][['DataExportTag']]
-  names(orig_responses) <- gsub(paste0(export_tag, "_"), "", names(orig_responses))
+  export_tags <- c(paste0(export_tag, "[-#_]"), paste0(gsub("#", "_", export_tag), "[-#_]"), paste0(gsub("-", "_", export_tag), "[-#_]"))
+  export_tags <- paste(export_tags, collapse="|")
+  names(orig_responses) <- gsub(export_tags, "", names(orig_responses))
+  if ("AnswerDataExportTag" %in% names(question[['Payload']])) {
+    names(orig_responses) <- gsub(paste0("_", question[['Payload']][['AnswerDataExportTag']]), "", names(orig_responses))
+  }
 
   # responses_by_answers is for separating the responses to
   # each answer row.
@@ -328,9 +333,9 @@ matrix_multiple_answer_results <- function(question) {
     # for each answer, save response columns that start with that answer.
     responses_by_answers[[ans]] <- list()
     responses_by_answers[[ans]][['responses']] <- list()
-    responses_by_answers[[ans]][['responses']] <- orig_responses[,
+    responses_by_answers[[ans]][['responses']] <- as.data.frame(orig_responses[,
                                                                  which(gdata::startsWith(names(orig_responses), ans))
-                                                                 ]
+                                                                 ])
 
     # remove the answer from the column name
     colnames(responses_by_answers[[ans]][['responses']]) <-
