@@ -24,14 +24,12 @@ shinyServer(
     if (input[['insights_or_not']] == TRUE) headerrows <- 3
     if (input[['insights_or_not']] == FALSE) headerrows <- 2
     responses <- load_csv_data(input$file2, input$file1, headerrows)
-    if (!is.null(input[['selected_responses']])) responses <- responses[input[['selected_responses']]]
-    original_first_row <- NULL
-    if (!is.null(input$file2)) original_first_row <- read.csv(input$file2$datapath, check.names=FALSE)[1,]
-    if (is.null(input$file2)) original_first_row <- sample_original_first_row
+    original_first_rows <- responses[[2]]
+    responses <- responses[[1]]
     list_survey_and_responses <- list()
     list_survey_and_responses[[1]] <- survey
     list_survey_and_responses[[2]] <- responses
-    list_survey_and_responses[[3]] <- original_first_row
+    list_survey_and_responses[[3]] <- original_first_rows
     return(list_survey_and_responses)
     })
 
@@ -64,14 +62,15 @@ shinyServer(
   # the question_dictionary block uses the survey from the survey_and_responses output
   # to create a data frame detailing each survey question.
   question_dictionary <- reactive({
-    survey <- try(load_qsf_data(input$file1))
-    original_first_row <- NULL
-    if (!is.null(input$file2)) original_first_row <- read.csv(input$file2$datapath, check.names=FALSE)[1,]
-    if (is.null(input$file2)) original_first_row <- sample_original_first_row
-    responses <- load_csv_data(input[['file2']], input[['file1']], 3)
+    validate(need(length(survey_and_responses()) >= 3, ""))
+    if (length(survey_and_responses()) >= 3) {
+
+    survey <- survey_and_responses()[[1]]
+    original_first_row <- survey_and_responses()[[3]][1, ]
+    responses <- survey_and_responses()[[2]]
     blocks <- get_coded_questions_and_blocks(survey, responses)[[2]]
     create_response_column_dictionary(blocks, original_first_row)
-
+    }
   })
 
   text_appendices <- reactive({
@@ -80,7 +79,7 @@ shinyServer(
       survey <- survey_and_responses()[[1]]
       responses <- survey_and_responses()[[2]]
       original_first_row <- NULL
-      if (length(survey_and_responses()) >= 3) original_first_row <- survey_and_responses()[[3]]
+      if (length(survey_and_responses()) >= 3) original_first_row <- survey_and_responses()[[3]][1,]
       blocks <- get_coded_questions_and_blocks(survey, responses)[[2]]
       c(blocks_header_to_html(blocks),
         text_appendices_table(blocks, original_first_row))
