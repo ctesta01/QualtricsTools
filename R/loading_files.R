@@ -10,7 +10,7 @@
 #' @return The return value is the responses data frame
 load_csv_data <- function(file2, file1, headerrows) {
     if (is.null(file2) && is.null(file1)) {
-      responses <- sample_responses
+      responses <- list(sample_responses, original_first_rows)
     } else if (is.null(file2)) {
       responses <- NULL
     } else {
