@@ -71,12 +71,20 @@ ask_for_csv <- function(responsesfile, headerrows) {
     if (missing(headerrows)) {
       headerrows <- 3
     }
-    responses = read.csv(responsesfile, check.names=FALSE)
+    responses = read.csv(responsesfile, check.names = FALSE, stringsAsFactors = FALSE)
     responses[which(colnames(responses) == "")] <- NULL
-    responses <- responses[headerrows:nrow(responses),]
-    responses <- responses[apply(responses,1,function(x)any(x != "")),]
+    original_first_rows <- responses[1:(headerrows-1),]
 
-    return(responses)
+    if (headerrows == 3) {
+      original_first_rows[2,] <- lapply(original_first_rows[2, ], function(x) {
+        x <- gsub("^\\{'ImportId': '", "", x, perl=TRUE)
+        x <- gsub("'\\}$", "", x, perl=TRUE)
+      })
+    }
+
+    responses <- responses[headerrows:nrow(responses),]
+    responses <- responses[apply(responses, 1, function(x) any(x != "")),]
+    return(list(responses, original_first_rows))
 }
 
 
