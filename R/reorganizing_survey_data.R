@@ -204,11 +204,7 @@ link_responses_to_questions <- function (questions, responses, original_first_ro
       question_id <- questions[[i]][['Payload']][['QuestionID']]
       matching_responses <- which(grepl(paste0(question_id, "[#-_]"), original_first_rows[2,]))
       if (length(matching_responses) > 0) {
-        cat(matching_responses)
-        cat("\n")
         matching_responses <- colnames(original_first_rows)[matching_responses]
-        cat(matching_responses)
-        cat("\n")
         matching_responses <- responses[matching_responses]
         questions[[i]][['Responses']] <- as.data.frame(matching_responses)
       }
