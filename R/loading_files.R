@@ -58,11 +58,16 @@ ask_for_qsf <- function(surveyfile) {
 
 #' Ask the user for the Qualtrics Response Set
 #'
-#' This function automatically turns the entries in the
-#' first row into a "text" attribute of the column. Additionally,
-#' it removes the first row after turning its entries into attributes.
-#'
-#' @return The csv file the user uploads, as a data frame
+#' ask_for_csv() inputs a file and a number of headerrows and returns a 
+#' list containing a responses data frame, and a 1-2 row data frame of the 
+#' responses' headers. Both input parameters are optional in the sense that 
+#' they do not have to be provided inline to the function, and that the 
+#' function will ask the user to choose a file for the responsesfile if one is 
+#' not provided inline, and it will default to using 3 headerrows. 
+#' 
+#' @param responsesfile this is the file path of a CSV response set to a Qualtrics survey
+#' @param headerrows the number of rows before responses begin in the CSV data
+#' @return a list of two elements: the responses data frame, and the original_first_rows data frame
 ask_for_csv <- function(responsesfile, headerrows) {
     if (missing(responsesfile)) {
         print("Select CSV Response File:")
