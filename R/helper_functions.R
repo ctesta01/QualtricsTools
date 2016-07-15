@@ -122,7 +122,7 @@ app <- function() {
 #' headerrows in the response csv.
 get_setup <- function(headerrows, already_loaded) {
   if (missing(headerrows)) {
-    headerrows <- 2
+    headerrows <- 3
   }
 
   if (missing(already_loaded)) {
@@ -131,11 +131,9 @@ get_setup <- function(headerrows, already_loaded) {
 
   if (already_loaded == FALSE) {
     try(survey <<- ask_for_qsf())
-    print("Select CSV Response File:")
-    responsesfile = file.choose()
-    responses = read.csv(responsesfile, check.names=FALSE)
-    original_first_row <<- responses[1,]
-    responses <<- ask_for_csv(responsesfile, headerrows=headerrows)
+    try(responses <- ask_for_csv())
+    original_first_rows <<- responses[[2]]
+    responses <<- responses[[1]]
   }
 
   if (already_loaded == TRUE) {
@@ -147,9 +145,10 @@ get_setup <- function(headerrows, already_loaded) {
 
     if (!exists("responses", where = -1)) {
       responses <- sample_responses
-      original_first_row <<- sample_original_first_row
+      original_first_rows <<- sample_original_first_rows
     } else {
       responses <- get("responses", envir=-1)
+      original_first_rows <- get("original_first_rows", envir=1)
     }
   }
 
@@ -164,16 +163,17 @@ get_setup <- function(headerrows, already_loaded) {
   try(questions_and_blocks <- split_side_by_sides(questions, blocks))
   questions <- questions_and_blocks[[1]]
   blocks <- questions_and_blocks[[2]]
-  questions <- link_responses_to_questions(questions, responses)
+  questions <- link_responses_to_questions(questions, responses, original_first_rows)
   try(questions <<- generate_results(questions))
   try(blocks <<- questions_into_blocks(questions, blocks))
 
   if ( exists("survey", 1) &&
        exists("responses", 1) &&
        exists("questions", 1) &&
-       exists("blocks", 1)
+       exists("blocks", 1) &&
+       exists("original_first_rows")
   ) {
-    cat("The survey, responses, the response set's original_first_row, questions, and blocks variables have all been made globally available in your R session.")
+    cat("The survey, responses, the response set's original_first_rows, questions, and blocks variables have all been made globally available in your R session.")
   }
 }
 
