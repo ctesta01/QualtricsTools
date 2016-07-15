@@ -11,7 +11,7 @@
 #'
 #' @return a list with two elements, the first being the survey questions,
 #' and the second being the survey blocks
-get_coded_questions_and_blocks <- function(survey, responses) {
+get_coded_questions_and_blocks <- function(survey, responses, original_first_rows) {
   # select the block elements from the survey
   blocks <- blocks_from_survey(survey)
 
@@ -39,7 +39,7 @@ get_coded_questions_and_blocks <- function(survey, responses) {
 
   # insert the response columns into their corresponding
   # question under question[['Responses']]
-  questions <- link_responses_to_questions(questions, responses)
+  questions <- link_responses_to_questions(questions, responses, original_first_rows)
 
   # generate each question's results table and insert it
   # in question[['Table']]
@@ -198,42 +198,58 @@ remove_trash_blocks <- function(blocks) {
 #'
 #' @return The updated list of questions, each including its relevant response columns
 #' as a data frame stored in [['Responses']].
-link_responses_to_questions <- function (questions, responses) {
+link_responses_to_questions <- function (questions, responses, original_first_rows) {
+  if (!missing(original_first_rows) && nrow(original_first_rows) >= 2) {
     for (i in 1:length(questions)) {
-        # create a string with the data export tag and an underscore
-        # create a string with the data export tag and a period
-        export_tag_with_underscore <- paste0( questions[[i]][['Payload']][['DataExportTag']], "_" )
-        export_tag_with_period <- paste0( questions[[i]][['Payload']][['DataExportTag']], "." )
-        export_tag_with_hashtag <- paste0( questions[[i]][['Payload']][['DataExportTag']], "#" )
-
-        # there's also the possibility that a response column starts
-        # with a choice data export tag from a question.
-        # this unlists the choice data export tags and creates
-        # a list of response columns that start with a choice data export tag.
-        starts_with_choice_export_tags <- vector('integer')
-        if ("ChoiceDataExportTags" %in% names(questions[[i]][['Payload']])) {
-          choice_export_tags <- unlist(questions[[i]][['Payload']][['ChoiceDataExportTags']])
-          choice_export_tags <- sapply(choice_export_tags, function(x) gsub("-", "_", x))
-          for (j in choice_export_tags) {
-            starts_with_choice_export_tags <- c(starts_with_choice_export_tags,
-                                                which(gdata::startsWith(names(responses), j)))
-          }
-        }
-
-        # the response columns that match a question are the ones that:
-        # - start with a data export tag followed by a underscore,
-        # - start with a data export tag followed by a period,
-        # - match the data export tag exactly,
-        # - start with a choice data export tag.
-        # take those matching response columns and join them to the question under [['Responses']]
-        matching_responses <- c(which(gdata::startsWith(names(responses), export_tag_with_underscore)),
-                                which(gdata::startsWith(names(responses), export_tag_with_period)),
-                                which(gdata::startsWith(names(responses), export_tag_with_hashtag)),
-                                which(names(responses) == questions[[i]][['Payload']][['DataExportTag']]),
-                                starts_with_choice_export_tags)
-        questions[[i]][['Responses']] <- as.data.frame(responses[unique(matching_responses)])
+      question_id <- questions[[i]][['Payload']][['QuestionID']]
+      matching_responses <- which(grepl(paste0(question_id, "[#-_]"), original_first_rows[2,]))
+      if (length(matching_responses) > 0) {
+        cat(matching_responses)
+        cat("\n")
+        matching_responses <- colnames(original_first_rows)[matching_responses]
+        cat(matching_responses)
+        cat("\n")
+        matching_responses <- responses[matching_responses]
+        questions[[i]][['Responses']] <- as.data.frame(matching_responses)
+      }
     }
-    questions
+  } else if (missing(original_first_rows) || !missing(original_first_rows) && nrow(original_first_rows) < 2) {
+    for (i in 1:length(questions)) {
+      # create a string with the data export tag and an underscore
+      # create a string with the data export tag and a period
+      export_tag_with_underscore <- paste0( questions[[i]][['Payload']][['DataExportTag']], "_" )
+      export_tag_with_period <- paste0( questions[[i]][['Payload']][['DataExportTag']], "." )
+      export_tag_with_hashtag <- paste0( questions[[i]][['Payload']][['DataExportTag']], "#" )
+
+      # there's also the possibility that a response column starts
+      # with a choice data export tag from a question.
+      # this unlists the choice data export tags and creates
+      # a list of response columns that start with a choice data export tag.
+      starts_with_choice_export_tags <- vector('integer')
+      if ("ChoiceDataExportTags" %in% names(questions[[i]][['Payload']])) {
+        choice_export_tags <- unlist(questions[[i]][['Payload']][['ChoiceDataExportTags']])
+        choice_export_tags <- sapply(choice_export_tags, function(x) gsub("-", "_", x))
+        for (j in choice_export_tags) {
+          starts_with_choice_export_tags <- c(starts_with_choice_export_tags,
+                                              which(gdata::startsWith(names(responses), j)))
+        }
+      }
+
+      # the response columns that match a question are the ones that:
+      # - start with a data export tag followed by a underscore,
+      # - start with a data export tag followed by a period,
+      # - match the data export tag exactly,
+      # - start with a choice data export tag.
+      # take those matching response columns and join them to the question under [['Responses']]
+      matching_responses <- c(which(gdata::startsWith(names(responses), export_tag_with_underscore)),
+                              which(gdata::startsWith(names(responses), export_tag_with_period)),
+                              which(gdata::startsWith(names(responses), export_tag_with_hashtag)),
+                              which(names(responses) == questions[[i]][['Payload']][['DataExportTag']]),
+                              starts_with_choice_export_tags)
+      questions[[i]][['Responses']] <- as.data.frame(responses[unique(matching_responses)])
+    }
+  }
+  return(questions)
 }
 
 
@@ -1119,7 +1135,7 @@ create_merged_response_column <- function(response_columns,
     merged_col[[i]] <- paste(to_merge, collapse=" + ")
   }
 
-  # save the original rownames of the responses, 
+  # save the original rownames of the responses,
   # cbind the new column in,
   # if there was an output column name provided, use it to name the added column
   # and replace the rownames with the original rownames
