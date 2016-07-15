@@ -183,9 +183,15 @@ matrix_single_answer_results <- function(question) {
   # The choice export tags also have "-" replaced with "_" whenever they're used as response
   # headers. We check if the response columns are exactly the choice data export tags,
   # or if they are the choice export tags prepended with the data export tags.
+  export_tag <- question[['Payload']][['DataExportTag']]
+  export_tags <- c(export_tag, gsub("#", "_", export_tag), gsub("-", "_", export_tag))
+  export_tags <- sapply(export_tags, function(x) paste0(x, "[-#_]"))
+  export_tags <- paste(export_tags, collapse="|")
   choice_export_tags_with_underscores <- sapply(question[['Payload']][['ChoiceDataExportTags']], function(x) gsub("-", "_", x))
-  response_names_without_export_tag <- gsub(paste0(question[['Payload']][['DataExportTag']], "_"), "", names(orig_responses))
-
+  response_names_without_export_tag <- gsub(export_tags, "", names(orig_responses))
+  if ("AnswerDataExportTag" %in% names(question[['Payload']])) {
+    response_names_without_export_tag <- gsub(paste0("_", question[['Payload']][['AnswerDataExportTag']]), "", response_names_without_export_tag)
+  }
 
 
   if ("RecodeValues" %in% names(question[['Payload']]) && length(question[['Payload']][['RecodeValues']]) > 0) {
@@ -257,9 +263,8 @@ matrix_single_answer_results <- function(question) {
     # response column name, and try to retrieve it directly from the
     # list of choices using the rest of the response column name.
   } else {
-    export_tag_with_underscore <- paste0(question[['Payload']][['DataExportTag']], "_")
     choices <- sapply(rownames(responses), function(x)
-      question[['Payload']][['Choices']][[gsub(export_tag_with_underscore, "", x)]][[1]])
+      question[['Payload']][['Choices']][[gsub(export_tags, "", x)]][[1]])
   }
 
   # The choices can contain information like DisplayLogic and
