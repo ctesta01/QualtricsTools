@@ -36,7 +36,7 @@ shinyServer(
   # the uncodeable_message reactive block reacts to the survey_and_responses() block
   # with a message indicating which, if any, questions were not properly processed.
   uncodeable_message <- reactive({
-    validate(need(length(survey_and_responses()) >= 2, "Please upload survey responses"))
+    validate(need(length(survey_and_responses()) >= 3, "Please upload the survey and responses"))
     if (length(survey_and_responses()) >= 2) {
       survey <- survey_and_responses()[[1]]
       responses <- survey_and_responses()[[2]]
@@ -49,7 +49,7 @@ shinyServer(
   # by processing the survey and responses into blocks with results tables inserted,
   # and then converting the results tables to HTML tables.
   results_tables <- reactive({
-    validate(need(length(survey_and_responses()) >= 2, ""))
+    validate(need(length(survey_and_responses()) >= 3, ""))
     if (length(survey_and_responses()) >= 2) {
       survey <- survey_and_responses()[[1]]
       responses <- survey_and_responses()[[2]]
@@ -74,7 +74,7 @@ shinyServer(
   })
 
   text_appendices <- reactive({
-    validate(need(length(survey_and_responses()) >= 2, "Please upload survey responses"))
+    validate(need(length(survey_and_responses()) >= 2, "Please upload the survey and responses"))
     if (length(survey_and_responses()) >= 2) {
       survey <- survey_and_responses()[[1]]
       responses <- survey_and_responses()[[2]]
@@ -87,7 +87,7 @@ shinyServer(
   })
 
   display_logic <- reactive({
-    validate(need(length(survey_and_responses()) >= 1, "Please upload survey responses"))
+    validate(need(length(survey_and_responses()) >= 1, "Please upload the survey and responses"))
     if (length(survey_and_responses()) >= 1) {
       survey <- survey_and_responses()[[1]]
       blocks <- blocks_from_survey(survey)
