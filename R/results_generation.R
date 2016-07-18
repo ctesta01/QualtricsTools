@@ -333,9 +333,8 @@ matrix_multiple_answer_results <- function(question) {
     # for each answer, save response columns that start with that answer.
     responses_by_answers[[ans]] <- list()
     responses_by_answers[[ans]][['responses']] <- list()
-    responses_by_answers[[ans]][['responses']] <- as.data.frame(orig_responses[,
-                                                                 which(gdata::startsWith(names(orig_responses), ans))
-                                                                 ])
+    responses_by_answers[[ans]][['responses']] <-
+      orig_responses[which(gdata::startsWith(names(orig_responses), ans))]
 
     # remove the answer from the column name
     colnames(responses_by_answers[[ans]][['responses']]) <-
