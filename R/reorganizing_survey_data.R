@@ -176,12 +176,12 @@ remove_trash_blocks <- function(blocks) {
 #' Link Responses to Questions
 #'
 #' The columns of the response data must be matched up to their corresponding
-#' questions and question-parts in order to analyze them. One of two methods is employed, depending 
-#' on whether or not the original_first_rows are from Insights or Legacy data. 
-#' 
-#' If Insights data is used, each question is looped through and the QuestionIDs are used to 
-#' match response columns to a question. 
-#' 
+#' questions and question-parts in order to analyze them. One of two methods is employed, depending
+#' on whether or not the original_first_rows are from Insights or Legacy data.
+#'
+#' If Insights data is used, each question is looped through and the QuestionIDs are used to
+#' match response columns to a question.
+#'
 #' Otherwise, a much more complicated process is used:
 #' each question is looped through, determining the DataExportTag of the question,
 #' and the ChoiceDataExportTags of the question. The DataExportTag might look
@@ -655,7 +655,7 @@ split_side_by_sides <- function(questions, blocks) {
         # question text will include the SBS question's original question text and the
         # specific question component's question text.
         split_questions[[j]][['Payload']][['QuestionTextClean']] <- paste0(
-          questions[[i]][['Payload']][['QuestionText']],
+          clean_html(questions[[i]][['Payload']][['QuestionText']]),
           "-",
           clean_html(questions[[i]][['Payload']][['AdditionalQuestions']][[as.character(j)]][['QuestionText']])
         )
