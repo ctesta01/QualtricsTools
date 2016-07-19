@@ -130,10 +130,12 @@ get_setup <- function(headerrows, already_loaded) {
   }
 
   if (already_loaded == FALSE) {
-    try(survey <<- ask_for_qsf())
-    try(responses <- ask_for_csv())
-    original_first_rows <<- responses[[2]]
-    responses <<- responses[[1]]
+    try(survey <- ask_for_qsf())
+    try(responses <- ask_for_csv(headerrows=headerrows))
+    original_first_rows <- as.data.frame(responses[[2]])
+    responses <- as.data.frame(responses[[1]])
+    cat(length(responses))
+    cat('\n')
   }
 
   if (already_loaded == TRUE) {
@@ -152,20 +154,29 @@ get_setup <- function(headerrows, already_loaded) {
     }
   }
 
-  try(survey <<- survey)
-  try(responses <<- responses)
-  try(blocks <<- blocks_from_survey(survey))
-  try(questions <<- questions_from_survey(survey))
-  try(questions <<- remove_trash_questions(questions, blocks))
-  try(questions <<- clean_question_text(questions))
-  try(questions <<- human_readable_qtype(questions))
-  try(blocks <<- remove_trash_blocks(blocks))
+  try(blocks <- blocks_from_survey(survey))
+  try(questions <- questions_from_survey(survey))
+  try(questions <- remove_trash_questions(questions, blocks))
+  try(questions <- clean_question_text(questions))
+  try(questions <- human_readable_qtype(questions))
+  try(blocks <- remove_trash_blocks(blocks))
   try(questions_and_blocks <- split_side_by_sides(questions, blocks))
   questions <- questions_and_blocks[[1]]
   blocks <- questions_and_blocks[[2]]
+  cat(length(responses))
+  cat('\n')
   questions <- link_responses_to_questions(questions, responses, original_first_rows)
-  try(questions <<- generate_results(questions))
-  try(blocks <<- questions_into_blocks(questions, blocks))
+  cat(length(responses))
+  cat('\n')
+
+  try(questions <- generate_results(questions))
+  try(blocks <- questions_into_blocks(questions, blocks))
+
+  survey <<- survey
+  responses <<- responses
+  questions <<- questions
+  blocks <<- blocks
+  original_first_rows <<- original_first_rows
 
   if ( exists("survey", 1) &&
        exists("responses", 1) &&

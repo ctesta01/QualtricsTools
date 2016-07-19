@@ -219,6 +219,7 @@ link_responses_to_questions <- function (questions, responses, original_first_ro
       }
     }
   } else if (missing(original_first_rows) || !missing(original_first_rows) && nrow(original_first_rows) < 2) {
+    responses <- as.data.frame(responses)
     for (i in 1:length(questions)) {
       # create a string with the data export tag and an underscore
       # create a string with the data export tag and a period
