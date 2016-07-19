@@ -350,7 +350,8 @@ uncodeable_questions_message <- function(questions) {
   uncodeable_questions <- which(sapply(questions, function(x)
     !("Table" %in% names(x)) &&
       (x[['Payload']][['QuestionType']] != "TE") &&
-      (x[['Payload']][['QuestionType']] != "DB")))
+      (x[['Payload']][['QuestionType']] != "DB") &&
+      (x[['Payload']][['Selector']] != "TE")))
 
   # get the data export tags of the uncodeable questions
   uncodeable_questions <- sapply(uncodeable_questions, function(x)
