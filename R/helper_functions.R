@@ -134,8 +134,6 @@ get_setup <- function(headerrows, already_loaded) {
     try(responses <- ask_for_csv(headerrows=headerrows))
     original_first_rows <- as.data.frame(responses[[2]])
     responses <- as.data.frame(responses[[1]])
-    cat(length(responses))
-    cat('\n')
   }
 
   if (already_loaded == TRUE) {
@@ -163,11 +161,7 @@ get_setup <- function(headerrows, already_loaded) {
   try(questions_and_blocks <- split_side_by_sides(questions, blocks))
   questions <- questions_and_blocks[[1]]
   blocks <- questions_and_blocks[[2]]
-  cat(length(responses))
-  cat('\n')
   questions <- link_responses_to_questions(questions, responses, original_first_rows)
-  cat(length(responses))
-  cat('\n')
 
   try(questions <- generate_results(questions))
   try(blocks <- questions_into_blocks(questions, blocks))
