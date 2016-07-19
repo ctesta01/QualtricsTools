@@ -1,13 +1,14 @@
+// make sure the sidebar opens automatically
 $("document").ready(function() {
-    setTimeout(function() {
-        $("body").toggleClass('sidebar-collapse', false);
-        $("li.treeview").children("a").first().click();
-    },5);
+  setTimeout(function() {
+    $("body").toggleClass('sidebar-collapse', false);
+    $("li.treeview").children("a").first().click();
+  }, 5);
 });
 
+// this code makes the select-all/unselect-all button do its job
 $("document").ready(function() {
-
-$('#selectAll').click(function(e){
+  $('#selectAll').click(function(e){
     var table= $("#DataTables_Table_0");
 
     if ($('td input:checkbox:checked',table).length == $('td input:checkbox',table).length) {
@@ -16,5 +17,19 @@ $('#selectAll').click(function(e){
       $('td input:checkbox',table).prop('checked', true);
     }
 
+  });
 });
+
+// bold things on the display logic page, so that they are more readable
+$("document").ready(function() {
+  setInterval(function() {
+    if ($('li:contains("display logic")').attr("class") == "active") {
+      selection = $('td:contains("Choice Display Logic:")');
+      selection = selection.add($('td:contains("Question Display Logic:")'));
+      selection = selection.add($('td:contains("Skip Logic:")'));
+      selection = selection.add($('td:contains("Display Logic for:")'));
+      selection = selection.add($('td:contains("Answer Display Logic:")'));
+      selection.each(function(index) { this.style.fontWeight = 'bold'; });
+    }
+  }, 100);
 });

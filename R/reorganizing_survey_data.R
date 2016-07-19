@@ -284,6 +284,9 @@ questions_into_blocks <- function(questions, blocks) {
         # if matching_question is a list of length 1 then we've matched the
         # question uniquely and can replace the BlockElement with the actual question
         if (length(matching_question) == 1) {
+          if ("SkipLogic" %in% names(blocks[[i]][['BlockElements']][[j]])) {
+            questions[[matching_question]][['Payload']][['SkipLogic']] <- blocks[[i]][['BlockElements']][[j]][['SkipLogic']]
+          }
           blocks[[i]][['BlockElements']][[j]] <- questions[[matching_question]]
         }
       }
@@ -740,7 +743,7 @@ display_logic_from_question <- function(question) {
       display_logic[[e]] <- "Choice Display Logic:"
       e <- e+1
       for (i in choices_with_logic) {
-        display_logic[[e]] <- paste0("Display Logic for ", question[['Payload']][['Choices']][[i]][['Display']], ":")
+        display_logic[[e]] <- paste0("Display Logic for: ", question[['Payload']][['Choices']][[i]][['Display']], ":")
         e <- e+1
         dl_indices_1 <- suppressWarnings(which(!is.na(as.numeric(names(question[['Payload']][['Choices']][[i]][['DisplayLogic']])))))
         for (j in dl_indices_1) {
@@ -765,7 +768,7 @@ display_logic_from_question <- function(question) {
       display_logic[[e]] <- "Answer Display Logic:"
       e <- e+1
       for (i in answers_with_logic) {
-        display_logic[[e]] <- paste0("Display Logic for ", question[['Payload']][['Answers']][[i]][['Display']], ":")
+        display_logic[[e]] <- paste0("Display Logic for: ", question[['Payload']][['Answers']][[i]][['Display']], ":")
         e <- e+1
         dl_indices_1 <- suppressWarnings(which(!is.na(as.numeric(names(question[['Payload']][['Answers']][[i]][['DisplayLogic']])))))
         for (j in dl_indices_1) {
@@ -1151,4 +1154,4 @@ create_merged_response_column <- function(response_columns,
   rownames(responses) <- orig_rownames
 
   return(responses)
-  }
+}

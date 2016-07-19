@@ -397,6 +397,14 @@ tabelize_display_logic <- function(blocks) {
         #   - Question Text (stripped of HTML)
         #   - Display logic ...
         display_logic <- display_logic_from_question(blocks[[i]][['BlockElements']][[j]])
+        if ("SkipLogic" %in% names(blocks[[i]][['BlockElements']][[j]][['Payload']])) {
+          display_logic <- c(display_logic, "Skip Logic:")
+          for (k in 1:length(blocks[[i]][['BlockElements']][[j]][['Payload']][['SkipLogic']])) {
+            display_logic <-
+              c(display_logic,
+                clean_html(blocks[[i]][['BlockElements']][[j]][['Payload']][['SkipLogic']][[k]][['Description']]))
+          }
+        }
         if (length(display_logic) > 1) {
           display_logic <- do.call(rbind.data.frame, t(c(
             blocks[[i]][['BlockElements']][[j]][['Payload']][['DataExportTag']],
@@ -406,7 +414,7 @@ tabelize_display_logic <- function(blocks) {
           tables = c(tables, capture.output(print(xtable::xtable(display_logic),
                                                   include.colnames=FALSE,
                                                   type="html",
-                                                  html.table.attributes='class="data table table-bordered table-condensed"',
+                                                  html.table.attributes='class="survey_logic data table table-bordered table-condensed"',
                                                   include.rownames=FALSE
           )))
 
@@ -416,4 +424,11 @@ tabelize_display_logic <- function(blocks) {
     }
   }
   return(unlist(lapply(tables, paste)))
+}
+
+
+tabelize_skip_logic <- function(blocks) {
+  tables <- list()
+  options(stringsAsFactors = FALSE)
+
 }

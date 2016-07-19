@@ -1,28 +1,40 @@
-/* text appendices are more readable
- * this way. */
+/* Table Formatting:
+ * - The question descriptions and display logic tables 
+ *    should have a bolded first entry (the data export tag)
+ * - Bold the 3rd to last rows of question descriptions, for
+ *    a 'header' effect
+ * - Center the 'header' of the text appendices */
+.question_description tr:first-child td {
+  font-weight: bold;
+}
+.survey_logic tr:first-child td {
+  font-weight: bold;
+}
+.question_description tr:nth-child(n+3) {
+  font-weight: bold;
+}
 .text_appendices tr:nth-child(-n+4) {
 	text-align: center;
 }
 
-/* format the question_description of 
- * the text appendices to have a bolded
- * header */
-.question_description tr:nth-child(n+3) {
-  font-weight: bold;
-}
 
-/* style the sidebar to have 
- * uniform padding */ 
+/* Sidebar Styling: 
+ * - uniform padding for buttons and the menu.
+ * - the 'Insights?' button has text associated with it 
+ *    that is getting styled to match proper margins.
+ * - the "Stop App" button has particular styling to keep
+ *    it at the bottom of the page */ 
 ul.treeview-menu.menu-open {
   padding-bottom: 10px;
 }
-
 .sidebar-menu a.btn {
 	margin-left: 20px;
 }
-
-/* style the quit button to stay 
- * at the bottom of the window */ 
+.sidebar-text {
+  white-space:normal!important;
+  padding-left:12px;
+  padding-right:12px;
+}
 #quit {
   position:fixed;
   bottom:0;
@@ -30,11 +42,3 @@ ul.treeview-menu.menu-open {
   margin-left: 20px;
   margin-bottom: 10px;
 }  
-
-/* styling for the sidebar text describing 
- * the Insights? button */
-.sidebar-text {
-  white-space:normal!important;
-  padding-left:12px;
-  padding-right:12px;
-}
