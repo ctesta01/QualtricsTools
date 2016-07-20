@@ -77,8 +77,8 @@ shinyServer(
   })
 
   text_appendices <- reactive({
-    validate(need(length(survey_and_responses()) >= 2, "Please upload the survey and responses"))
-    if (length(survey_and_responses()) >= 2) {
+    validate(need(length(survey_and_responses()) >= 3, "Please upload the survey and responses"))
+    if (length(survey_and_responses()) >= 3) {
       survey <- survey_and_responses()[[1]]
       responses <- survey_and_responses()[[2]]
       original_first_rows <- survey_and_responses()[[3]]

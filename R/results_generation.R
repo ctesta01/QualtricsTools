@@ -382,8 +382,6 @@ matrix_multiple_answer_results <- function(question) {
         responses_by_answers[[ans]][['responses']] <- responses_by_answers[[ans]][['responses']][
           which(!names(responses_by_answers[[ans]][['responses']]) %in% na_cols)
           ]
-
-
       }
 
       # calculate the total_N and recalculate N to be the number of
@@ -394,8 +392,6 @@ matrix_multiple_answer_results <- function(question) {
         responses_by_answers[[ans]][['responses']],
         1,
         function(x) any(x==1))))
-
-
     }
 
     # turn the responses for this answer into a list of percentages
@@ -412,6 +408,22 @@ matrix_multiple_answer_results <- function(question) {
         responses_by_answers[[ans]][['na_columns']],
         2,
         function(x) percent0(sum(x==1) / responses_by_answers[[ans]][['total_N']]))
+    }
+  }
+
+  # if there's only one column to the question, then we will use the number of
+  # respondents who answered any part of the question as the denominator, instead
+  # of the number of respondents who answered that specific question part.
+  if (all(lapply(responses_by_answers, function(x) length(x[['responses']])) == 1)) {
+    all_question_respondents <- length(which(apply(
+      orig_responses,
+      1,
+      function(x) any(x==1))))
+    for (ans in answer_codes) {
+      responses_by_answers[[ans]][['responses']] <- percent0(
+        responses_by_answers[[ans]][['N']] /
+          all_question_respondents
+      )
     }
   }
 
@@ -444,7 +456,6 @@ matrix_multiple_answer_results <- function(question) {
 
   # relabel the names of the valid choices
   colnames(choices) <- rename_choices(colnames(choices), question)
-
 
   # if there were non-applicable options, table them, re-label the choices,
   # then table the N, choices, total_N, and na_choices together.
@@ -481,7 +492,6 @@ matrix_multiple_answer_results <- function(question) {
   colnames(responses_tabled)[1] <- " "
   return(responses_tabled)
 }
-
 
 
 #' Create Results Tables and Pair Them to Questions
