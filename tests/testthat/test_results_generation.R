@@ -1,7 +1,7 @@
 library(QualtricsTools)
 context("Results Generation - Multiple Choice Single Answer")
 
-# testing multiple choice single answer (radio button) questions
+# testing a multiple choice single answer (radio button) question
 test_that("plain mcsa results are processed correctly", {
   plain_mcsa <- readRDS(system.file("testdata", "plain_mcsa.RDS", package="QualtricsTools"))
   results_table <- mc_single_answer_results(plain_mcsa)
@@ -12,7 +12,7 @@ test_that("plain mcsa results are processed correctly", {
                                                    "Click to write Statement 3"))
 })
 
-# testing multiple choice single answer (radio button) questions with recoded values
+# testing a multiple choice single answer (radio button) question with recoded values
 test_that("recoded mcsa results are processed correctly", {
   recode_mcsa <- readRDS(system.file("testdata", "recode_mcsa.RDS", package="QualtricsTools"))
   results_table <- mc_single_answer_results(recode_mcsa)
@@ -30,7 +30,7 @@ test_that("recoded mcsa results are processed correctly", {
                  "Click to write Choice 7"))
 })
 
-# testing multiple choice multiple answer (check all) questions
+# testing a multiple choice multiple answer (check all) question
 test_that("plain mcma results are processed correctly", {
   plain_mcma <- readRDS(system.file("testdata", "plain_mcma.RDS", package="QualtricsTools"))
   results_table <- mc_multiple_answer_results(plain_mcma)
@@ -45,7 +45,7 @@ test_that("plain mcma results are processed correctly", {
                  "None of the above"))
 })
 
-# testing multiple choice multiple answer (check all) questions
+# testing a multiple choice multiple answer (check all) question
 test_that("recoded mcma results are processed correctly", {
   recode_mcma <- readRDS(system.file("testdata", "recode_mcma.RDS", package="QualtricsTools"))
   results_table <- mc_multiple_answer_results(recode_mcma)
@@ -58,4 +58,24 @@ test_that("recoded mcma results are processed correctly", {
                  "Kiwi",
                  "Pomegranate",
                  "None of the above"))
+})
+
+# testing matrix single answer with recode values and an NA option
+test_that("matrix single answer with recoded values and NA-choice(s) are processed correctly",{
+  recode_na_mx_sa <- readRDS(system.file("testdata", "recode_na_matrix_sa.RDS", package="QualtricsTools"))
+  results_table <- matrix_single_answer_results(recode_na_mx_sa)
+  expect_equal(as.character(results_table[[1]]),
+               c("Cantaloupe", "Kiwi", "Pomegranate"))
+  expect_equal(results_table[['N']],
+               c(5,5,3))
+  expect_equal(as.character(results_table[['Enjoy']]),
+               c("20.0%", "0.0%", "33.3%"))
+  expect_equal(as.character(results_table[['Ambivalent']]),
+               c("60.0%", "60.0%", "33.3%"))
+  expect_equal(as.character(results_table[['Dislike']]),
+               c("20.0%", "40.0%", "33.3%"))
+  expect_equal(results_table[['total_N']],
+               c(6,6,6))
+  expect_equal(as.character(results_table[['Never Tried It']]),
+               c("16.7%", "16.7%", "50.0%"))
 })
