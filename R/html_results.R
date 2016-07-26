@@ -168,6 +168,7 @@ text_appendices_table <- function(blocks, original_first_row) {
   # tables is for storing the HTML for all of the
   # text appendices tables.
   tables <- list()
+  no_respondents_tables <- list()
   e <- 0
 
   # loop through every response column that is EITHER
@@ -197,32 +198,33 @@ text_appendices_table <- function(blocks, original_first_row) {
             responses <- as.data.frame(responses[!apply(responses, 1, function(x) any(x=="")),])
             responses <- as.data.frame(responses[!apply(responses, 1, function(x) any(x==-99)),])
             colnames(responses) <- colnames(blocks[[i]][['BlockElements']][[j]][['Responses']])
+
+            if (nrow(responses) == 0) {
+              No_Respondents <- c(blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
+                                  "Verbatim responses -- these have not been edited in any way.",
+                                  "",
+                                  "No respondents answered this question")
+              no_respondents_tables <- c(no_respondents_tables, capture.output(print(xtable::xtable(as.data.frame(No_Respondents)),
+                                                                                     type="html",
+                                                                                     html.table.attributes='class="text_appendices data table table-bordered table-condensed"',
+                                                                                     include.rownames=FALSE)))
+              no_respondents_tables <- c(no_respondents_tables, "<br>")
+              next
+            }
+
             if (length(as.list(responses)) > 0) {
               e <- e+1
 
               # write the message for how many respondents responded
-              if (nrow(responses) > 0) {
-                response_n <- paste0("Responses: (", nrow(responses), ")")
-              } else {
-                response_n <- "No respondents answered this question"
-                No_Respondents <- c(blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
-                                          "Verbatim responses -- these have not been edited in any way.",
-                                          "",
-                                          response_n)
-                tables <- c(tables, capture.output(print(xtable::xtable(as.data.frame(No_Respondents)),
-                                                         type="html",
-                                                         html.table.attributes='class="text_appendices data table table-bordered table-condensed"',
-                                                         include.rownames=FALSE)))
-                e <- e - 1
-                next
-              }
+              response_n <- paste0("Responses: (", nrow(responses), ")")
+
 
               # generate the header for the text appendix
               text_appendix_header <- c(paste0("Appendix ", appendix_lettering(e)),
-                blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
-                "Verbatim responses -- these have not been edited in any way.",
-                "",
-                response_n)
+                                        blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
+                                        "Verbatim responses -- these have not been edited in any way.",
+                                        "",
+                                        response_n)
               text_appendix_header <- as.data.frame(text_appendix_header)
 
               # repeat the header for each response column, and
@@ -235,9 +237,9 @@ text_appendices_table <- function(blocks, original_first_row) {
 
               # turn the text appendix into an html table, and add it to the tables list
               tables <- c(tables, capture.output(print(xtable::xtable(text_appendix),
-              type="html",
-              html.table.attributes='class="text_appendices data table table-bordered table-condensed"',
-              include.rownames=FALSE)))
+                                                       type="html",
+                                                       html.table.attributes='class="text_appendices data table table-bordered table-condensed"',
+                                                       include.rownames=FALSE)))
 
 
               tables <- c(tables, "<br>")
@@ -279,26 +281,24 @@ text_appendices_table <- function(blocks, original_first_row) {
               responses <- as.data.frame(responses[!apply(responses, 1, function(x) any(x==-99)),])
               colnames(responses) <- colnames(blocks[[i]][['BlockElements']][[j]][['Responses']][text_columns[[k]]])
 
+              if (nrow(responses) == 0) {
+                No_Respondents <- c(blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
+                                    "Verbatim responses -- these have not been edited in any way.",
+                                    "",
+                                    "No respondents answered this question")
+                no_respondents_tables <- c(no_respondents_tables, capture.output(print(xtable::xtable(as.data.frame(No_Respondents)),
+                                                                                       type="html",
+                                                                                       html.table.attributes='class="text_appendices data table table-bordered table-condensed"',
+                                                                                       include.rownames=FALSE)))
+                no_respondents_tables <- c(no_respondents_tables, "<br>")
+                next
+              }
 
               if (length(as.list(responses)) > 0) {
                 e <- e+1
 
                 # write the message for how many respondents responded
-                if (nrow(responses) > 0) {
-                  response_n <- paste0("Responses: (", nrow(responses), ")")
-                } else {
-                  response_n <- "No respondents answered this question"
-                  No_Respondents <- c(blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
-                                            "Verbatim responses -- these have not been edited in any way.",
-                                            "",
-                                            response_n)
-                  tables <- c(tables, capture.output(print(xtable::xtable(as.data.frame(No_Respondents)),
-                                                           type="html",
-                                                           html.table.attributes='class="text_appendices data table table-bordered table-condensed"',
-                                                           include.rownames=FALSE)))
-                  e <- e - 1
-                  next
-                }
+                response_n <- paste0("Responses: (", nrow(responses), ")")
 
                 # generate the header for the text appendix
                 text_appendix_header <- c(paste0("Appendix ", appendix_lettering(e)),
@@ -318,18 +318,18 @@ text_appendices_table <- function(blocks, original_first_row) {
 
                 # turn the text appendix into an html table, and add it to the tables list
                 tables <- c(tables, capture.output(print(xtable::xtable(text_appendix),
-                type="html",
-                html.table.attributes='class="text_appendices data table table-bordered table-condensed"',
-                include.rownames=FALSE)))
+                                                         type="html",
+                                                         html.table.attributes='class="text_appendices data table table-bordered table-condensed"',
+                                                         include.rownames=FALSE)))
                 tables <- c(tables, "<br>")
               }
-
             }
           }
         }
       }
     }
   }
+  tables <- c(tables, no_respondents_tables)
   return(unlist(lapply(tables, paste)))
 }
 

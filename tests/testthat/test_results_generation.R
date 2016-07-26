@@ -61,7 +61,7 @@ test_that("recoded mcma results are processed correctly", {
 })
 
 # testing matrix single answer with recode values and an NA option
-test_that("matrix single answer with recoded values and NA-choice(s) are processed correctly",{
+test_that("matrix single answer results with recoded values and NA-choice(s) are processed correctly",{
   recode_na_mx_sa <- readRDS(system.file("testdata", "recode_na_matrix_sa.RDS", package="QualtricsTools"))
   results_table <- matrix_single_answer_results(recode_na_mx_sa)
   expect_equal(as.character(results_table[[1]]),
@@ -78,4 +78,22 @@ test_that("matrix single answer with recoded values and NA-choice(s) are process
                c(6,6,6))
   expect_equal(as.character(results_table[['Never Tried It']]),
                c("16.7%", "16.7%", "50.0%"))
+})
+
+# testing a plain matrix multiple answer (checkbox) question
+test_that("matrix multiple answer results are processed correctly", {
+  matrix_ma <- readRDS(system.file("testdata", "plain_matrix_ma.RDS", package="QualtricsTools"))
+  results_table <- as.data.frame(matrix_multiple_answer_results(matrix_ma))
+  expect_equal(colnames(results_table),
+               c(" ", "N", "In the last week", "In the last month", "In the last year"))
+  expect_equal(as.character(results_table[,1]),
+               c("Canteloupe", "Kiwi", "Pomegranate"))
+  expect_equal(as.numeric(results_table[['N']]),
+               c(10,10,10))
+  expect_equal(as.character(results_table[['In the last week']]),
+               c("70.0%", "80.0%", "70.0%"))
+  expect_equal(as.character(results_table[['In the last month']]),
+               c("80.0%", "100.0%", "60.0%"))
+  expect_equal(as.character(results_table[['In the last year']]),
+               c("70.0%", "80.0%", "80.0%"))
 })
