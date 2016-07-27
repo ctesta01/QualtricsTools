@@ -9,7 +9,18 @@ shinyServer(
   # list with three elements -- the processed survey, the responses,
   # and the original_first_row from the response set.
   survey_and_responses <- reactive({
-    survey <- try(load_qsf_data(input$file1))
+    survey <- try(load_qsf_data(input[['file1']]))
+    if (!is.null(input[['unselected_questions']])) {
+      remove_these_survey_elements <- function(x) {
+            "DataExportTag" %in% names(x[['Payload']]) && x[['Payload']][['DataExportTag']] %in% input[['unselected_questions']]
+        }
+      for (i in 1:length(survey[['SurveyElements']])) {
+        if ('DataExportTag' %in% names(survey[['SurveyElements']][[i]][['Payload']]) &&
+            survey[['SurveyElements']][[i]][['Payload']][['DataExportTag']] %in% input[['unselected_questions']]) {
+          survey[['SurveyElements']][[i]][['qtSkip']] <- TRUE
+        }
+      }
+    }
     questions <- try(questions_from_survey(survey))
     blocks <- try(blocks_from_survey(survey))
     questions <- remove_trash_questions(questions, blocks)
@@ -103,6 +114,15 @@ shinyServer(
     }
   })
 
+  include_exclude_dict <- reactive({
+    validate(need(length(survey_and_responses()) >= 3, "Please upload the survey and responses"))
+    qdict <- unique(question_dictionary()[c(1,3,5,6,7)])
+    check_list <- lapply(qdict[[1]], function(x) ifelse(x %in% input[['unselected_questions']], "", " checked "))
+    addCheckboxButtons <- paste0('<input type="checkbox" name="unselected_questions_', qdict[[1]], '" value="', qdict[[1]], '"', check_list, '>',"")
+    #Display table with checkbox buttons
+    cbind(Include=addCheckboxButtons, qdict)
+  })
+
   # output tabpanels' contents
   output$uncodeable_message <- renderUI(HTML(uncodeable_message()))
   output$results_tables <- renderUI(div(HTML(results_tables()), class="shiny-html-output"))
@@ -117,19 +137,18 @@ shinyServer(
 
   # Include/Exclude Questions
   output$select_qdict = renderDataTable({
-    addCheckboxButtons <- paste0('<input type="checkbox" checked name="selected_responses', question_dictionary()[['id']], '" value="', question_dictionary()[['id']], '">',"")
-    #Display table with checkbox buttons
-    cbind(Include=addCheckboxButtons, question_dictionary())
-  }, options = list(orderClasses = TRUE,
+    include_exclude_dict()
+    }, options = list(orderClasses = TRUE,
                     lengthMenu = c(5, 25, 50),
                     pageLength = 25)
   , escape = FALSE
   , callback = "function(table) {
   table.on('change.dt', 'tr td input:checkbox', function() {
 setTimeout(function () {
-  Shiny.onInputChange('selected_responses', $(this).add('tr td input:checkbox:checked').parent().siblings(':nth-child(3)').map(function() {
+  Shiny.onInputChange('unselected_questions', $(this).add('tr td input:checkbox:not(:checked)').parent().siblings(':nth-child(2)').map(function() {
   return $(this).text();
-  }).get())
+  }).get());
+  Shiny.onInputChange
 }, 10);
   });
   }")
