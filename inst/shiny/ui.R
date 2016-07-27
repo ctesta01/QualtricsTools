@@ -66,7 +66,7 @@ body <- dashboardBody(
   tabItem(tabName = "include_exclude",
           fluidRow(
             column(width=12,
-            h2('Include or Exclude Specific Response Columns'),
+            h2('Include or Exclude Specific Questions'),
             actionButton("selectAll", "Unselect/Select All"),
               dataTableOutput("select_qdict")
               )
