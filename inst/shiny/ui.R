@@ -4,7 +4,7 @@ sidebar <- dashboardSidebar(
   sidebarMenu(id="tabs",
     menuItem("File Uploading",
              icon=icon("upload"),
-             selected=TRUE,
+           selected=TRUE,
              fileInput('file1',
                        'Choose QSF Survey File',
                        accept=c('text/qsf', 'text/plain', '.qsf')

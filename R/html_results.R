@@ -15,10 +15,13 @@ tabelize_blocks <- function(blocks) {
       tables <- c(tables, paste0("<h5>", blocks[[i]][['Description']], "</h5><br>"))
       if (length(blocks[[i]][['BlockElements']]) != 0) {
         for (j in 1:length(blocks[[i]][['BlockElements']])) {
-
-          #if a question isn't a descriptive block, insert the question description for it
-          if (blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionType']] != "DB") {
-            tables <- c(tables, question_description(blocks[[i]][['BlockElements']][[j]]))
+          # don't get any questions that are supposed to be skipped
+          if (!'qtSkip' %in% names(blocks[[i]][['BlockElements']][[j]]) ||
+              blocks[[i]][['BlockElements']][[j]][['qtSkip']] != TRUE) {
+            #if a question isn't a descriptive block, insert the question description for it
+            if (blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionType']] != "DB") {
+              tables <- c(tables, question_description(blocks[[i]][['BlockElements']][[j]]))
+            }
           }
         }
       }

@@ -143,7 +143,7 @@ get_setup <- function(headerrows, already_loaded) {
       survey <- get("survey", envir=-1)
     }
 
-    if (!exists("responses", where = -1)) {
+    if (!exists("responses", where = -1) && !exists("original_first_rows", where = -1)) {
       responses <- sample_responses
       original_first_rows <<- sample_original_first_rows
     } else {
