@@ -32,52 +32,63 @@ percent0 <- function(x, digits = 1, format = "f", ...) {
 #' under [['Responses']]
 #' @return a table with an N, Percent, and choice column, detailing the number of responses for each
 #' choice.
-mc_single_answer_results <- function(question) {
-    # If a question's response options were given recoded values
-    # during the survey's creation, the variables for the recoded values
-    # are used as the factors a response could match. If there was no
-    # recoding of values, then the choices are directly use as the factors
-    # a response can match.
-    if ("RecodeValues" %in% names(question[['Payload']]) && length(question[['Payload']][['RecodeValues']]) > 0) {
-        factors <- unlist(question[['Payload']][['RecodeValues']])
-    } else {
-        factors <- names(question[['Payload']][['Choices']])
-    }
+mc_single_answer_results <- function(question, original_first_rows) {
+  # If a question's response options were given recoded values
+  # during the survey's creation, the variables for the recoded values
+  # are used as the factors a response could match. If there was no
+  # recoding of values, then the choices are directly use as the factors
+  # a response can match.
+  if ("RecodeValues" %in% names(question[['Payload']]) && length(question[['Payload']][['RecodeValues']]) > 0) {
+    factors <- unlist(question[['Payload']][['RecodeValues']])
+  } else {
+    factors <- names(question[['Payload']][['Choices']])
+  }
 
-    # the responses to single answer questions are only one column.
-    # first, take the responses and sort them by the factors to get responses_tabled.
-    # the second column of the responses_tabled are the numbers of responses for each factor, our Ns.
-    # total number of responses to a question is counted by all the answers that aren't -99
-    # use Ns and respondent_count to calculate the percents for each factor.
-    responses <- question[['Responses']][[question[['Payload']][['DataExportTag']]]]
-    responses_tabled <- as.data.frame(table(factor(responses, levels=factors)))
-    N <- responses_tabled[,2]
-    exporttag <- question[['Payload']][['DataExportTag']]
-    respondent_count <- length(which((question[['Responses']][[exporttag]] != -99) & (question[['Responses']][[exporttag]] != "")))
-    Percent <- percent0(N / respondent_count)
+  # get the data export tag and questionID
+  exporttag <- question[['Payload']][['DataExportTag']]
+  questionID <- question[['Payload']][['QuestionID']]
 
-    # if the choice variables have been recoded, first the factors are retrieved from the responses_tabled,
-    # then they are turned into the list of corresponding indexes in the RecodeValues list,
-    # which are then used to recover the original choice text from the Choices list,
-    # and then the choices are flattened to a cleaner list.
-    # if the choice variables are not recoded, then they can be retrieved directly from the responses_table
-    if ("RecodeValues" %in% names(question[['Payload']]) && length(question[['Payload']][['RecodeValues']]) > 0) {
-        choices_recoded <- responses_tabled[,1]
-        choices_uncoded <- sapply(choices_recoded, function(x) which(question[['Payload']][['RecodeValues']] == x))
-        choices <- sapply(choices_uncoded, function(x) question[['Payload']][['Choices']][[x]][[1]])
-    } else {
-        choices_uncoded <- responses_tabled[,1]
-        choices <- sapply(choices_uncoded, function(x) question[['Payload']][['Choices']][[x]][[1]])
-    }
-    choices <- unlist(choices, use.names = FALSE)
-    choices <- sapply(choices, clean_html)
+  # if the original_first_rows are available, we use them to pick the right
+  # response column, and if not, we select the column by using the DataExportTag
+  if (!missing(original_first_rows)) {
+    selected_column <- which(original_first_rows[2,] == questionID)
+    selected_column <- colnames(original_first_rows)[selected_column]
+    responses <- question[['Responses']][[selected_column]]
+  } else {
+    responses <- question[['Responses']][[exporttag]]
+  }
+
+  # first, take the responses and sort them by the factors to get responses_tabled.
+  # the second column of the responses_tabled are the numbers of responses for each factor, our Ns.
+  # total number of responses to a question is counted by all the answers that aren't -99
+  # use Ns and respondent_count to calculate the percents for each factor.
+  responses_tabled <- as.data.frame(table(factor(responses, levels=factors)))
+  N <- responses_tabled[,2]
+  respondent_count <- length(which((question[['Responses']][[exporttag]] != -99) & (question[['Responses']][[exporttag]] != "")))
+  Percent <- percent0(N / respondent_count)
+
+  # if the choice variables have been recoded, first the factors are retrieved from the responses_tabled,
+  # then they are turned into the list of corresponding indexes in the RecodeValues list,
+  # which are then used to recover the original choice text from the Choices list,
+  # and then the choices are flattened to a cleaner list.
+  # if the choice variables are not recoded, then they can be retrieved directly from the responses_table
+  if ("RecodeValues" %in% names(question[['Payload']]) && length(question[['Payload']][['RecodeValues']]) > 0) {
+    choices_recoded <- responses_tabled[,1]
+    choices_uncoded <- sapply(choices_recoded, function(x) which(question[['Payload']][['RecodeValues']] == x))
+    choices <- sapply(choices_uncoded, function(x) question[['Payload']][['Choices']][[x]][[1]])
+  } else {
+    choices_uncoded <- responses_tabled[,1]
+    choices <- sapply(choices_uncoded, function(x) question[['Payload']][['Choices']][[x]][[1]])
+  }
+  choices <- unlist(choices, use.names = FALSE)
+  choices <- sapply(choices, clean_html)
 
 
-    # construct the results table with a column for N, Percent, and choices,
-    # but make sure that the choices column doesn't have a header when it prints.
-    results_table <- data.frame(N, Percent, choices, row.names = NULL)
-    colnames(results_table)[3] <- ""
-    results_table
+  # construct the results table with a column for N, Percent, and choices,
+  # but make sure that the choices column doesn't have a header when it prints.
+  results_table <- data.frame(N, Percent, choices, row.names = NULL)
+  colnames(results_table)[3] <- ""
+  results_table
 }
 
 
