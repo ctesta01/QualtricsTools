@@ -141,17 +141,7 @@ shinyServer(
     }, options = list(orderClasses = TRUE,
                     lengthMenu = c(5, 25, 50),
                     pageLength = 25)
-  , escape = FALSE
-  , callback = "function(table) {
-  table.on('change.dt', 'tr td input:checkbox', function() {
-setTimeout(function () {
-  Shiny.onInputChange('unselected_questions', $(this).add('tr td input:checkbox:not(:checked)').parent().siblings(':nth-child(2)').map(function() {
-  return $(this).text();
-  }).get());
-  Shiny.onInputChange
-}, 10);
-  });
-  }")
+  , escape = FALSE)
 
 
   # Download Buttons

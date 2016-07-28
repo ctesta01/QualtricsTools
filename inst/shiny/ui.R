@@ -68,6 +68,7 @@ body <- dashboardBody(
             column(width=12,
             h2('Include or Exclude Specific Questions'),
             actionButton("selectAll", "Unselect/Select All"),
+            actionButton("submit", "Apply"),
               dataTableOutput("select_qdict")
               )
   )))
