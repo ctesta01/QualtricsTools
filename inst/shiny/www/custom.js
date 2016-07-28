@@ -16,7 +16,6 @@ $("document").ready(function() {
     } else {
       $('td input:checkbox',table).prop('checked', true);
     }
-
   });
 });
 
@@ -32,4 +31,14 @@ $("document").ready(function() {
       selection.each(function(index) { this.style.fontWeight = 'bold'; });
     }
   }, 100);
+});
+
+
+$('document').ready(function() {
+  $('#submit').click(function(e) {
+    var unselected = $('td input:checkbox:not(:checked)').parent().siblings(':nth-child(2)').map(function() {
+      return($(this).text());
+    });
+    Shiny.onInputChange('unselected_questions', unselected);
+  });
 });

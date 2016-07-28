@@ -299,6 +299,9 @@ text_appendices_table <- function(blocks, original_first_row) {
                   next
                 }
 
+                # write the message for how many respondents responded
+                response_n <- paste0("Responses: (", nrow(responses), ")")
+
                 # generate the header for the text appendix
                 text_appendix_header <- c(paste0("Appendix ", appendix_lettering(e)),
                                           blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
