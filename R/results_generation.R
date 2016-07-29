@@ -100,52 +100,104 @@ mc_single_answer_results <- function(question, original_first_rows) {
 #' @inheritParams mc_single_answer_results
 #' @return a table with an N, Percent, and choice column, detailing the number of responses for each
 #' choice.
-mc_multiple_answer_results <- function(question) {
-  # take each response column and sum all the 1s in it together to get the
-  # number of responses for a given choice.
-  # since if a respondent did not respond to a question, their response
-  # appears as -99 in all columns of the responses, we can use any column (in this case
-  # we will use the first) to determine the total number of valid responses.
-  # to get the respondent_count, we determine how many responses were not -99 in the
-  # first response column.
-  # the response column names are simply the data export tag appended with an underscore
-  # and then the choice number as it is recorded in [['Payload']][['Choices']].
-  # from the choice numbers in the column, we construct a list of the corresponding choice
-  # texts, and then flatten it.
-  # lastly, flatten the Ns list and calculate the Percents.
+mc_multiple_answer_results <- function(question, original_first_rows) {
+  # save the original responses
   orig_responses <- question[['Responses']]
-  not_text_columns <- which(sapply(colnames(orig_responses), function(x) !(grepl("TEXT", x))))
-  orig_responses <- orig_responses[, not_text_columns]
 
-  N <- sapply(orig_responses, function(x) sum(x == 1))
-  respondents_count <- length(which(apply(
-    orig_responses, 1, function(row) !(all(row == -99) | all(row == "")))))
-  data_export_tag <- question[['Payload']][['DataExportTag']]
-  names(N) <- gsub(paste0(data_export_tag, "_"), "", names(orig_responses))
+  # determine if we should use the original_first_rows
+  if (!missing(original_first_rows) &&
+      all(colnames(orig_responses) %in% colnames(original_first_rows)) &&
+      dim(original_first_rows)[[1]] >= 2
+  ) {
+    should_use_ofr <- TRUE
+  } else should_use_ofr <- FALSE
 
-  # Qualtrics Insights' platform uses the recoded values for the column names
-  # in the response data. However, Qualtrics only used the choice values
-  # before their insights platform. The condition used for recoding the columns
-  # is that "RecodeValues" appears in the question's payload, and that
-  # all the column names (after having their data export tag removed) are
-  # contained in the RecodeValues list.
-  if ("RecodeValues" %in% names(question[['Payload']]) && all(names(N) %in% question[['Payload']][['RecodeValues']])) {
-    names(N) <- sapply(names(N), function(x) names(question[['Payload']][['RecodeValues']])[which(question[['Payload']][['RecodeValues']] == x)])
+  # search either the import IDs or response column names
+  # for the string "TEXT", and include all but those including
+  # "TEXT" from the relevant_responses
+  if (should_use_ofr) {
+    relevant_responses <- orig_responses[
+      which(unlist(lapply(colnames(orig_responses), function(x) !grepl("TEXT", original_first_rows[2,x]))))
+      ]
+  } else {
+    relevant_responses <- orig_responses[
+      which(unlist(lapply(colnames(orig_responses), function(x) !grepl("TEXT", x))))
+      ]
   }
 
-  # After recoding the choices, grab their choice text.
-  # Clean the choice text of HTML, and format the data as percents.
-  choices <- lapply(names(N), function(x) question[['Payload']][['Choices']][[x]][[1]])
-  choices <- lapply(choices, clean_html)
-  choices <- unlist(choices, use.names = FALSE)
-  N <- unlist(N, use.names = FALSE)
-  Percent <- percent0(N / respondents_count)
+  # create a list of possible variations of the data export tag
+  data_export_tag <- question[['Payload']][['DataExportTag']]
+  data_export_tags <- c(data_export_tag, gsub("#", "_", data_export_tag), gsub("-", "_", data_export_tag))
+  data_export_tags <- c(paste0(data_export_tags, "_"), data_export_tags)
 
-  # construct the results table with a column for N, Percent, and choices,
-  # but make sure that the choices column doesn't have a header when it prints.
-  results_table <- data.frame(N, Percent, choices, row.names = NULL)
+  # rename the columns to be the choice indices they represent
+  colnames(relevant_responses) <- lapply(colnames(relevant_responses), function(x) {
+    if (should_use_ofr) {
+      choice_index <- original_first_rows[2,x]
+      choice_index <- gsub("QID[0-9]*-", "", choice_index)
+    } else {
+      x <- gsub(data_export_tags, "", x)
+      if ("RecodeValues" %in% names(question[['Payload']]) && x %in% question[['Payload']][['RecodeValues']]) {
+        names(question[['Payload']][['RecodeValues']])[which(
+          question[['Payload']][['RecodeValues']] == x
+        )]
+      }
+    }
+  })
+
+  # get the number of respondents for each choice
+  N <- lapply(relevant_responses, function(x) sum(x != 0 & x != -99 & x != ""))
+
+  # determine if the question has any NA-type choices
+  if ('RecodeValues' %in% names(question[['Payload']])) {
+    has_na <- any(question[['Payload']][['RecodeValues']] < 0)
+  } else has_na <- FALSE
+
+  # if the question has NA choices, calculate a valid_denominator
+  if (has_na) {
+    non_negative_columns <- which(unlist(lapply(colnames(relevant_responses), function(x) {
+      question[['Payload']][['RecodeValues']][[x]] >= 0
+    })))
+    non_negative_responses <- relevant_responses[non_negative_columns]
+    valid_denominator <- length(which(apply(non_negative_responses, 1, function(x) {
+      !(all(x == -99) | all(x == "") | all(x == 0))
+    })))
+  }
+
+  # calculate the total denominator
+  total_denominator <- length(which(apply(relevant_responses, 1, function(x) {
+    !(all(x == -99) | all(x == "") | all(x == 0))
+  })))
+
+  # calculate the percent for each column:
+  # if it's an NA-column use the total denominator,
+  # if it's not an NA-column, but the question has NA options, use the valid denominator
+  # if the question has no NA choices, use the total_denominator
+  Percent <- lapply(1:length(N), function(x) {
+    if (has_na &&
+        !names(N)[[x]] %in% colnames(non_negative_responses)) {
+      percent0(N[[x]] / total_denominator)
+    } else if (has_na &&
+               names(N)[[x]] %in% colnames(non_negative_responses)) {
+      percent0(N[[x]] / valid_denominator)
+    } else {
+      percent0(N[[x]] / total_denominator)
+    }
+  })
+
+  # get the choice text for each column, and then clean the HTML out of it
+  choices <- lapply(names(N), function(x) question[['Payload']][['Choices']][[x]][[1]])
+  choices <- clean_html(choices)
+
+  # make sure that these are flat lists
+  choices <- unlist(choices, use.names=FALSE)
+  N <- unlist(N, use.names=FALSE)
+  Percent <- unlist(Percent, use.names=FALSE)
+
+  # construct and return the output data frame
+  results_table <- data.frame(N, Percent, choices, row.names=NULL)
   colnames(results_table)[3] <- ""
-  results_table
+  return(results_table)
 }
 
 
