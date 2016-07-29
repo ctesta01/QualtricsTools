@@ -107,7 +107,6 @@ question_description <- function(question) {
           caption.placement="top",
           html.table.attributes='class="question_description data table table-bordered table-condensed"',
           include.rownames=FALSE)))
-  tables = c(tables, "<p style='line-height:0px;'>&emsp;</p>")
 
   # if the question has a results table, append it as an html table.
   if ("Table" %in% names(question)) {
