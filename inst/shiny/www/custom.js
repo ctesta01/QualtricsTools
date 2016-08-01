@@ -33,7 +33,7 @@ $("document").ready(function() {
   }, 100);
 });
 
-
+// send a list of the unselected questions to Shiny when the #submit button is clicked
 $('document').ready(function() {
   $('#submit').click(function(e) {
     var unselected = $('td input:checkbox:not(:checked)').parent().siblings(':nth-child(2)').map(function() {
