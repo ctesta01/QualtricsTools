@@ -247,7 +247,7 @@ choice_text_from_response_column <- function(response_column, original_first_row
   # characters, since the question is cut off in the first row after 99
   # characters.
   if (!response_column %in% colnames(original_first_row)) return("")
-  first_row_entry <- as.character(original_first_row[response_column][[1]])
+  first_row_entry <- enc2native(as.character(original_first_row[response_column][1,]))
   stem_dashes <- gregexpr("-", substr(question_text, 1, 99))[[1]]
   stem_dash_n <- length(which(stem_dashes > 0))
   first_row_dashes <- gregexpr("-", first_row_entry)[[1]]
