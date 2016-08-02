@@ -128,7 +128,8 @@ mc_multiple_answer_results <- function(question, original_first_rows) {
   # create a list of possible variations of the data export tag
   data_export_tag <- question[['Payload']][['DataExportTag']]
   data_export_tags <- c(data_export_tag, gsub("#", "_", data_export_tag), gsub("-", "_", data_export_tag))
-  data_export_tags <- c(paste0(data_export_tags, "_"), data_export_tags)
+  data_export_tags <- unique(c(paste0(data_export_tags, "_"), data_export_tags))
+  data_export_tags <- paste0(data_export_tags, collapse="|")
 
   # rename the columns to be the choice indices they represent
   colnames(relevant_responses) <- lapply(colnames(relevant_responses), function(x) {
