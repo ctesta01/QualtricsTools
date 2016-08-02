@@ -138,6 +138,9 @@ question_description <- function(question) {
 #'
 #' @param blocks A list of blocks with block elements replaced
 #' by the question with its paired responses.
+#' @param original_first_row This is the original first row of the
+#' response set. If you have the original_first_rows, you can
+#' pass original_first_rows[1,] to
 #'
 #' @return an html string containing a title,
 #' question text, and the text responses for each
@@ -330,8 +333,8 @@ text_appendices_table <- function(blocks, original_first_row) {
       }
     }
   }
-tables <- c(tables, no_respondents_tables)
-return(unlist(lapply(tables, paste)))
+  tables <- c(tables, no_respondents_tables)
+  return(unlist(lapply(tables, paste)))
 }
 
 
@@ -426,11 +429,4 @@ tabelize_display_logic <- function(blocks) {
     }
   }
   return(unlist(lapply(tables, paste)))
-}
-
-
-tabelize_skip_logic <- function(blocks) {
-  tables <- list()
-  options(stringsAsFactors = FALSE)
-
 }

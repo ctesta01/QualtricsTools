@@ -7,7 +7,7 @@ shinyServer(
   # and loads them as the survey and responses. It validates that there
   # are no duplicate data export tags in the survey, and it returns a
   # list with three elements -- the processed survey, the responses,
-  # and the original_first_row from the response set.
+  # and the original_first_rows from the response set.
   survey_and_responses <- reactive({
     survey <- try(load_qsf_data(input[['file1']]))
     if (!is.null(input[['unselected_questions']])) {
@@ -48,7 +48,7 @@ shinyServer(
   # with a message indicating which, if any, questions were not properly processed.
   uncodeable_message <- reactive({
     validate(need(length(survey_and_responses()) >= 3, "Please upload the survey and responses"))
-    if (length(survey_and_responses()) >= 2) {
+    if (length(survey_and_responses()) >= 3) {
       survey <- survey_and_responses()[[1]]
       responses <- survey_and_responses()[[2]]
       original_first_rows <- survey_and_responses()[[3]]
@@ -62,7 +62,7 @@ shinyServer(
   # and then converting the results tables to HTML tables.
   results_tables <- reactive({
     validate(need(length(survey_and_responses()) >= 3, ""))
-    if (length(survey_and_responses()) >= 2) {
+    if (length(survey_and_responses()) >= 3) {
       survey <- survey_and_responses()[[1]]
       responses <- survey_and_responses()[[2]]
       original_first_rows <- survey_and_responses()[[3]]
@@ -77,13 +77,12 @@ shinyServer(
   question_dictionary <- reactive({
     validate(need(length(survey_and_responses()) >= 3, ""))
     if (length(survey_and_responses()) >= 3) {
-
-    survey <- survey_and_responses()[[1]]
-    original_first_row <- survey_and_responses()[[3]][1, ]
-    responses <- survey_and_responses()[[2]]
-    original_first_rows <- survey_and_responses()[[3]]
-    blocks <- get_coded_questions_and_blocks(survey, responses, original_first_rows)[[2]]
-    create_response_column_dictionary(blocks, original_first_row)
+      survey <- survey_and_responses()[[1]]
+      original_first_row <- survey_and_responses()[[3]][1, ]
+      responses <- survey_and_responses()[[2]]
+      original_first_rows <- survey_and_responses()[[3]]
+      blocks <- get_coded_questions_and_blocks(survey, responses, original_first_rows)[[2]]
+      create_response_column_dictionary(blocks, original_first_row)
     }
   })
 
@@ -123,20 +122,20 @@ shinyServer(
     cbind(Include=addCheckboxButtons, qdict)
   })
 
-  # output tabpanels' contents
-  output$uncodeable_message <- renderUI(HTML(uncodeable_message()))
-  output$results_tables <- renderUI(div(HTML(results_tables()), class="shiny-html-output"))
-  output$question_dictionary <- renderDataTable(question_dictionary(),
+  # output each tabpanels' contents
+  output[['uncodeable_message']] <- renderUI(HTML(uncodeable_message()))
+  output[['results_tables']] <- renderUI(div(HTML(results_tables()), class="shiny-html-output"))
+  output[['question_dictionary']] <- renderDataTable(question_dictionary(),
                                                 options = list(scrollX = TRUE,
                                                                pageLength = 10,
                                                                autoWidth = TRUE
                                                 ))
-  output$text_appendices <- renderUI(div(HTML(text_appendices()), class="shiny-html-output"))
-  output$display_logic <- renderUI(div(HTML(display_logic()), class="shiny-html-output"))
+  output[['text_appendices']] <- renderUI(div(HTML(text_appendices()), class="shiny-html-output"))
+  output[['display_logic']] <- renderUI(div(HTML(display_logic()), class="shiny-html-output"))
 
 
   # Include/Exclude Questions
-  output$select_qdict = renderDataTable({
+  output[['select_qdict']] = renderDataTable({
     include_exclude_dict()
     }, options = list(orderClasses = TRUE,
                     lengthMenu = c(5, 25, 50),
@@ -144,41 +143,37 @@ shinyServer(
   , escape = FALSE)
 
 
-  # Download Buttons
-
+  ########## Download Buttons
   # download results tables
-  output$downloadResultsTables <- downloadHandler(
+  output[['downloadResultsTables']] <- downloadHandler(
     filename = 'results-tables.docx',
     content = function(file) {
       file.copy(html_to_docx(results_tables()), file)
     }
   )
-
   # download question dictionary
-  output$downloadQuestionDictionary <- downloadHandler(
+  output[['downloadQuestionDictionary']] <- downloadHandler(
     filename = 'question-dictionary.csv',
     content = function(file) {
       write.csv(question_dictionary(), file, row.names=F)
     }
   )
-
   # download text appendices
-  output$downloadTextAppendices <- downloadHandler(
+  output[['downloadTextAppendices']] <- downloadHandler(
     filename = 'appendices.docx',
     content = function(file) {
       file.copy(html_to_docx(text_appendices()), file)
     }
   )
-
   # download display logic
-  output$downloadDisplayLogic <- downloadHandler(
+  output[['downloadDisplayLogic']] <- downloadHandler(
     filename = 'display-logic.docx',
     content = function(file) {
       file.copy(html_to_docx(display_logic()), file)
     }
   )
 
-  # Stop App button
+  ########## Stop Button
   observe({
     # If input$quit is unset (NULL) do nothing; if it's anything else, quit
     # and return input$n
