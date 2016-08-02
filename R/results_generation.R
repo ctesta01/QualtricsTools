@@ -139,10 +139,11 @@ mc_multiple_answer_results <- function(question, original_first_rows) {
     } else {
       x <- gsub(data_export_tags, "", x)
       if ("RecodeValues" %in% names(question[['Payload']]) && x %in% question[['Payload']][['RecodeValues']]) {
-        names(question[['Payload']][['RecodeValues']])[which(
+        x <- names(question[['Payload']][['RecodeValues']])[which(
           question[['Payload']][['RecodeValues']] == x
         )]
       }
+      return(x)
     }
   })
 
@@ -314,8 +315,7 @@ matrix_single_answer_results <- function(question, original_first_rows) {
       na_responses <- as.data.frame(na_responses)
       colnames(na_responses) <- na_factors
       rownames(na_responses) <- colnames(relevant_responses)
-    }
-    na_responses <- t(na_responses)
+    } else na_responses <- t(na_responses)
   }
 
   # convert the number of respondents for each answer (row) by choice (column) combination
