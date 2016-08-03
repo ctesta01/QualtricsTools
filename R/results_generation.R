@@ -398,52 +398,82 @@ matrix_single_answer_results <- function(question, original_first_rows) {
 #' @return a table with the matrix-sub-questions listed in the first column,
 #' a column with the total number of respondents for each subquestion, and
 #' the percentages for each choice for each sub-question.
-matrix_multiple_answer_results <- function(question) {
-  # remove the text entry columns from the responses
+matrix_multiple_answer_results <- function(question, original_first_rows) {
+  # save the original responses
   orig_responses <- question[['Responses']]
-  not_text_columns <- which(sapply(colnames(orig_responses), function(x) isTRUE(!(grepl("TEXT", x)))))
-  orig_responses <- orig_responses[, not_text_columns]
 
-  # remove the data export tag from the column headers of the response data
-  export_tag <- question[['Payload']][['DataExportTag']]
-  export_tags <- c(paste0(export_tag, "[-#_]"), paste0(gsub("#", "_", export_tag), "[-#_]"), paste0(gsub("-", "_", export_tag), "[-#_]"))
-  export_tags <- paste(export_tags, collapse="|")
-  names(orig_responses) <- gsub(export_tags, "", names(orig_responses))
-  if ("AnswerDataExportTag" %in% names(question[['Payload']])) {
-    names(orig_responses) <- gsub(paste0("_", question[['Payload']][['AnswerDataExportTag']]), "", names(orig_responses))
+  # determine if we should use the original_first_rows
+  if (!missing(original_first_rows) &&
+      all(colnames(orig_responses) %in% colnames(original_first_rows)) &&
+      dim(original_first_rows)[[1]] >= 2
+  ) {
+    should_use_ofr <- TRUE
+  } else should_use_ofr <- FALSE
+
+  # search either the import IDs or response column names
+  # for the string "TEXT", and include all but those including
+  # "TEXT" from the relevant_responses
+  if (should_use_ofr) {
+    relevant_responses <- orig_responses[
+      which(unlist(lapply(colnames(orig_responses), function(x) !grepl("TEXT", original_first_rows[2,x]))))
+      ]
+  } else {
+    relevant_responses <- orig_responses[
+      which(unlist(lapply(colnames(orig_responses), function(x) !grepl("TEXT", x))))
+      ]
   }
 
-  # responses_by_answers is for separating the responses to
-  # each answer row.
-  # the response columns are split by their names excluding
-  # the last "_[-0-9]+$" part, (an underscore and an integer before the end of the
-  # string).
+  # create a list of possible variations of the data export tag
+  data_export_tag <- question[['Payload']][['DataExportTag']]
+  data_export_tags <- c(data_export_tag, gsub("#", "_", data_export_tag), gsub("-", "_", data_export_tag))
+  data_export_tags <- unique(c(paste0(data_export_tags, "_"), data_export_tags))
+  data_export_tags <- paste0(data_export_tags, collapse="|")
+
+  # remove the QID or Question Data Export Tags from the columns
+  # now columns look like "1_4" and "avocados_10"
+  colnames(relevant_responses) <- lapply(colnames(relevant_responses), function(x) {
+    if (should_use_ofr) {
+      choice_index <- original_first_rows[2,x]
+      choice_index <- gsub("^QID[# 0-9]*-", "", choice_index)
+    } else {
+      x <- gsub(data_export_tags, "", x)
+    }
+  })
+
+  # if the question is reduced from a side-by-side question,
+  # then we need to remove the AnswerDataExportTag from the end of the column names
+  if ("AnswerDataExportTag" %in% names(question[['Payload']])) {
+    names(relevant_responses) <- gsub(paste0("_", question[['Payload']][['AnswerDataExportTag']]), "", names(relevant_responses))
+  }
+
+  # separate the response columns into a list for each
+  # answer row
   responses_by_answers <- list()
-  answer_codes <- sapply(names(orig_responses), function(x) gsub("_[-0-9]+$", "", x, perl=TRUE))
+  answer_codes <- sapply(names(relevant_responses), function(x) gsub("[_ -][-0-9]+$", "", x, perl=TRUE))
   for (ans in unique(answer_codes)) {
 
     # for each answer, save response columns that start with that answer.
     responses_by_answers[[ans]] <- list()
     responses_by_answers[[ans]][['responses']] <- list()
     responses_by_answers[[ans]][['responses']] <-
-      orig_responses[which(gdata::startsWith(names(orig_responses), ans))]
+      relevant_responses[which(gdata::startsWith(names(relevant_responses), ans))]
 
     # remove the answer from the column name
     colnames(responses_by_answers[[ans]][['responses']]) <-
       sapply(colnames(responses_by_answers[[ans]][['responses']]),
-             function(x) gsub(paste0(ans, "_"), "", x))
+             function(x) gsub(paste0(ans, "[_ -]"), "", x))
 
     # calculate the total number of valid respondents, N
     responses_by_answers[[ans]][['N']] <- length(which(apply(
       responses_by_answers[[ans]][['responses']],
       1,
-      function(x) any(x==1))))
+      function(x) any(x!=0 & x!= "" & x!=-99))))
 
     # if there are RecodeValues indicating NA like options,
     # separate them from the valid respondents, recalculate N,
     # and calculate total_N
     if ("RecodeValues" %in% names(question[['Payload']]) &&
-        any(question[['Payload']][['RecodeValues']] < 0)) {
+        suppressWarnings(any(question[['Payload']][['RecodeValues']] < 0))) {
 
       # if the response columns have use recode values
       # to represent the choices
@@ -468,7 +498,7 @@ matrix_multiple_answer_results <- function(question) {
         # separate na_columns from the valid responses
         na_cols <- which(sapply(
           names(responses_by_answers[[ans]][['responses']]),
-          function(x) question[['Payload']][['RecodeValues']][[x]] < 0))
+          function(x) suppressWarnings(question[['Payload']][['RecodeValues']][[x]] < 0)))
         responses_by_answers[[ans]][['na_columns']] <- list()
         responses_by_answers[[ans]][['na_columns']] <- responses_by_answers[[ans]][['responses']][na_cols]
         responses_by_answers[[ans]][['responses']] <- responses_by_answers[[ans]][['responses']][
@@ -491,7 +521,12 @@ matrix_multiple_answer_results <- function(question) {
     responses_by_answers[[ans]][['responses']] <- apply(
       responses_by_answers[[ans]][['responses']],
       2,
-      function(x) percent0(sum(x==1) / responses_by_answers[[ans]][['N']]))
+      function(x) {
+        if (sum(x!=-99 & x!=0 & x!="") != 0 && responses_by_answers[[ans]][['N']] != 0) {
+          percent0(sum(x!=-99 & x!=0 & x!="") / responses_by_answers[[ans]][['N']])
+        } else percent0(0)
+      }
+    )
 
     if (all(c('na_columns', 'total_N') %in% names(responses_by_answers[[ans]]))) {
       # turn the not-applicable columns for this answer into a
@@ -499,7 +534,12 @@ matrix_multiple_answer_results <- function(question) {
       responses_by_answers[[ans]][['na_columns']] <- apply(
         responses_by_answers[[ans]][['na_columns']],
         2,
-        function(x) percent0(sum(x==1) / responses_by_answers[[ans]][['total_N']]))
+        function(x) {
+          if (sum(x!=-99 & x!=0 & x!="") != 0 && responses_by_answers[[ans]][['total_N']] != 0) {
+            percent0(sum(x!=-99 & x!=0 & x!="") / responses_by_answers[[ans]][['total_N']])
+          } else percent0(0)
+        }
+      )
     }
   }
 
@@ -508,14 +548,17 @@ matrix_multiple_answer_results <- function(question) {
   # of the number of respondents who answered that specific question part.
   if (all(lapply(responses_by_answers, function(x) length(x[['responses']])) == 1)) {
     all_question_respondents <- length(which(apply(
-      orig_responses,
+      relevant_responses,
       1,
-      function(x) any(x==1))))
+      function(x) any(x!=0 & x!= -99 & x!=""))))
     for (ans in answer_codes) {
-      responses_by_answers[[ans]][['responses']] <- percent0(
-        responses_by_answers[[ans]][['N']] /
-          all_question_respondents
-      )
+      if (responses_by_answers[[ans]][['N']] != 0 &
+          all_question_respondents != 0) {
+        responses_by_answers[[ans]][['responses']] <- percent0(
+          responses_by_answers[[ans]][['N']] /
+            all_question_respondents
+        )
+      } else percent0(0)
     }
   }
 
@@ -567,7 +610,8 @@ matrix_multiple_answer_results <- function(question) {
   # if the rownames are labeled by the Choice Data Export Tags, use them to convert
   # their labels to the question parts' names.
   # if not, just try to use the labels directly to retrieve the part's labeling.
-  if (all(rownames(responses_tabled) %in% question[['Payload']][['ChoiceDataExportTags']])) {
+  if ('ChoiceDataExportTags' %in% names(question[['Payload']]) &&
+      all(rownames(responses_tabled) %in% question[['Payload']][['ChoiceDataExportTags']])) {
     rownames(responses_tabled) <- sapply(rownames(responses_tabled), function(x) {
       code <- names(question[['Payload']][['ChoiceDataExportTags']])[
         which(question[['Payload']][['ChoiceDataExportTags']] == x)
