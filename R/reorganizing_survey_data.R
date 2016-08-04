@@ -574,7 +574,7 @@ lean_responses <- function(question_blocks, survey_responses) {
 
   # list_of_rows_to_df turns the rows into a data frame
   dictionary <- do.call(rbind.data.frame, dictionary)
-  names(dictionary) <- c(
+  colnames(dictionary) <- c(
     "Respondent ID",
     "Question Response Column",
     "Raw Response",
