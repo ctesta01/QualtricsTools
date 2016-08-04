@@ -22,14 +22,6 @@ get_coded_questions_and_blocks <- function(survey, responses, original_first_row
   # remove the questions that were found in the trash block
   questions <- remove_trash_questions(questions, blocks)
 
-  # clean the question text of HTML and CSS tags
-  questions <- clean_question_text(questions)
-
-  # categorize each question's Response Type
-  # (Single Answer, Multiple Answer,
-  #  Text Entry, Rank Order)
-  questions <- human_readable_qtype(questions)
-
   # remove the trash block from the blocks
   blocks <- remove_trash_blocks(blocks)
 
@@ -37,6 +29,14 @@ get_coded_questions_and_blocks <- function(survey, responses, original_first_row
   questions_and_blocks <- split_side_by_sides(questions, blocks)
   questions <- questions_and_blocks[[1]]
   blocks <- questions_and_blocks[[2]]
+
+  # clean the question text of HTML and CSS tags
+  questions <- clean_question_text(questions)
+
+  # categorize each question's Response Type
+  # (Single Answer, Multiple Answer,
+  #  Text Entry, Rank Order)
+  questions <- human_readable_qtype(questions)
 
   # insert the response columns into their corresponding
   # question under question[['Responses']]
@@ -333,10 +333,15 @@ clean_question_text <- function(questions) {
 #' @param text any text string that might contain HTML or whitespace that needs stripped.
 #' @return text without any html or extraneous whitespace.
 clean_html <- function(text) {
-  clean_html_tags <- function(x) gsub("(&[a-z]*;|<.*?>)", " ", x)
+  clean_html_tags <- function(x) gsub("<.*?>", " ", x)
+  clean_html_entities <- function(x) gsub("&[# a-z 0-9]*;", "", x)
   clean_extra_whitespace <- function(x) gsub("\\s+", " ", x)
   clean_leading_whitespace <- function (x) gsub("^\\s+|\\s+$", "", x)
-  return(clean_leading_whitespace(clean_extra_whitespace(clean_html_tags(text))))
+  return(clean_leading_whitespace(
+         clean_extra_whitespace(
+         clean_html_entities(
+         clean_html_tags(text)
+         ))))
 }
 
 
