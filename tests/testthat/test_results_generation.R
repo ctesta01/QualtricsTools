@@ -1,5 +1,5 @@
 library(QualtricsTools)
-context("Results Generation - Multiple Choice Single Answer")
+context("Results Generation: mcsa, mcma, matrix-sa")
 
 # testing a multiple choice single answer (radio button) question
 test_that("plain mcsa results are processed correctly", {

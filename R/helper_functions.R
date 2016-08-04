@@ -65,7 +65,7 @@ choice_text_from_question <- function(question, choice) {
       recoded_value <- which(question[['Payload']][['RecodeValues']] == choice)
       recoded_value <- names(question[['Payload']][['RecodeValues']])[[recoded_value]]
       if (length(recoded_value) != 0)
-        choice <- recoded_value
+        choice <- names(question[['Payload']][['RecodeValues']])[[recoded_value]]
       if (choice %in% names(question[['Payload']][['Choices']]))
         choice <- question[['Payload']][['Choices']][[choice]][[1]]
     } else {
@@ -83,7 +83,7 @@ choice_text_from_question <- function(question, choice) {
     if ("RecodeValues" %in% names(question[['Payload']]) && length(question[['Payload']][['RecodeValues']]) > 0) {
       recoded_value <- which(question[['Payload']][['RecodeValues']] == choice)
       if (length(recoded_value) != 0) {
-        choice <- names(question[['Payload']][['RecodeValues']][recoded_value])[[1]]
+        choice <- names(question[['Payload']][['RecodeValues']])[[recoded_value]]
       }
       if (choice %in% names(question[['Payload']][['Answers']]))
         choice <- question[['Payload']][['Answers']][[choice]][[1]]
@@ -121,18 +121,25 @@ app <- function() {
 #'
 #' @param headerrows An optional parameter for specifying the number of
 #' headerrows in the response csv.
+#' @param already_loaded can be set to TRUE to indicate that get_setup should
+#' try to get the survey, responses, and original_first_rows from the global scope
+#' instead of asking the user for them. If they aren't there, then the function
+#' will use the sample data included in the package.
 get_setup <- function(headerrows, already_loaded) {
+  # default to headerrows = 3
   if (missing(headerrows)) {
     headerrows <- 3
   }
 
+  # default to already_loaded = FALSE
   if (missing(already_loaded)) {
     already_loaded <- FALSE
   }
 
+  # ask the user for the CSV and the QSF if the
   if (already_loaded == FALSE) {
-    try(survey <- ask_for_qsf())
-    try(responses <- ask_for_csv(headerrows=headerrows))
+    survey <- ask_for_qsf()
+    responses <- ask_for_csv(headerrows=headerrows)
     original_first_rows <- as.data.frame(responses[[2]])
     responses <- as.data.frame(responses[[1]])
   }
@@ -153,19 +160,24 @@ get_setup <- function(headerrows, already_loaded) {
     }
   }
 
-  try(blocks <- blocks_from_survey(survey))
-  try(questions <- questions_from_survey(survey))
-  try(questions <- remove_trash_questions(questions, blocks))
-  try(questions <- clean_question_text(questions))
-  try(questions <- human_readable_qtype(questions))
-  try(blocks <- remove_trash_blocks(blocks))
-  try(questions_and_blocks <- split_side_by_sides(questions, blocks))
+  blocks <- blocks_from_survey(survey)
+  questions <- questions_from_survey(survey)
+  questions <- remove_trash_questions(questions, blocks)
+  questions <- clean_question_text(questions)
+  questions <- human_readable_qtype(questions)
+  blocks <- remove_trash_blocks(blocks)
+  questions_and_blocks <- split_side_by_sides(questions, blocks)
   questions <- questions_and_blocks[[1]]
   blocks <- questions_and_blocks[[2]]
   questions <- link_responses_to_questions(questions, responses, original_first_rows)
+  questions <- generate_results(questions)
+  blocks <- questions_into_blocks(questions, blocks)
 
-  try(questions <- generate_results(questions))
-  try(blocks <- questions_into_blocks(questions, blocks))
+  # insert a header into the blocks
+  blocks[['header']] <- c(paste0("Survey Name: ",
+                                 survey[['SurveyEntry']][['SurveyName']]),
+                          paste0("Number of Respondents: ",
+                                 nrow(responses)))
 
   survey <<- survey
   responses <<- responses
@@ -212,7 +224,8 @@ find_question_index <- function(questions, exporttag) {
 #' to determine the choice text a response column corresponds to.
 #'
 #' @param response_column The name of a response column from the response set
-#' @param original_first_row The first row of the original response set, with names
+#' @param original_first_row The first row of the original response set. If you have
+#' the original_first_rows, you can use original_first_rows[1,].
 #' @param blocks A list of the survey blocks, with the questions included in them
 #' @return The choice text corresponding to a response column
 choice_text_from_response_column <- function(response_column, original_first_row, blocks) {
@@ -235,7 +248,7 @@ choice_text_from_response_column <- function(response_column, original_first_row
   # characters, since the question is cut off in the first row after 99
   # characters.
   if (!response_column %in% colnames(original_first_row)) return("")
-  first_row_entry <- as.character(original_first_row[response_column][[1]])
+  first_row_entry <- enc2native(as.character(original_first_row[response_column][1,]))
   stem_dashes <- gregexpr("-", substr(question_text, 1, 99))[[1]]
   stem_dash_n <- length(which(stem_dashes > 0))
   first_row_dashes <- gregexpr("-", first_row_entry)[[1]]
@@ -281,11 +294,11 @@ blocks_header_to_html <- function(blocks) {
 #' Since the blocks list is used to transport some additional information
 #' beyond the contents of the survey questions, this function is here to
 #' help in counting how many valid question blocks there are.
-#' Any real question blocks will be enumerated in R, as opposed to the
-#' content that's been added which will be named. This means that when
+#' Any real question blocks will be enumerated (aka numbered) in R, as opposed to the
+#' content that's been added which will be named (with a string). This means that when
 #' looking at the names of the blocks list, the integer values or the values which
 #' have no name are the question blocks, and the values which have names are the
-#' added information. This function counts up the former.
+#' information added by the QualtricsTools functions. This function counts up the former.
 #'
 #' @param blocks A list of blocks
 #' @return the number of question blocks
