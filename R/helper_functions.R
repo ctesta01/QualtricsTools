@@ -61,8 +61,9 @@ choice_text_from_question <- function(question, choice) {
     # of the recode values, try getting it directly from
     # the choices.
   } else if (is_mc_single_answer(question)) {
-    if ("RecodeValues" %in% names(question[['Payload']]) && length(question[['Payload']][['RecodeValues']]) > 0) {
+    if ("RecodeValues" %in% names(question[['Payload']]) && choice %in% question[['Payload']][['RecodeValues']]) {
       recoded_value <- which(question[['Payload']][['RecodeValues']] == choice)
+      recoded_value <- names(question[['Payload']][['RecodeValues']])[[recoded_value]]
       if (length(recoded_value) != 0)
         choice <- recoded_value
       if (choice %in% names(question[['Payload']][['Choices']]))
