@@ -367,7 +367,7 @@ matrix_single_answer_results <- function(question, original_first_rows) {
   # get the answer text as a list
   choices <- rownames(valid_responses)
   if ('ChoiceDataExportTags' %in% names(question[['Payload']]) &&
-      question[['Payload']][['ChoiceDataExportTags']] != FALSE &&
+      typeof(question[['Payload']][['ChoiceDataExportTags']]) != 'logical' &&
       rownames(valid_responses) %in% question[['Payload']][['ChoiceDataExportTags']]) {
     choices <- lapply(choices, function(x) names(question[['Payload']][['ChoiceDataExportTags']])[
       which(question[['Payload']][['ChoiceDataExportTags']] == x)
