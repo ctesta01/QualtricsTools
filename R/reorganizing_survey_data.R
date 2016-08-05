@@ -334,7 +334,7 @@ clean_question_text <- function(questions) {
 #' @return text without any html or extraneous whitespace.
 clean_html <- function(text) {
   clean_html_tags <- function(x) gsub("<.*?>", " ", x)
-  clean_html_entities <- function(x) gsub("&[# a-z 0-9]*;", "", x)
+  clean_html_entities <- function(x) gsub("&[# a-z 0-9]*;", " ", x)
   clean_extra_whitespace <- function(x) gsub("\\s+", " ", x)
   clean_leading_whitespace <- function (x) gsub("^\\s+|\\s+$", "", x)
   return(clean_leading_whitespace(
@@ -663,7 +663,7 @@ split_side_by_sides <- function(questions, blocks) {
 
         # question text will include the SBS question's original question text and the
         # specific question component's question text.
-        split_questions[[j]][['Payload']][['QuestionTextClean']] <- paste0(
+        split_questions[[j]][['Payload']][['QuestionText']] <- paste0(
           clean_html(questions[[i]][['Payload']][['QuestionText']]),
           "-",
           clean_html(questions[[i]][['Payload']][['AdditionalQuestions']][[as.character(j)]][['QuestionText']])

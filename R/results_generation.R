@@ -456,7 +456,7 @@ matrix_multiple_answer_results <- function(question, original_first_rows) {
     responses_by_answers[[ans]] <- list()
     responses_by_answers[[ans]][['responses']] <- list()
     responses_by_answers[[ans]][['responses']] <-
-      relevant_responses[which(gdata::startsWith(names(relevant_responses), ans))]
+      relevant_responses[which(grepl(paste0("^", ans, "[_ -]"), names(relevant_responses)))]
 
     # remove the answer from the column name
     colnames(responses_by_answers[[ans]][['responses']]) <-
@@ -567,6 +567,11 @@ matrix_multiple_answer_results <- function(question, original_first_rows) {
   N <- lapply(responses_by_answers, '[[', 'N')
   choices <- t(as.data.frame(lapply(responses_by_answers, '[[', 'responses'),
                              optional=TRUE))
+
+  # if there's only one option, then the choice will need manual naming because
+  # R has trouble differentiating between single column data frames and lists
+  only_one_option <- ncol(choices) == 1 && length(unique(gsub("[0-9 _ -]*-", "", colnames(relevant_responses)))) == 1
+  if (only_one_option) colnames(choices) <- gsub("[0-9 _ -]*-", "", colnames(relevant_responses)[[1]])
 
   # this is a helper function for renaming the choices based on the
   # recodevalues, if appropriate. Insights uses the recodevalues reliably,
