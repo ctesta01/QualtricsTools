@@ -170,7 +170,7 @@ get_setup <- function(headerrows, already_loaded) {
   questions <- clean_question_text(questions)
   questions <- human_readable_qtype(questions)
   questions <- link_responses_to_questions(questions, responses, original_first_rows)
-  questions <- generate_results(questions)
+  questions <- generate_results(questions, original_first_rows)
   blocks <- questions_into_blocks(questions, blocks)
 
   # insert a header into the blocks

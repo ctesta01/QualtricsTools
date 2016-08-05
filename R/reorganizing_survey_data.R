@@ -44,7 +44,7 @@ get_coded_questions_and_blocks <- function(survey, responses, original_first_row
 
   # generate each question's results table and insert it
   # in question[['Table']]
-  questions <- generate_results(questions)
+  questions <- generate_results(questions, original_first_rows)
 
   # insert the questions into the blocks
   blocks <- questions_into_blocks(questions, blocks)
