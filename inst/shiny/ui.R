@@ -19,17 +19,10 @@ sidebar <- dashboardSidebar(
              ),
              menuItem("Processed Results", tabName="report", icon=icon("tasks")),
              menuItem("Include/Exclude Responses", tabName="include_exclude", icon=icon("toggle-on")),
+             menuItem("More Options", tabName="more-options", icon=icon("dashboard")),
+
 
              # empty h5 headers below are for spacing
-
-             h5(""),
-             downloadButton('downloadResultsTables', 'Results Table', class="btn-primary"),
-             h5(""),
-             downloadButton('downloadQuestionDictionary', 'Question Dictionary', class="btn-primary"),
-             h5(""),
-             downloadButton('downloadTextAppendices', 'Text Appendices', class="btn-primary"),
-             h5(""),
-             downloadButton('downloadDisplayLogic', 'Display Logic', class="btn-primary"),
              h5(""),
              downloadButton('downloadAllAsZip', 'Download All As Zip', class="btn-primary"),
              h5(""),

@@ -42,3 +42,9 @@ $('document').ready(function() {
     Shiny.onInputChange('unselected_questions', unselected);
   });
 });
+
+// add the navbar-fixed-top class to the logo and change the class of the header
+$('document').ready(function() {
+  $('.logo').addClass('navbar-fixed-top')
+  $('.navbar').removeClass( "navbar-static-top" ).addClass( "navbar-fixed-top" );
+})

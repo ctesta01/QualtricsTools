@@ -192,8 +192,8 @@ shinyServer(
       fs <- c()
       tmpdir <- tempdir()
       rt_docx <- html_to_docx(results_tables(), "results_tables.docx")
-      write.csv(question_dictionary(), row.names=F, file=file.path(tempdir(), "question_dictionary.csv"))
-      qd_csv <- file.path(tempdir(), "question_dictionary.csv")
+      write.csv(question_dictionary(), row.names=F, file=file.path(tmpdir, "question_dictionary.csv"))
+      qd_csv <- file.path(tmpdir, "question_dictionary.csv")
       dl_docx <- html_to_docx(display_logic(), "display_logic.docx")
       ta_docx <- html_to_docx(text_appendices(), "text_appendices.docx")
 
@@ -205,6 +205,8 @@ shinyServer(
       fs <- c(fs, file=qd_csv)
       fs <- c(fs, file=dl_docx)
       fs <- c(fs, file=ta_docx)
+      if (file.exists(paste0(fname, ".zip")))
+        file.rename(paste0(fname, ".zip"), fname)
       zip(zipfile=fname, files=fs, flags="-j")
     },
     contentType = "application/zip"
