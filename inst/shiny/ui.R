@@ -31,6 +31,8 @@ sidebar <- dashboardSidebar(
              h5(""),
              downloadButton('downloadDisplayLogic', 'Display Logic', class="btn-primary"),
              h5(""),
+             downloadButton('downloadAllAsZip', 'Download All As Zip', class="btn-primary"),
+             h5(""),
              actionButton("quit", "Stop App")
              )
 )

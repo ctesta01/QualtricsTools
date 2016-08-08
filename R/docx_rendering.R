@@ -12,7 +12,7 @@
 #' @param output_dir an optional parameter for specifying an output folder
 #'
 #' @return the path to the docx file created from converting the html.
-html_to_docx <- function(html, output_dir) {
+html_to_docx <- function(html, file_name) {
   # it is necessary that we save the file in UTF-8 format, otherwise Pandoc
   # will not be able to read it.
   options("encoding" = "UTF-8")
@@ -38,16 +38,18 @@ html_to_docx <- function(html, output_dir) {
 	pandoc_command <- gsub("temp_html", temp_html, pandoc_command)
 	pandoc_command <- gsub("temp_docx", temp_docx, pandoc_command)
 	system(pandoc_command)
+
+	# rename the file if a name was given
+	if (!missing(file_name)) {
+	  file.rename(from=temp_docx, to=file_name)
+	  temp_docx_full <- file.path(tempdir(), file_name)
+	}
+
+	# set things back to normal
 	setwd(orig_directory)
 	options("encoding" = "native.enc")
 
-	# if they included an output_dir, copy the file there
-	# if that works, return "Success!"
-	# otherwise, return the temporary file path.
-	if (!missing(output_dir)) {
-	  if (file.copy(from=temp_docx_full, to=output_dir)) {
-	    return("Success!")
-	  } else return(temp_docx_full)
-	} else return(temp_docx_full)
+
+	return(temp_docx_full)
 }
 

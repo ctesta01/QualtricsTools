@@ -184,6 +184,23 @@ shinyServer(
     }
   )
 
+  output[['downloadAllAsZip']] <- downloadHandler(
+    filename = function() {
+      paste("QT Survey Output", "zip", sep=".")
+    },
+    content = function(fname) {
+      fs <- c()
+      tmpdir <- tempdir()
+      fs <- c(fs, html_to_docx(results_tables(), "results_tables.docx"))
+      write.csv(question_dictionary(), row.names=F, file=file.path(tempdir(), "question_dictionary.csv"))
+      fs <- c(fs, file=file.path(tempdir(), "question_dictionary.csv"))
+      fs <- c(fs, file=html_to_docx(display_logic(), "display_logic.docx"))
+      fs <- c(fs, file=html_to_docx(text_appendices(), "text_appendices.docx"))
+      zip(zipfile=fname, files=fs)
+    },
+    contentType = "application/zip"
+  )
+
   ########## Stop Button
   observe({
     # If input$quit is unset (NULL) do nothing; if it's anything else, quit
