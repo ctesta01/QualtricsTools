@@ -45,6 +45,9 @@ html_to_docx <- function(html, file_name) {
 	  temp_docx_full <- file.path(tempdir(), file_name)
 	}
 
+	# make sure the path is safe for Windows
+	temp_docx_full <- gsub('\\\\', '/', temp_docx_full)
+
 	# set things back to normal
 	setwd(orig_directory)
 	options("encoding" = "native.enc")

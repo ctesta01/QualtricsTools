@@ -191,12 +191,21 @@ shinyServer(
     content = function(fname) {
       fs <- c()
       tmpdir <- tempdir()
-      fs <- c(fs, html_to_docx(results_tables(), "results_tables.docx"))
+      rt_docx <- html_to_docx(results_tables(), "results_tables.docx")
       write.csv(question_dictionary(), row.names=F, file=file.path(tempdir(), "question_dictionary.csv"))
-      fs <- c(fs, file=file.path(tempdir(), "question_dictionary.csv"))
-      fs <- c(fs, file=html_to_docx(display_logic(), "display_logic.docx"))
-      fs <- c(fs, file=html_to_docx(text_appendices(), "text_appendices.docx"))
-      zip(zipfile=fname, files=fs)
+      qd_csv <- file.path(tempdir(), "question_dictionary.csv")
+      dl_docx <- html_to_docx(display_logic(), "display_logic.docx")
+      ta_docx <- html_to_docx(text_appendices(), "text_appendices.docx")
+
+      # repath the CSV in case it needs it for a Windows path
+      # https://www.r-bloggers.com/stop-fiddling-around-with-copied-paths-in-windows-r/
+      qd_csv <- gsub('\\\\', '/', qd_csv)
+
+      fs <- c(fs, file=rt_docx)
+      fs <- c(fs, file=qd_csv)
+      fs <- c(fs, file=dl_docx)
+      fs <- c(fs, file=ta_docx)
+      zip(zipfile=fname, files=fs, flags="-j")
     },
     contentType = "application/zip"
   )
