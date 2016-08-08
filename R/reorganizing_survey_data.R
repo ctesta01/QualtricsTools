@@ -750,10 +750,9 @@ display_logic_from_question <- function(question) {
     has_choice_logic <- any(choices_with_logic)
     choices_with_logic <- which(choices_with_logic)
     if (has_choice_logic) {
-      display_logic[[e]] <- "Choice Display Logic:"
       e <- e+1
       for (i in choices_with_logic) {
-        display_logic[[e]] <- paste0("Display Logic for: ", question[['Payload']][['Choices']][[i]][['Display']], ":")
+        display_logic[[e]] <- paste0("Choice Display Logic for ", question[['Payload']][['Choices']][[i]][['Display']], ":")
         e <- e+1
         dl_indices_1 <- suppressWarnings(which(!is.na(as.numeric(names(question[['Payload']][['Choices']][[i]][['DisplayLogic']])))))
         for (j in dl_indices_1) {
@@ -775,10 +774,9 @@ display_logic_from_question <- function(question) {
     has_answer_logic <- any(answers_with_logic)
     answers_with_logic <- which(answers_with_logic)
     if (has_answer_logic) {
-      display_logic[[e]] <- "Answer Display Logic:"
       e <- e+1
       for (i in answers_with_logic) {
-        display_logic[[e]] <- paste0("Display Logic for: ", question[['Payload']][['Answers']][[i]][['Display']], ":")
+        display_logic[[e]] <- paste0("Choice Display Logic for ", question[['Payload']][['Answers']][[i]][['Display']], ":")
         e <- e+1
         dl_indices_1 <- suppressWarnings(which(!is.na(as.numeric(names(question[['Payload']][['Answers']][[i]][['DisplayLogic']])))))
         for (j in dl_indices_1) {

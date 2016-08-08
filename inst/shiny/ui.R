@@ -51,6 +51,7 @@ body <- dashboardBody(
                        uiOutput("results_tables")
                       ),
               tabPanel(h5("question dictionary"),
+                       checkboxInput("uncodeable-only", "Only Uncodeable Questions", value = FALSE, width = NULL),
                        dataTableOutput("question_dictionary")
                        ),
               tabPanel(h5("text appendices"),

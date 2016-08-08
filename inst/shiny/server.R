@@ -82,7 +82,18 @@ shinyServer(
       responses <- survey_and_responses()[[2]]
       original_first_rows <- survey_and_responses()[[3]]
       blocks <- get_coded_questions_and_blocks(survey, responses, original_first_rows)[[2]]
-      create_response_column_dictionary(blocks, original_first_row)
+      if (input[['uncodeable-only']] == TRUE) {
+        uncode_qdict <- uncodeable_question_dictionary(blocks)
+        if (is.null(uncode_qdict)) {
+          success_message <- data.frame("All questions were successfully processed!")
+          colnames(success_message)[1] <- " "
+          return(success_message)
+        } else {
+          return(uncode_qdict)
+        }
+      } else {
+        return(create_response_column_dictionary(blocks, original_first_row))
+      }
     }
   })
 
