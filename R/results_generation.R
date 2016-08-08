@@ -456,7 +456,7 @@ matrix_multiple_answer_results <- function(question, original_first_rows) {
     responses_by_answers[[ans]] <- list()
     responses_by_answers[[ans]][['responses']] <- list()
     responses_by_answers[[ans]][['responses']] <-
-      relevant_responses[which(gdata::startsWith(names(relevant_responses), ans))]
+      relevant_responses[which(grepl(paste0("^", ans, "[_ -]"), names(relevant_responses)))]
 
     # remove the answer from the column name
     colnames(responses_by_answers[[ans]][['responses']]) <-
@@ -568,6 +568,11 @@ matrix_multiple_answer_results <- function(question, original_first_rows) {
   choices <- t(as.data.frame(lapply(responses_by_answers, '[[', 'responses'),
                              optional=TRUE))
 
+  # if there's only one option, then the choice will need manual naming because
+  # R has trouble differentiating between single column data frames and lists
+  only_one_option <- ncol(choices) == 1 && length(unique(gsub("[0-9 _ -]*-", "", colnames(relevant_responses)))) == 1
+  if (only_one_option) colnames(choices) <- gsub("[0-9 _ -]*-", "", colnames(relevant_responses)[[1]])
+
   # this is a helper function for renaming the choices based on the
   # recodevalues, if appropriate. Insights uses the recodevalues reliably,
   # but legacy didn't. So the test is whether or not all the choices are
@@ -644,7 +649,12 @@ matrix_multiple_answer_results <- function(question, original_first_rows) {
 #'
 #' @return A list of questions with their results tables paired to them
 #' under the questions[[i]][['Table']]
-generate_results <- function(questions) {
+generate_results <- function(questions, original_first_rows) {
+  # should we use the original_first_rows?
+  if (!missing(original_first_rows) &&
+      nrow(original_first_rows) >= 2) {
+    should_use_ofr <- TRUE
+  } else should_use_ofr <- FALSE
 
   # loop through all the questions that have responses,
   # and for each question that has responses, determine
@@ -661,22 +671,45 @@ generate_results <- function(questions) {
     if (has_responses) {
       questions[[i]][['Table']] <- NULL
 
-      if (is_mc_multiple_answer(questions[[i]])) {
-        try(questions[[i]][['Table']] <-
-              mc_multiple_answer_results(questions[[i]]), silent = TRUE)
+      try({
+        # multiple choice multiple answer
+        if (is_mc_multiple_answer(questions[[i]])) {
+          if (should_use_ofr) {
+            table <- mc_multiple_answer_results(questions[[i]], original_first_rows)
+          } else {
+            table <- mc_multiple_answer_results(questions[[i]])
+          }
+          questions[[i]][['Table']] <- table
 
-      } else if (is_mc_single_answer(questions[[i]])) {
-        try(questions[[i]][['Table']] <-
-              mc_single_answer_results(questions[[i]]), silent = TRUE)
+          # multiple choice single answer
+        } else if (is_mc_single_answer(questions[[i]])) {
+          if(should_use_ofr) {
+            table <- mc_single_answer_results(questions[[i]], original_first_rows)
+          } else {
+            table <- mc_single_answer_results(questions[[i]])
+          }
+          questions[[i]][['Table']] <- table
 
-      } else if (is_matrix_multiple_answer(questions[[i]])) {
-        try(questions[[i]][['Table']] <-
-              matrix_multiple_answer_results(questions[[i]]), silent = TRUE)
+          # matrix multiple answer
+        } else if (is_matrix_multiple_answer(questions[[i]])) {
+          if (should_use_ofr) {
+            table <- matrix_multiple_answer_results(questions[[i]], original_first_rows)
+          } else {
+            table <- matrix_multiple_answer_results(questions[[i]])
+          }
+          questions[[i]][['Table']] <- table
 
-      } else if (is_matrix_single_answer(questions[[i]])) {
-        try(questions[[i]][['Table']] <-
-              matrix_single_answer_results(questions[[i]]), silent = TRUE)
-      }
+          # matrix single answer
+        } else if (is_matrix_single_answer(questions[[i]])) {
+          if (should_use_ofr) {
+            table <- matrix_single_answer_results(questions[[i]], original_first_rows)
+          } else {
+            table <- matrix_single_answer_results(questions[[i]])
+          }
+          questions[[i]][['Table']] <- table
+
+        }
+      }, silent=TRUE)
     }
   }
 
