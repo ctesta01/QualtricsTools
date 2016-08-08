@@ -580,11 +580,11 @@ matrix_multiple_answer_results <- function(question, original_first_rows) {
         code <- names(question[['Payload']][['RecodeValues']])[
           which(question[['Payload']][['RecodeValues']] == x)
           ]
-        clean_html(question[['Payload']][['Answers']][[code]][[1]])
+        question[['Payload']][['Answers']][[code]][[1]]
       })
     } else {
       sapply(choice_names, function(x) {
-        clean_html(question[['Payload']][['Answers']][[x]][[1]])
+        question[['Payload']][['Answers']][[x]][[1]]
       })
     }
   }
@@ -616,11 +616,11 @@ matrix_multiple_answer_results <- function(question, original_first_rows) {
       code <- names(question[['Payload']][['ChoiceDataExportTags']])[
         which(question[['Payload']][['ChoiceDataExportTags']] == x)
         ]
-      clean_html(question[['Payload']][['Choices']][[code]][[1]])
+      question[['Payload']][['Choices']][[code]][[1]]
     })
   } else {
     rownames(responses_tabled) <- sapply(rownames(responses_tabled),
-                                         function(x) clean_html(question[['Payload']][['Choices']][[x]][[1]]))
+                                         function(x) question[['Payload']][['Choices']][[x]][[1]])
   }
 
   # include the rownames as the first row
