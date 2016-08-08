@@ -668,6 +668,11 @@ split_side_by_sides <- function(questions, blocks) {
           "-",
           clean_html(questions[[i]][['Payload']][['AdditionalQuestions']][[as.character(j)]][['QuestionText']])
         )
+
+        # append a qtNote to split side-by-side questions
+        split_questions[[j]][['qtNotes']] <- list()
+        if ('qtNotes' %in% names(questions[[i]])) split_questions[[j]][['qtNotes']] <- questions[[i]][['qtNotes']]
+        split_questions[[j]][['qtNotes']] <- c(split_questions[[j]][['qtNotes']], 'This question was split from a side-by-side question.')
       }
 
       # use the SBS question's QuestionID to look up the question in the blocks

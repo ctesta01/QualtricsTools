@@ -88,7 +88,14 @@ mc_single_answer_results <- function(question, original_first_rows) {
   # but make sure that the choices column doesn't have a header when it prints.
   results_table <- data.frame(N, Percent, choices, row.names = NULL)
   colnames(results_table)[3] <- ""
-  results_table
+
+  # append the results table to the question
+  question[['Table']] <- results_table
+
+  # add a denominator note to the question
+  if (!'qtNotes' %in% names(question)) question[['qtNotes']] <- list()
+  question[['qtNotes']] <- c(question[['qtNotes']], paste0('Denominator Used: ', toString(respondent_count)))
+  return(question)
 }
 
 
@@ -199,7 +206,23 @@ mc_multiple_answer_results <- function(question, original_first_rows) {
   # construct and return the output data frame
   results_table <- data.frame(N, Percent, choices, row.names=NULL)
   colnames(results_table)[3] <- ""
-  return(results_table)
+
+  # append the results table
+  question[['Table']] <- results_table
+
+  # add a note for the denominators used in the question
+  if ('qtNotes' %in% names(question)) question[['qtNotes']] <- list()
+  if (exists('valid_denominator')) {
+    question[['qtNotes']] <- c(question[['qtNotes']], paste0('Valid Denominator Used: ',
+                                    toString(valid_denominator)))
+    question[['qtNotes']] <- c(question[['qtNotes']], paste0('Total Denominator Used: ',
+                                    toString(total_denominator)))
+  } else {
+    question[['qtNotes']] <- c(question[['qtNotes']], paste0('Denominator Used: ',
+                                    toString(total_denominator)))
+  }
+
+  return(question)
 }
 
 
@@ -388,7 +411,9 @@ matrix_single_answer_results <- function(question, original_first_rows) {
   colnames(results_table)[1] <- ""
   rownames(results_table) <- NULL
 
-  return(results_table)
+  # append the results table
+  question[['Table']] <- results_table
+  return(question)
 }
 
 
@@ -631,7 +656,8 @@ matrix_multiple_answer_results <- function(question, original_first_rows) {
   # include the rownames as the first row
   responses_tabled <- cbind(rownames(responses_tabled), responses_tabled)
   colnames(responses_tabled)[1] <- " "
-  return(responses_tabled)
+  question[['Table']] <- responses_tabled
+  return(question)
 }
 
 
@@ -675,39 +701,34 @@ generate_results <- function(questions, original_first_rows) {
         # multiple choice multiple answer
         if (is_mc_multiple_answer(questions[[i]])) {
           if (should_use_ofr) {
-            table <- mc_multiple_answer_results(questions[[i]], original_first_rows)
+            questions[[i]] <- mc_multiple_answer_results(questions[[i]], original_first_rows)
           } else {
-            table <- mc_multiple_answer_results(questions[[i]])
+            questions[[i]] <- mc_multiple_answer_results(questions[[i]])
           }
-          questions[[i]][['Table']] <- table
 
           # multiple choice single answer
         } else if (is_mc_single_answer(questions[[i]])) {
           if(should_use_ofr) {
-            table <- mc_single_answer_results(questions[[i]], original_first_rows)
+            questions[[i]] <- mc_single_answer_results(questions[[i]], original_first_rows)
           } else {
-            table <- mc_single_answer_results(questions[[i]])
+            questions[[i]] <- mc_single_answer_results(questions[[i]])
           }
-          questions[[i]][['Table']] <- table
 
           # matrix multiple answer
         } else if (is_matrix_multiple_answer(questions[[i]])) {
           if (should_use_ofr) {
-            table <- matrix_multiple_answer_results(questions[[i]], original_first_rows)
+            questions[[i]] <- matrix_multiple_answer_results(questions[[i]], original_first_rows)
           } else {
-            table <- matrix_multiple_answer_results(questions[[i]])
+            questions[[i]] <- matrix_multiple_answer_results(questions[[i]])
           }
-          questions[[i]][['Table']] <- table
 
           # matrix single answer
         } else if (is_matrix_single_answer(questions[[i]])) {
           if (should_use_ofr) {
-            table <- matrix_single_answer_results(questions[[i]], original_first_rows)
+            questions[[i]] <- matrix_single_answer_results(questions[[i]], original_first_rows)
           } else {
-            table <- matrix_single_answer_results(questions[[i]])
+            questions[[i]] <- matrix_single_answer_results(questions[[i]])
           }
-          questions[[i]][['Table']] <- table
-
         }
       }, silent=TRUE)
     }
