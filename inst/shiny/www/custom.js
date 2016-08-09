@@ -45,6 +45,11 @@ $('document').ready(function() {
 
 // add the navbar-fixed-top class to the logo and change the class of the header
 $('document').ready(function() {
-  $('.logo').addClass('navbar-fixed-top')
+  $('.logo').addClass('navbar-fixed-top');
   $('.navbar').removeClass( "navbar-static-top" ).addClass( "navbar-fixed-top" );
-})
+});
+
+// remove the btn-default from the download buttons
+$('document').ready(function() {
+  $('.btn-primary').removeClass("btn-default");
+});

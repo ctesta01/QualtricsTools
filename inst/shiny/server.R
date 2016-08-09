@@ -2,7 +2,6 @@ options(shiny.maxRequestSize=30*1024^2)
 
 shinyServer(
   function(input, output) {
-
   # the survey_and_responses reactive block reads the input files
   # and loads them as the survey and responses. It validates that there
   # are no duplicate data export tags in the survey, and it returns a
@@ -155,36 +154,59 @@ shinyServer(
 
 
   ########## Download Buttons
+  download_names <- reactive({
+    dnames <- list()
+
+    dnames['results_tables'] <- paste0("results_tables.", input[['rt_format']])
+    dnames['qdict'] <- paste0('question_dictionary.', input[['qd_format']])
+    dnames['text_appendices'] <- paste0('text_appendices.', input[['ta_format']])
+    dnames['display_logic'] <- paste0('display_logic.', input[['dl_format']])
+    return(dnames)
+  })
+
   # download results tables
   output[['downloadResultsTables']] <- downloadHandler(
-    filename = 'results-tables.docx',
+    filename = function() { download_names()[['results_tables']] },
     content = function(file) {
-      file.copy(html_to_docx(results_tables()), file)
-    }
-  )
-  # download question dictionary
-  output[['downloadQuestionDictionary']] <- downloadHandler(
-    filename = 'question-dictionary.csv',
-    content = function(file) {
-      write.csv(question_dictionary(), file, row.names=F)
-    }
-  )
-  # download text appendices
-  output[['downloadTextAppendices']] <- downloadHandler(
-    filename = 'appendices.docx',
-    content = function(file) {
-      file.copy(html_to_docx(text_appendices()), file)
-    }
-  )
-  # download display logic
-  output[['downloadDisplayLogic']] <- downloadHandler(
-    filename = 'display-logic.docx',
-    content = function(file) {
-      file.copy(html_to_docx(display_logic()), file)
+      pandoc_output = html_2_pandoc(html = results_tables(),
+                                    file_name = as.character(download_names()['results_tables']),
+                                    format = gsub(".*\\.", "", download_names()['results_tables'], perl=TRUE))
+      file.copy(pandoc_output, file)
     }
   )
 
-  output[['downloadAllAsZip']] <- downloadHandler(
+  # download question dictionary
+  output[['downloadQuestionDictionary']] <- downloadHandler(
+    filename = function() { download_names()[['qdict']] },
+    content = function(file) {
+      write.csv(question_dictionary(), file, row.names=FALSE)
+    }
+  )
+
+  # download text appendices
+  output[['downloadTextAppendices']] <- downloadHandler(
+    filename = function() { download_names()[['text_appendices']] },
+    content = function(file) {
+      pandoc_output = html_2_pandoc(html = text_appendices(),
+                                    file_name = as.character(download_names()['text_appendices']),
+                                    format = gsub(".*\\.", "", download_names()['text_appendices'], perl=TRUE))
+      file.copy(pandoc_output, file)
+    }
+  )
+
+  # download display logic
+  output[['downloadDisplayLogic']] <- downloadHandler(
+    filename = function() { download_names()[['display_logic']] },
+    content = function(file) {
+      pandoc_output = html_2_pandoc(html = display_logic(),
+                                    file_name = as.character(download_names()['display_logic']),
+                                    format = gsub(".*\\.", "", download_names()['display_logic'], perl=TRUE))
+      file.copy(pandoc_output, file)
+    }
+  )
+
+  # Download Zip Button
+  output[['downloadZip']] <- downloadHandler(
     filename = function() {
       paste("QT Survey Output", "zip", sep=".")
     },
@@ -192,7 +214,7 @@ shinyServer(
       fs <- c()
       tmpdir <- tempdir()
       rt_docx <- html_to_docx(results_tables(), "results_tables.docx")
-      write.csv(question_dictionary(), row.names=F, file=file.path(tmpdir, "question_dictionary.csv"))
+      write.csv(question_dictionary(), row.names=FALSE, file=file.path(tmpdir, "question_dictionary.csv"))
       qd_csv <- file.path(tmpdir, "question_dictionary.csv")
       dl_docx <- html_to_docx(display_logic(), "display_logic.docx")
       ta_docx <- html_to_docx(text_appendices(), "text_appendices.docx")
@@ -211,6 +233,7 @@ shinyServer(
     },
     contentType = "application/zip"
   )
+
 
   ########## Stop Button
   observe({

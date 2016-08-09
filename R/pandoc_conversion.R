@@ -12,21 +12,26 @@
 #' @param output_dir an optional parameter for specifying an output folder
 #'
 #' @return the path to the docx file created from converting the html.
-html_to_docx <- function(html, file_name) {
+html_2_pandoc <- function(html, file_name, format) {
   # it is necessary that we save the file in UTF-8 format, otherwise Pandoc
   # will not be able to read it.
   options("encoding" = "UTF-8")
+
+  # set default format to docx
+  if (missing(format)) format <- "docx"
 
   # save the original working directory so we can return to it at the end.
   # move to the temporary files directory, use tempfile() to create
   # the temporary HTML document, and then the .docx file path which we will
   # use pandoc to generate.
   orig_directory <- getwd()
-  setwd(tempdir())
+
+  temp_dir <- tempdir()
+  setwd(temp_dir)
 	html <- unlist(c("<!doctype html><html><body>", html, "</body></html>"))
 	temp_html <- basename(tempfile(fileext = ".html"))
-	temp_docx_full <- tempfile(fileext = ".docx")
-	temp_docx <- basename(temp_docx_full)
+	temp_output_full <- tempfile(fileext = paste0(".", format))
+	temp_output <- basename(temp_output_full)
 	write(html, file = temp_html)
 
 	# create the pandoc conversion command by replacing
@@ -34,25 +39,25 @@ html_to_docx <- function(html, file_name) {
 	# actual values (the file names).
 	# run the pandoc conversion, then return to the original directory,
 	# then return the full filepath of the converted docx file.
-	pandoc_command <- "pandoc -s temp_html -o temp_docx"
+	pandoc_command <- "pandoc -s temp_html -o temp_output"
 	pandoc_command <- gsub("temp_html", temp_html, pandoc_command)
-	pandoc_command <- gsub("temp_docx", temp_docx, pandoc_command)
+	pandoc_command <- gsub("temp_output", temp_output, pandoc_command)
 	system(pandoc_command)
 
 	# rename the file if a name was given
 	if (!missing(file_name)) {
-	  file.rename(from=temp_docx, to=file_name)
-	  temp_docx_full <- file.path(tempdir(), file_name)
+	  file.rename(from=temp_output, to=file_name)
+	  temp_output_full <- file.path(temp_dir, file_name)
 	}
 
 	# make sure the path is safe for Windows
-	temp_docx_full <- gsub('\\\\', '/', temp_docx_full)
+	temp_output_full <- gsub('\\\\', '/', temp_output_full)
 
 	# set things back to normal
 	setwd(orig_directory)
 	options("encoding" = "native.enc")
 
 
-	return(temp_docx_full)
+	return(temp_output_full)
 }
 
