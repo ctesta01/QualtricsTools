@@ -9,7 +9,7 @@ $("document").ready(function() {
 // this code makes the select-all/unselect-all button do its job
 $("document").ready(function() {
   $('#selectAll').click(function(e){
-    var table= $("#DataTables_Table_0");
+    var table= $("#select_qdict").find(".dataTables_wrapper");
 
     if ($('td input:checkbox:checked',table).length == $('td input:checkbox',table).length) {
       $('td input:checkbox',table).removeAttr("checked");

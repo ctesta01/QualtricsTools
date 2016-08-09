@@ -213,11 +213,11 @@ shinyServer(
     content = function(fname) {
       fs <- c()
       tmpdir <- tempdir()
-      rt_docx <- html_to_docx(results_tables(), "results_tables.docx")
+      rt_docx <- html_2_pandoc(results_tables(), "results_tables.docx")
       write.csv(question_dictionary(), row.names=FALSE, file=file.path(tmpdir, "question_dictionary.csv"))
       qd_csv <- file.path(tmpdir, "question_dictionary.csv")
-      dl_docx <- html_to_docx(display_logic(), "display_logic.docx")
-      ta_docx <- html_to_docx(text_appendices(), "text_appendices.docx")
+      dl_docx <- html_2_pandoc(display_logic(), "display_logic.docx")
+      ta_docx <- html_2_pandoc(text_appendices(), "text_appendices.docx")
 
       # repath the CSV in case it needs it for a Windows path
       # https://www.r-bloggers.com/stop-fiddling-around-with-copied-paths-in-windows-r/
@@ -233,6 +233,12 @@ shinyServer(
     },
     contentType = "application/zip"
   )
+
+  # selectize input for splitting respondents
+  output[['select_response_columns']] <- renderUI({
+    selectInput('split_respondents', 'Response Columns', survey_and_responses()[[2]][1,], multiple=TRUE, selectize=TRUE)
+  })
+
 
 
   ########## Stop Button

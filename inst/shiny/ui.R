@@ -63,16 +63,18 @@ body <- dashboardBody(
             column(width=12,
             h2('Include or Exclude Specific Questions'),
             actionButton("selectAll", "Unselect/Select All"),
-            actionButton("submit", "Apply"),
+            actionButton("submit", "Apply", class="btn-sucess"),
+            HTML("<br><br>"),
               dataTableOutput("select_qdict")
               )
   )),
   tabItem(tabName = "more_options",
           fluidPage(
-            titlePanel('Downloads'),
+            # titlePanel('Downloads'),
             sidebarLayout(
               sidebarPanel(
-                HTML("<table style='width: 100%;'> <tr> <td>"),
+                h1('Downloads'),
+                HTML("<br><table style='width: 100%;'> <tr> <td>"),
                 selectInput("rt_format", "Format for Results Tables:",
                             choices = c("docx", "html", "md", "pdf", "xls"),
                             width='90%'),
@@ -91,15 +93,18 @@ body <- dashboardBody(
                 HTML("</td> <td>"),
                 downloadButton('downloadTextAppendices', '', class="btn-primary"),
                 HTML("</td> </tr> <tr> <td>"),
-                selectInput("dl_format", "Format for Text Appendices:",
+                selectInput("dl_format", "Format for Display Logic:",
                             choices = c("docx", "html", "md", "pdf", "xls"),
                             width='90%'),
                 HTML("</td> <td>"),
                 downloadButton('downloadDisplayLogic', '', class="btn-primary"),
                 HTML("</td> </tr> </table>")
               ),
-              mainPanel(
-                HTML("yo")
+              sidebarPanel(width=8,
+                h1('Splitting Respondents'),
+                HTML("Select the columns for which you'd like to split the respondents
+                     into unique respondent groups"),
+                uiOutput("select_response_columns")
               )
             )
           )
