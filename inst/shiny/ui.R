@@ -103,39 +103,6 @@ body <- dashboardBody(
               )
             )
           )
-#     fluidRow(
-#       column(width=4,
-#         tabBox(width=NULL,
-#           tabPanel(h5('downloads'),
-#                    HTML("<table style='width: 100%;'> <tr> <td>"),
-#                    selectInput("rt_format", "Format for Results Tables:",
-#                                choices = c("docx", "html", "md", "pdf", "xlsx"),
-#                                width='90%'),
-#                    HTML("</td> <td>"),
-#                    downloadButton('downloadResultsTables', '', class="btn-primary"),
-#                    HTML("</td> </tr> <tr> <td>"),
-#                    selectInput("qd_format", "Format for Question Dictionary:",
-#                                choices = c("csv", "html", "md", "pdf", "xlsx"),
-#                                width='90%'),
-#                    HTML("</td> <td>"),
-#                    downloadButton('downloadQuestionDictionary', '', class="btn-primary"),
-#                    HTML("</td> </tr> <tr> <td>"),
-#                    selectInput("ta_format", "Format for Text Appendices:",
-#                                choices = c("docx", "html", "md", "pdf", "xlsx"),
-#                                width='90%'),
-#                    HTML("</td> <td>"),
-#                    downloadButton('downloadTextAppendices', '', class="btn-primary"),
-#                    HTML("</td> </tr> <tr> <td>"),
-#                    selectInput("dl_format", "Format for Text Appendices:",
-#                                choices = c("docx", "html", "md", "pdf", "xlsx"),
-#                                width='90%'),
-#                    HTML("</td> <td>"),
-#                    downloadButton('downloadDisplayLogic', '', class="btn-primary"),
-#                    HTML("</td> </tr> </table>"),
-#                    HTML("<label>Download All Formatted Files in a Zip: </label> <br> "),
-#                    downloadButton('downloadZip', 'Download Zip', class="btn-primary")
-#           ))
-#     )))
    ))
 )
 
