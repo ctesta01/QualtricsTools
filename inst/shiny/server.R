@@ -2,7 +2,6 @@ options(shiny.maxRequestSize=30*1024^2)
 
 shinyServer(
   function(input, output) {
-
   # the survey_and_responses reactive block reads the input files
   # and loads them as the survey and responses. It validates that there
   # are no duplicate data export tags in the survey, and it returns a
@@ -82,7 +81,18 @@ shinyServer(
       responses <- survey_and_responses()[[2]]
       original_first_rows <- survey_and_responses()[[3]]
       blocks <- get_coded_questions_and_blocks(survey, responses, original_first_rows)[[2]]
-      create_response_column_dictionary(blocks, original_first_row)
+      if (input[['uncodeable-only']] == TRUE) {
+        uncode_qdict <- uncodeable_question_dictionary(blocks)
+        if (is.null(uncode_qdict)) {
+          success_message <- data.frame("All questions were successfully processed!")
+          colnames(success_message)[1] <- " "
+          return(success_message)
+        } else {
+          return(uncode_qdict)
+        }
+      } else {
+        return(create_response_column_dictionary(blocks, original_first_row))
+      }
     }
   })
 
@@ -144,34 +154,92 @@ shinyServer(
 
 
   ########## Download Buttons
+  download_names <- reactive({
+    dnames <- list()
+
+    dnames['results_tables'] <- paste0("results_tables.", input[['rt_format']])
+    dnames['qdict'] <- paste0('question_dictionary.', input[['qd_format']])
+    dnames['text_appendices'] <- paste0('text_appendices.', input[['ta_format']])
+    dnames['display_logic'] <- paste0('display_logic.', input[['dl_format']])
+    return(dnames)
+  })
+
   # download results tables
   output[['downloadResultsTables']] <- downloadHandler(
-    filename = 'results-tables.docx',
+    filename = function() { download_names()[['results_tables']] },
     content = function(file) {
-      file.copy(html_to_docx(results_tables()), file)
+      pandoc_output = html_2_pandoc(html = results_tables(),
+                                    file_name = as.character(download_names()['results_tables']),
+                                    format = gsub(".*\\.", "", download_names()['results_tables'], perl=TRUE))
+      file.copy(pandoc_output, file)
     }
   )
+
   # download question dictionary
   output[['downloadQuestionDictionary']] <- downloadHandler(
-    filename = 'question-dictionary.csv',
+    filename = function() { download_names()[['qdict']] },
     content = function(file) {
-      write.csv(question_dictionary(), file, row.names=F)
+      write.csv(question_dictionary(), file, row.names=FALSE)
     }
   )
+
   # download text appendices
   output[['downloadTextAppendices']] <- downloadHandler(
-    filename = 'appendices.docx',
+    filename = function() { download_names()[['text_appendices']] },
     content = function(file) {
-      file.copy(html_to_docx(text_appendices()), file)
+      pandoc_output = html_2_pandoc(html = text_appendices(),
+                                    file_name = as.character(download_names()['text_appendices']),
+                                    format = gsub(".*\\.", "", download_names()['text_appendices'], perl=TRUE))
+      file.copy(pandoc_output, file)
     }
   )
+
   # download display logic
   output[['downloadDisplayLogic']] <- downloadHandler(
-    filename = 'display-logic.docx',
+    filename = function() { download_names()[['display_logic']] },
     content = function(file) {
-      file.copy(html_to_docx(display_logic()), file)
+      pandoc_output = html_2_pandoc(html = display_logic(),
+                                    file_name = as.character(download_names()['display_logic']),
+                                    format = gsub(".*\\.", "", download_names()['display_logic'], perl=TRUE))
+      file.copy(pandoc_output, file)
     }
   )
+
+  # Download Zip Button
+  output[['downloadZip']] <- downloadHandler(
+    filename = function() {
+      paste("QT Survey Output", "zip", sep=".")
+    },
+    content = function(fname) {
+      fs <- c()
+      tmpdir <- tempdir()
+      rt_docx <- html_2_pandoc(results_tables(), "results_tables.docx")
+      write.csv(question_dictionary(), row.names=FALSE, file=file.path(tmpdir, "question_dictionary.csv"))
+      qd_csv <- file.path(tmpdir, "question_dictionary.csv")
+      dl_docx <- html_2_pandoc(display_logic(), "display_logic.docx")
+      ta_docx <- html_2_pandoc(text_appendices(), "text_appendices.docx")
+
+      # repath the CSV in case it needs it for a Windows path
+      # https://www.r-bloggers.com/stop-fiddling-around-with-copied-paths-in-windows-r/
+      qd_csv <- gsub('\\\\', '/', qd_csv)
+
+      fs <- c(fs, file=rt_docx)
+      fs <- c(fs, file=qd_csv)
+      fs <- c(fs, file=dl_docx)
+      fs <- c(fs, file=ta_docx)
+      if (file.exists(paste0(fname, ".zip")))
+        file.rename(paste0(fname, ".zip"), fname)
+      zip(zipfile=fname, files=fs, flags="-j")
+    },
+    contentType = "application/zip"
+  )
+
+  # selectize input for splitting respondents
+  output[['select_response_columns']] <- renderUI({
+    selectInput('split_respondents', 'Response Columns', survey_and_responses()[[2]][1,], multiple=TRUE, selectize=TRUE)
+  })
+
+
 
   ########## Stop Button
   observe({

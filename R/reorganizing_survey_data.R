@@ -22,14 +22,6 @@ get_coded_questions_and_blocks <- function(survey, responses, original_first_row
   # remove the questions that were found in the trash block
   questions <- remove_trash_questions(questions, blocks)
 
-  # clean the question text of HTML and CSS tags
-  questions <- clean_question_text(questions)
-
-  # categorize each question's Response Type
-  # (Single Answer, Multiple Answer,
-  #  Text Entry, Rank Order)
-  questions <- human_readable_qtype(questions)
-
   # remove the trash block from the blocks
   blocks <- remove_trash_blocks(blocks)
 
@@ -38,13 +30,21 @@ get_coded_questions_and_blocks <- function(survey, responses, original_first_row
   questions <- questions_and_blocks[[1]]
   blocks <- questions_and_blocks[[2]]
 
+  # clean the question text of HTML and CSS tags
+  questions <- clean_question_text(questions)
+
+  # categorize each question's Response Type
+  # (Single Answer, Multiple Answer,
+  #  Text Entry, Rank Order)
+  questions <- human_readable_qtype(questions)
+
   # insert the response columns into their corresponding
   # question under question[['Responses']]
   questions <- link_responses_to_questions(questions, responses, original_first_rows)
 
   # generate each question's results table and insert it
   # in question[['Table']]
-  questions <- generate_results(questions)
+  questions <- generate_results(questions, original_first_rows)
 
   # insert the questions into the blocks
   blocks <- questions_into_blocks(questions, blocks)
@@ -333,10 +333,15 @@ clean_question_text <- function(questions) {
 #' @param text any text string that might contain HTML or whitespace that needs stripped.
 #' @return text without any html or extraneous whitespace.
 clean_html <- function(text) {
-  clean_html_tags <- function(x) gsub("(&[a-z]*;|<.*?>)", " ", x)
+  clean_html_tags <- function(x) gsub("<.*?>", " ", x)
+  clean_html_entities <- function(x) gsub("&[# a-z 0-9]*;", " ", x)
   clean_extra_whitespace <- function(x) gsub("\\s+", " ", x)
   clean_leading_whitespace <- function (x) gsub("^\\s+|\\s+$", "", x)
-  return(clean_leading_whitespace(clean_extra_whitespace(clean_html_tags(text))))
+  return(clean_leading_whitespace(
+         clean_extra_whitespace(
+         clean_html_entities(
+         clean_html_tags(text)
+         ))))
 }
 
 
@@ -574,7 +579,7 @@ lean_responses <- function(question_blocks, survey_responses) {
 
   # list_of_rows_to_df turns the rows into a data frame
   dictionary <- do.call(rbind.data.frame, dictionary)
-  names(dictionary) <- c(
+  colnames(dictionary) <- c(
     "Respondent ID",
     "Question Response Column",
     "Raw Response",
@@ -658,11 +663,16 @@ split_side_by_sides <- function(questions, blocks) {
 
         # question text will include the SBS question's original question text and the
         # specific question component's question text.
-        split_questions[[j]][['Payload']][['QuestionTextClean']] <- paste0(
+        split_questions[[j]][['Payload']][['QuestionText']] <- paste0(
           clean_html(questions[[i]][['Payload']][['QuestionText']]),
           "-",
           clean_html(questions[[i]][['Payload']][['AdditionalQuestions']][[as.character(j)]][['QuestionText']])
         )
+
+        # append a qtNote to split side-by-side questions
+        split_questions[[j]][['qtNotes']] <- list()
+        if ('qtNotes' %in% names(questions[[i]])) split_questions[[j]][['qtNotes']] <- questions[[i]][['qtNotes']]
+        split_questions[[j]][['qtNotes']] <- c(split_questions[[j]][['qtNotes']], 'This question was split from a side-by-side question.')
       }
 
       # use the SBS question's QuestionID to look up the question in the blocks
@@ -740,10 +750,9 @@ display_logic_from_question <- function(question) {
     has_choice_logic <- any(choices_with_logic)
     choices_with_logic <- which(choices_with_logic)
     if (has_choice_logic) {
-      display_logic[[e]] <- "Choice Display Logic:"
       e <- e+1
       for (i in choices_with_logic) {
-        display_logic[[e]] <- paste0("Display Logic for: ", question[['Payload']][['Choices']][[i]][['Display']], ":")
+        display_logic[[e]] <- paste0("Choice Display Logic for ", question[['Payload']][['Choices']][[i]][['Display']], ":")
         e <- e+1
         dl_indices_1 <- suppressWarnings(which(!is.na(as.numeric(names(question[['Payload']][['Choices']][[i]][['DisplayLogic']])))))
         for (j in dl_indices_1) {
@@ -765,10 +774,9 @@ display_logic_from_question <- function(question) {
     has_answer_logic <- any(answers_with_logic)
     answers_with_logic <- which(answers_with_logic)
     if (has_answer_logic) {
-      display_logic[[e]] <- "Answer Display Logic:"
       e <- e+1
       for (i in answers_with_logic) {
-        display_logic[[e]] <- paste0("Display Logic for: ", question[['Payload']][['Answers']][[i]][['Display']], ":")
+        display_logic[[e]] <- paste0("Choice Display Logic for ", question[['Payload']][['Answers']][[i]][['Display']], ":")
         e <- e+1
         dl_indices_1 <- suppressWarnings(which(!is.na(as.numeric(names(question[['Payload']][['Answers']][[i]][['DisplayLogic']])))))
         for (j in dl_indices_1) {

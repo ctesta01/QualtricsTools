@@ -1,5 +1,5 @@
 /* Table Formatting:
- * - The question descriptions and display logic tables 
+ * - The question descriptions and display logic tables
  *    should have a bolded first entry (the data export tag)
  * - Bold the 3rd to last rows of question descriptions, for
  *    a 'header' effect
@@ -18,12 +18,12 @@
 }
 
 
-/* Sidebar Styling: 
+/* Sidebar Styling:
  * - uniform padding for buttons and the menu.
- * - the 'Insights?' button has text associated with it 
+ * - the 'Insights?' button has text associated with it
  *    that is getting styled to match proper margins.
  * - the "Stop App" button has particular styling to keep
- *    it at the bottom of the page */ 
+ *    it at the bottom of the page */
 ul.treeview-menu.menu-open {
   padding-bottom: 10px;
 }
@@ -41,4 +41,13 @@ ul.treeview-menu.menu-open {
   left:0;
   margin-left: 20px;
   margin-bottom: 10px;
-}  
+}
+
+/* fixing the navbar, logo, and sidebar
+ */
+.content {
+  padding-top: 60px;
+}
+.main-sidebar {
+  position: fixed;
+}

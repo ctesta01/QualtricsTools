@@ -61,8 +61,9 @@ choice_text_from_question <- function(question, choice) {
     # of the recode values, try getting it directly from
     # the choices.
   } else if (is_mc_single_answer(question)) {
-    if ("RecodeValues" %in% names(question[['Payload']]) && length(question[['Payload']][['RecodeValues']]) > 0) {
+    if ("RecodeValues" %in% names(question[['Payload']]) && choice %in% question[['Payload']][['RecodeValues']]) {
       recoded_value <- which(question[['Payload']][['RecodeValues']] == choice)
+      recoded_value <- names(question[['Payload']][['RecodeValues']])[[recoded_value]]
       if (length(recoded_value) != 0)
         choice <- names(question[['Payload']][['RecodeValues']])[[recoded_value]]
       if (choice %in% names(question[['Payload']][['Choices']]))
@@ -150,7 +151,7 @@ get_setup <- function(headerrows, already_loaded) {
       survey <- get("survey", envir=-1)
     }
 
-    if (!exists("responses", where = -1) && !exists("original_first_rows", where = -1)) {
+    if (!exists("responses", where = -1) || !exists("original_first_rows", where = -1)) {
       responses <- sample_responses
       original_first_rows <<- sample_original_first_rows
     } else {
@@ -162,14 +163,14 @@ get_setup <- function(headerrows, already_loaded) {
   blocks <- blocks_from_survey(survey)
   questions <- questions_from_survey(survey)
   questions <- remove_trash_questions(questions, blocks)
-  questions <- clean_question_text(questions)
-  questions <- human_readable_qtype(questions)
   blocks <- remove_trash_blocks(blocks)
   questions_and_blocks <- split_side_by_sides(questions, blocks)
   questions <- questions_and_blocks[[1]]
   blocks <- questions_and_blocks[[2]]
+  questions <- clean_question_text(questions)
+  questions <- human_readable_qtype(questions)
   questions <- link_responses_to_questions(questions, responses, original_first_rows)
-  questions <- generate_results(questions)
+  questions <- generate_results(questions, original_first_rows)
   blocks <- questions_into_blocks(questions, blocks)
 
   # insert a header into the blocks

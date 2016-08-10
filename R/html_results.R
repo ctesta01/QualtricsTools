@@ -95,6 +95,11 @@ question_description <- function(question) {
     }
   }
 
+  # Check for notes, and include them where necessary
+  if ('qtNotes' %in% names(question)) {
+    description <- c(description, question[['qtNotes']])
+  }
+
   # reshape the data into a data frame
   question_header <- do.call(rbind.data.frame,
                              t(description))

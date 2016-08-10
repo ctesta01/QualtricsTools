@@ -9,7 +9,7 @@ $("document").ready(function() {
 // this code makes the select-all/unselect-all button do its job
 $("document").ready(function() {
   $('#selectAll').click(function(e){
-    var table= $("#DataTables_Table_0");
+    var table= $("#select_qdict").find(".dataTables_wrapper");
 
     if ($('td input:checkbox:checked',table).length == $('td input:checkbox',table).length) {
       $('td input:checkbox',table).removeAttr("checked");
@@ -41,4 +41,15 @@ $('document').ready(function() {
     });
     Shiny.onInputChange('unselected_questions', unselected);
   });
+});
+
+// add the navbar-fixed-top class to the logo and change the class of the header
+$('document').ready(function() {
+  $('.logo').addClass('navbar-fixed-top');
+  $('.navbar').removeClass( "navbar-static-top" ).addClass( "navbar-fixed-top" );
+});
+
+// remove the btn-default from the download buttons
+$('document').ready(function() {
+  $('.btn-primary').removeClass("btn-default");
 });
