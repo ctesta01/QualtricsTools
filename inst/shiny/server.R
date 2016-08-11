@@ -164,6 +164,7 @@ shinyServer(
       flow <- which(sapply(survey[['SurveyElements']], function(x) x[['Element']] == "FL"))
       flow <- sapply(survey[['SurveyElements']][[flow]][['Payload']][['Flow']], function(x) x[['ID']])
       flow <- unlist(flow)
+      if (!is.null(choose_split_block())) blocks <- choose_split_block()
       c(blocks_header_to_html(blocks),
         text_appendices_table(blocks, original_first_row, flow))
     }
