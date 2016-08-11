@@ -20,7 +20,7 @@ tabelize_blocks <- function(blocks, flow) {
     for (h in flow) {
       matched_block <- sapply(blocks, function(x) {
         if ('ID' %in% names(x)) {
-          return(x[['ID']] == h)
+          return(identical(x[['ID']], h))
         } else return(FALSE)
       })
       if (table(matched_block)['TRUE'] == 1) {

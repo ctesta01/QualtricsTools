@@ -91,6 +91,7 @@ shinyServer(
       survey <- survey_and_responses()[[1]]
       flow <- which(sapply(survey[['SurveyElements']], function(x) x[['Element']] == "FL"))
       flow <- sapply(survey[['SurveyElements']][[flow]][['Payload']][['Flow']], function(x) x[['ID']])
+      flow <- unlist(flow)
       blocks <- processed_questions_and_blocks()[[2]]
       return(c(blocks_header_to_html(blocks),
         tabelize_blocks(blocks, flow)))
@@ -125,8 +126,12 @@ shinyServer(
       original_first_rows <- survey_and_responses()[[3]]
       blocks <- processed_questions_and_blocks()[[2]]
       original_first_row <- original_first_rows[1,]
+      survey <- survey_and_responses()[[1]]
+      flow <- which(sapply(survey[['SurveyElements']], function(x) x[['Element']] == "FL"))
+      flow <- sapply(survey[['SurveyElements']][[flow]][['Payload']][['Flow']], function(x) x[['ID']])
+      flow <- unlist(flow)
       c(blocks_header_to_html(blocks),
-        text_appendices_table(blocks, original_first_row))
+        text_appendices_table(blocks, original_first_row, flow))
     }
   })
 
