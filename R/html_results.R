@@ -5,12 +5,34 @@
 #' such a list of questions by using generate_results function
 #'
 #' @return A list of HTML results tables for each question
-tabelize_blocks <- function(blocks) {
+tabelize_blocks <- function(blocks, flow) {
   # all the html tables will be saved into the tables list.
   tables <- list()
   tables[[1]] <- "<br>"
   options(stringsAsFactors = FALSE)
-  for (i in 1:number_of_blocks(blocks)) {
+
+  # determine the order of the block indices that we will use to
+  # go through the blocks
+  if (!missing(flow)) {
+    # if the survey flow was provided, then use it to figure out
+    # the block_ordering
+    block_ordering <- list()
+    for (h in flow) {
+      matched_block <- sapply(blocks, function(x) {
+        if ('ID' %in% names(x)) {
+          return(x[['ID']] == h)
+        } else return(FALSE)
+      })
+      if (table(matched_block)['TRUE'] == 1) {
+        block_ordering <- c(block_ordering, which(matched_block))
+      }
+    }
+  } else {
+    # if no flow was provided, then just go in order through all the blocks
+    block_ordering <- 1:length(blocks)
+  }
+
+  for (i in block_ordering) {
     if ('BlockElements' %in% names(blocks[[i]])) {
       tables <- c(tables, paste0("<h5>", blocks[[i]][['Description']], "</h5><br>"))
       if (length(blocks[[i]][['BlockElements']]) != 0) {
@@ -151,7 +173,7 @@ question_description <- function(question) {
 #' @return an html string containing a title,
 #' question text, and the text responses for each
 #' text appendix.
-text_appendices_table <- function(blocks, original_first_row) {
+text_appendices_table <- function(blocks, original_first_row, flow) {
 
   # appendix_lettering takes a number
   # and returns the corresponding lettered index.
@@ -173,6 +195,27 @@ text_appendices_table <- function(blocks, original_first_row) {
     }
   }
 
+  # determine the order of the block indices that we will use to
+  # go through the blocks
+  if (!missing(flow)) {
+    # if the survey flow was provided, then use it to figure out
+    # the block_ordering
+    block_ordering <- list()
+    for (h in flow) {
+      matched_block <- sapply(blocks, function(x) {
+        if ('ID' %in% names(x)) {
+          return(x[['ID']] == h)
+        } else return(FALSE)
+      })
+      if (table(matched_block)['TRUE'] == 1) {
+        block_ordering <- c(block_ordering, which(matched_block))
+      }
+    }
+  } else {
+    # if no flow was provided, then just go in order through all the blocks
+    block_ordering <- 1:length(blocks)
+  }
+
   # start with an empty list and an index at 0
   # the index e is for creating the appendix names,
   # by use of the above appendix_lettering function.
@@ -185,7 +228,7 @@ text_appendices_table <- function(blocks, original_first_row) {
   # loop through every response column that is EITHER
   # 1) the only response column to a TextEntry question, or
   # 2) a response column containing the string "TEXT".
-  for (i in 1:number_of_blocks(blocks)) {
+  for (i in block_ordering) {
     if ('BlockElements' %in% names(blocks[[i]])) {
       for (j in 1:length(blocks[[i]][['BlockElements']])) {
         if (!"qtSkip" %in% names(blocks[[i]][['BlockElements']][[j]]) ||

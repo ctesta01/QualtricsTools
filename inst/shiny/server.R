@@ -41,17 +41,43 @@ shinyServer(
     list_survey_and_responses[[2]] <- responses
     list_survey_and_responses[[3]] <- original_first_rows
     return(list_survey_and_responses)
-    })
+  })
+
+  # process the survey and responses into the coded questions
+  # and blocks.
+  processed_questions_and_blocks <- reactive({
+    if (length(survey_and_responses()) >= 3) {
+      survey <- survey_and_responses()[[1]]
+      responses <- survey_and_responses()[[2]]
+      original_first_rows <- survey_and_responses()[[3]]
+      questions_and_blocks <- get_coded_questions_and_blocks(survey, responses, original_first_rows)
+    }
+  })
+
+  # create the responses with a merged response column for splitting respondents
+  split_col_responses <- reactive({
+    validate(need(length(survey_and_responses()) >= 3, "Please upload the survey and responses"))
+    if (length(survey_and_responses()) >= 3) {
+      if (!is.null(input[['split_response_columns']])) {
+        responses <- survey_and_responses()[[2]]
+        blocks <- processed_questions_and_blocks()[[2]]
+        split_cols <- input[['split_response_columns']]
+        responses <- create_merged_response_column(
+          response_columns = split_cols,
+          col_name = "QualtricsTools Custom Split",
+          survey_responses = responses,
+          question_blocks = blocks)
+      } else return(survey_and_responses()[[2]])
+    }
+  })
+
 
   # the uncodeable_message reactive block reacts to the survey_and_responses() block
   # with a message indicating which, if any, questions were not properly processed.
   uncodeable_message <- reactive({
     validate(need(length(survey_and_responses()) >= 3, "Please upload the survey and responses"))
     if (length(survey_and_responses()) >= 3) {
-      survey <- survey_and_responses()[[1]]
-      responses <- survey_and_responses()[[2]]
-      original_first_rows <- survey_and_responses()[[3]]
-      questions <- get_coded_questions_and_blocks(survey, responses, original_first_rows)[[1]]
+      questions <- processed_questions_and_blocks()[[1]]
       uncodeable_questions_message(questions)
     }
   })
@@ -63,11 +89,11 @@ shinyServer(
     validate(need(length(survey_and_responses()) >= 3, ""))
     if (length(survey_and_responses()) >= 3) {
       survey <- survey_and_responses()[[1]]
-      responses <- survey_and_responses()[[2]]
-      original_first_rows <- survey_and_responses()[[3]]
-      blocks <- get_coded_questions_and_blocks(survey, responses, original_first_rows)[[2]]
-      c(blocks_header_to_html(blocks),
-        tabelize_blocks(blocks))
+      flow <- which(sapply(survey[['SurveyElements']], function(x) x[['Element']] == "FL"))
+      flow <- sapply(survey[['SurveyElements']][[flow]][['Payload']][['Flow']], function(x) x[['ID']])
+      blocks <- processed_questions_and_blocks()[[2]]
+      return(c(blocks_header_to_html(blocks),
+        tabelize_blocks(blocks, flow)))
     }
   })
 
@@ -76,11 +102,8 @@ shinyServer(
   question_dictionary <- reactive({
     validate(need(length(survey_and_responses()) >= 3, ""))
     if (length(survey_and_responses()) >= 3) {
-      survey <- survey_and_responses()[[1]]
       original_first_row <- survey_and_responses()[[3]][1, ]
-      responses <- survey_and_responses()[[2]]
-      original_first_rows <- survey_and_responses()[[3]]
-      blocks <- get_coded_questions_and_blocks(survey, responses, original_first_rows)[[2]]
+      blocks <- processed_questions_and_blocks()[[2]]
       if (input[['uncodeable-only']] == TRUE) {
         uncode_qdict <- uncodeable_question_dictionary(blocks)
         if (is.null(uncode_qdict)) {
@@ -99,10 +122,8 @@ shinyServer(
   text_appendices <- reactive({
     validate(need(length(survey_and_responses()) >= 3, "Please upload the survey and responses"))
     if (length(survey_and_responses()) >= 3) {
-      survey <- survey_and_responses()[[1]]
-      responses <- survey_and_responses()[[2]]
       original_first_rows <- survey_and_responses()[[3]]
-      blocks <- get_coded_questions_and_blocks(survey, responses, original_first_rows)[[2]]
+      blocks <- processed_questions_and_blocks()[[2]]
       original_first_row <- original_first_rows[1,]
       c(blocks_header_to_html(blocks),
         text_appendices_table(blocks, original_first_row))
@@ -236,9 +257,15 @@ shinyServer(
 
   # selectize input for splitting respondents
   output[['select_response_columns']] <- renderUI({
-    selectInput('split_respondents', 'Response Columns', survey_and_responses()[[2]][1,], multiple=TRUE, selectize=TRUE)
+    selectInput('split_response_columns', 'Response Columns', colnames(survey_and_responses()[[2]]), multiple=TRUE, selectize=TRUE)
   })
 
+  output[['select_respondent_group']] <- renderUI({
+    if ('QualtricsTools Custom Split' %in% colnames(split_col_responses())) {
+      choices <- unique(split_col_responses()[['QualtricsTools Custom Split']])
+    } else choices <- c('mtcars', 'test')
+    selectInput('split_respondents_group', 'Split Respondents Group', choices)
+  })
 
 
   ########## Stop Button

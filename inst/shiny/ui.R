@@ -17,7 +17,7 @@ sidebar <- dashboardSidebar(
                  HTML("Was the CSV exported using the <a href='https://github.com/ctesta01/QualtricsTools/wiki/Usage-Requirements#legacy-and-insights-data'>Insights format</a>?")),
              checkboxInput("insights_or_not", "Insights?", value = TRUE, width = NULL)
              ),
-             menuItem("Processed Results", tabName="report", icon=icon("tasks")),
+             menuItem("Processed Results", tabName="report", icon=icon("leanpub")),
              menuItem("Include/Exclude Responses", tabName="include_exclude", icon=icon("toggle-on")),
              menuItem("More Options", tabName="more_options", icon=icon("dashboard")),
 
@@ -104,7 +104,9 @@ body <- dashboardBody(
                 h1('Splitting Respondents'),
                 HTML("Select the columns for which you'd like to split the respondents
                      into unique respondent groups"),
-                uiOutput("select_response_columns")
+                uiOutput("select_response_columns"),
+                HTML("Select for which answer (combinations) you'd like to restrict the respondents to"),
+                uiOutput('select_respondent_group')
               )
             )
           )
