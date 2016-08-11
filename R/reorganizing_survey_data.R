@@ -681,12 +681,14 @@ split_side_by_sides <- function(questions, blocks) {
       split_question_ids <- lapply(split_questions, function(x) x[['Payload']][['QuestionID']])
       split_block_elements <- lapply(split_question_ids, function(x) list("Type"="Question", "QuestionID"=x))
       for (k in 1:length(blocks)) {
-        for (j in 1:length(blocks[[k]][['BlockElements']])) {
-          block_elmt_question_id <- blocks[[k]][['BlockElements']][[j]][['QuestionID']]
-          if (block_elmt_question_id == orig_question_id) {
-            blocks[[k]][['BlockElements']][[j]] <- NULL
-            blocks[[k]][['BlockElements']] <- append(blocks[[k]][['BlockElements']], split_block_elements, after=(j-1))
-            break
+        if ('BlockElements' %in% names(blocks[[k]])) {
+          for (j in 1:length(blocks[[k]][['BlockElements']])) {
+            block_elmt_question_id <- blocks[[k]][['BlockElements']][[j]][['QuestionID']]
+            if (block_elmt_question_id == orig_question_id) {
+              blocks[[k]][['BlockElements']][[j]] <- NULL
+              blocks[[k]][['BlockElements']] <- append(blocks[[k]][['BlockElements']], split_block_elements, after=(j-1))
+              break
+            }
           }
         }
       }
@@ -815,7 +817,7 @@ display_logic_from_question <- function(question) {
 #'  might look something like split_blocks[[1]][[1]][['BlockElements']][[1]] and
 #'  split_blocks[[2]][[1]][['BlockElements']][[1]]. These refer to the first and second respondent
 #'  groups, the first block, and the first block element.
-split_respondents <- function(response_column, headerrows, already_loaded) {
+split_respondents <- function(response_column, responses, survey, headerrows, already_loaded) {
   if (missing(headerrows)) {
     headerrows <- 3
   }
@@ -824,8 +826,12 @@ split_respondents <- function(response_column, headerrows, already_loaded) {
   }
 
   if (already_loaded != TRUE) {
-    try(survey <<- ask_for_qsf())
-    try(responses <<- ask_for_csv(headerrows = headerrows))
+    if (missing(responses)) {
+      try(responses <<- ask_for_csv(headerrows = headerrows))
+    }
+    if (missing(survey)) {
+      try(survey <<- ask_for_qsf())
+    }
   }
 
   if (already_loaded == TRUE) {
@@ -845,17 +851,6 @@ split_respondents <- function(response_column, headerrows, already_loaded) {
   # split the respondents by their responses to in the response_column
   split_responses <- split(responses, responses[response_column], drop=TRUE)
 
-  # print the respondent levels to console and wait for input
-  preview <- c(nrow(responses),
-               table(factor(responses[[response_column]])))
-  names(preview)[1] <- "Total"
-  print(preview,
-        row.names = FALSE)
-
-  cat ("\nPress [enter] to continue")
-  line <- readline()
-
-
   # process the blocks and questions as per usual
   blocks <- blocks_from_survey(survey)
   questions <- questions_from_survey(survey)
@@ -866,7 +861,7 @@ split_respondents <- function(response_column, headerrows, already_loaded) {
 
   # insert the header into the blocks
   blocks[['header']] <- c(paste0("Survey Name: ",
-                                 survey[['SurveyEntry']][['SurveyName']]),
+                          survey[['SurveyEntry']][['SurveyName']]),
                           paste0("Total Number of Original Respondents: ",
                                  nrow(responses)))
 
@@ -1135,8 +1130,9 @@ create_merged_response_column <- function(response_columns,
     merge_col_name <- response_columns[[i]]
     question <- question_from_response_column(blocks, merge_col_name)
     response_col <- responses[[merge_col_name]]
-    if (!is.null(question)) {
-      to_be_merged[[i]] <- lapply(response_col, function(x) choice_text_from_question(blocks[[question[[1]]]][['BlockElements']][[question[[2]]]], x))
+    if (!is.null(question) && !is_text_entry(blocks[[question[[1]]]][['BlockElements']][[question[[2]]]])) {
+      question <- blocks[[question[[1]]]][['BlockElements']][[question[[2]]]]
+      to_be_merged[[i]] <- lapply(response_col, function(x) choice_text_from_question(question, x))
     } else {
       to_be_merged[[i]] <- response_col
     }
