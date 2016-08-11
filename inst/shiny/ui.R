@@ -106,7 +106,8 @@ body <- dashboardBody(
                      into unique respondent groups"),
                 uiOutput("select_response_columns"),
                 HTML("Select for which answer (combinations) you'd like to restrict the respondents to"),
-                uiOutput('select_respondent_group')
+                uiOutput('select_respondent_group'),
+                tableOutput('table_respondent_groups')
               )
             )
           )
