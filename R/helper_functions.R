@@ -283,9 +283,18 @@ choice_text_from_response_column <- function(response_column, original_first_row
 #' @param blocks A list of blocks with a 'header' inserted.
 #' @return an HTML header for the survey
 blocks_header_to_html <- function(blocks) {
-  return(c("<h4>",
-           paste(blocks[['header']], collapse="<br>"),
-           "</h4><br>"))
+  header <- c("<h4>",
+           paste(blocks[['header']][1:2], collapse="<br>"))
+  if (length(blocks[['header']]) > 2) {
+    header <- c(header,
+                "<br><br>",
+                paste(blocks[['header']][3:length(blocks[['header']])], collapse="<br>"),
+                "</h4><br>"
+    )
+  }
+  header <- c(header,
+              "</h4></br>")
+  return(header)
 }
 
 

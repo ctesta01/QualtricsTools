@@ -1130,9 +1130,18 @@ create_merged_response_column <- function(response_columns,
     merge_col_name <- response_columns[[i]]
     question <- question_from_response_column(blocks, merge_col_name)
     response_col <- responses[[merge_col_name]]
-    if (!is.null(question) && !is_text_entry(blocks[[question[[1]]]][['BlockElements']][[question[[2]]]])) {
+
+    if (!is.null(question)) {
       question <- blocks[[question[[1]]]][['BlockElements']][[question[[2]]]]
-      to_be_merged[[i]] <- lapply(response_col, function(x) choice_text_from_question(question, x))
+      should_convert <- !is_text_entry(question)
+      converted <- lapply(response_col, function(x) choice_text_from_question(question, x))
+      should_convert <- should_convert && !all(converted=="")
+    } else should_convert <- FALSE
+
+
+    if (should_convert) {
+      question <- blocks[[question[[1]]]][['BlockElements']][[question[[2]]]]
+      to_be_merged[[i]] <- converted
     } else {
       to_be_merged[[i]] <- response_col
     }

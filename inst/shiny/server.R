@@ -58,7 +58,8 @@ shinyServer(
   split_col_responses <- reactive({
     validate(need(length(survey_and_responses()) >= 3, "Please upload the survey and responses"))
     if (length(survey_and_responses()) >= 3) {
-      if (!is.null(input[['split_response_columns']])) {
+      if ('split_response_columns' %in% names(input) &&
+          !is.null(input[['split_response_columns']])) {
         responses <- survey_and_responses()[[2]]
         blocks <- processed_questions_and_blocks()[[2]]
         split_cols <- input[['split_response_columns']]
@@ -69,6 +70,38 @@ shinyServer(
           question_blocks = blocks)
       } else return(survey_and_responses()[[2]])
     }
+  })
+
+  split_blocks <- reactive({
+    validate(need(length(survey_and_responses()) >= 3, "Please upload the survey and responses"))
+    if ('split_respondents_group' %in% names(input) &&
+        input[['split_respondents_group']] != "") {
+      survey <- survey_and_responses()[[1]]
+      blocks <- processed_questions_and_blocks()[[2]]
+      responses <- split_col_responses()
+      split_respondents(response_column = "QualtricsTools Custom Split",
+                        survey = survey,
+                        responses = responses
+                        )
+    } else return(NULL)
+  })
+
+  choose_split_block <- reactive({
+    validate(need(length(survey_and_responses()) >= 3, "Please upload the survey and responses"))
+    if ('split_respondents_group' %in% names(input) &&
+        input[['split_respondents_group']] != "" &&
+        !is.null(split_blocks())) {
+      block_respondent_groups <- sapply(split_blocks(), function(x) {
+        header <- x[['header']][[3]]
+        header <- gsub("^Survey Respondents who had\\s", "", header, perl=TRUE)
+        header <- gsub("\\sin the QualtricsTools Custom Split column", "", header, perl=TRUE)
+        })
+
+      matching_blocks <- which(block_respondent_groups == input[['split_respondents_group']])
+      if (length(matching_blocks) == 1) {
+        return(split_blocks()[[matching_blocks[[1]]]])
+      } else return(NULL)
+    } else return(NULL)
   })
 
 
@@ -93,6 +126,7 @@ shinyServer(
       flow <- sapply(survey[['SurveyElements']][[flow]][['Payload']][['Flow']], function(x) x[['ID']])
       flow <- unlist(flow)
       blocks <- processed_questions_and_blocks()[[2]]
+      if (!is.null(choose_split_block())) blocks <- choose_split_block()
       return(c(blocks_header_to_html(blocks),
         tabelize_blocks(blocks, flow)))
     }
@@ -179,6 +213,30 @@ shinyServer(
   , escape = FALSE)
 
 
+  # selectize response columns for splitting respondents
+  output[['select_response_columns']] <- renderUI({
+    selectInput('split_response_columns', 'Response Columns', colnames(survey_and_responses()[[2]]), multiple=TRUE, selectize=TRUE)
+  })
+
+  # select respondent group to view
+  output[['select_respondent_group']] <- renderUI({
+    if ('QualtricsTools Custom Split' %in% colnames(split_col_responses())) {
+      choices <- unique(split_col_responses()[['QualtricsTools Custom Split']])
+    } else choices <- c('')
+    selectInput('split_respondents_group', 'Split Respondents Group', c("", choices))
+  })
+
+  # output the breakdown of the respondent groups
+  output[['table_respondent_groups']] <- renderTable({
+      factor_table <- table(factor(split_col_responses()[['QualtricsTools Custom Split']]))
+      factor_table <- as.data.frame(factor_table)
+      if (ncol(factor_table) >= 2) {
+        colnames(factor_table) <- c("Respondent Group", "N")
+        factor_table
+      }
+    }, include.rownames=FALSE)
+
+
   ########## Download Buttons
   download_names <- reactive({
     dnames <- list()
@@ -260,17 +318,8 @@ shinyServer(
     contentType = "application/zip"
   )
 
-  # selectize input for splitting respondents
-  output[['select_response_columns']] <- renderUI({
-    selectInput('split_response_columns', 'Response Columns', colnames(survey_and_responses()[[2]]), multiple=TRUE, selectize=TRUE)
-  })
+  # Download Split Reports and Text Appendices
 
-  output[['select_respondent_group']] <- renderUI({
-    if ('QualtricsTools Custom Split' %in% colnames(split_col_responses())) {
-      choices <- unique(split_col_responses()[['QualtricsTools Custom Split']])
-    } else choices <- c('mtcars', 'test')
-    selectInput('split_respondents_group', 'Split Respondents Group', choices)
-  })
 
 
   ########## Stop Button
