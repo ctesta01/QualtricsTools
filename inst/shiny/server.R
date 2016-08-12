@@ -74,8 +74,8 @@ shinyServer(
 
   split_blocks <- reactive({
     validate(need(length(survey_and_responses()) >= 3, "Please upload the survey and responses"))
-    if ('split_respondents_group' %in% names(input) &&
-        input[['split_respondents_group']] != "") {
+    if ('split_response_columns' %in% names(input) &&
+        !is.null(input[['split_response_columns']])) {
       survey <- survey_and_responses()[[1]]
       blocks <- processed_questions_and_blocks()[[2]]
       responses <- split_col_responses()
@@ -320,7 +320,21 @@ shinyServer(
   )
 
   # Download Split Reports and Text Appendices
-
+  output[['downloadSplit']] <- downloadHandler(
+    filename = function() {
+      paste("QT Split Reports and Appendices", "zip", sep=".")
+    },
+    content = function(fname) {
+      fs <- c()
+      split_blocks <- split_blocks()
+      for (i in 1:length(split_blocks)) {
+        fs <- c(fs, html_2_pandoc(tabelize_blocks(split_blocks[[i]]), paste0("results_tables_", i, ".docx")))
+        fs <- c(fs, html_2_pandoc(text_appendices_table(split_blocks[[i]]), paste0("text_appendices_", i, ".docx")))
+      }
+      zip(zipfile=fname, files=fs, flags="-j")
+    },
+    contentType = "application/zip"
+  )
 
 
   ########## Stop Button
