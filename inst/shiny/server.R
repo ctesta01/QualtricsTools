@@ -65,7 +65,7 @@ shinyServer(
         split_cols <- input[['split_response_columns']]
         responses <- create_merged_response_column(
           response_columns = split_cols,
-          col_name = "QualtricsTools Custom Split",
+          col_name = paste0(c("split", split_cols), collapse=" "),
           survey_responses = responses,
           question_blocks = blocks)
       } else return(survey_and_responses()[[2]])
@@ -79,7 +79,8 @@ shinyServer(
       survey <- survey_and_responses()[[1]]
       blocks <- processed_questions_and_blocks()[[2]]
       responses <- split_col_responses()
-      split_respondents(response_column = "QualtricsTools Custom Split",
+      split_cols <- input[['split_response_columns']]
+      split_respondents(response_column = paste0(c("split", split_cols), collapse=" "),
                         survey = survey,
                         responses = responses
                         )
@@ -93,9 +94,11 @@ shinyServer(
         !is.null(split_blocks())) {
       block_respondent_groups <- sapply(split_blocks(), function(x) {
         header <- x[['header']][[3]]
-        header <- gsub("^Survey Respondents who had\\s", "", header, perl=TRUE)
-        header <- gsub("\\sin the QualtricsTools Custom Split column", "", header, perl=TRUE)
-        })
+        header <- gsub("^Respondents with\\s", "", header, perl=TRUE)
+        split_cols <- input[['split_response_columns']]
+        header_second_half <- paste0("\\sin the ", paste0(c("split", split_cols), collapse=" "), " column")
+        header <- gsub(header_second_half, "", header, perl=TRUE)
+      })
 
       matching_blocks <- which(block_respondent_groups == input[['split_respondents_group']])
       if (length(matching_blocks) == 1) {
@@ -221,21 +224,25 @@ shinyServer(
 
   # select respondent group to view
   output[['select_respondent_group']] <- renderUI({
-    if ('QualtricsTools Custom Split' %in% colnames(split_col_responses())) {
-      choices <- unique(split_col_responses()[['QualtricsTools Custom Split']])
+    split_cols <- input[['split_response_columns']]
+    qt_split_col <- paste0(c("split", split_cols), collapse=" ")
+    if (qt_split_col %in% colnames(split_col_responses())) {
+      choices <- unique(split_col_responses()[[qt_split_col]])
     } else choices <- c('')
     selectInput('split_respondents_group', 'Split Respondents Group', c("", choices))
   })
 
   # output the breakdown of the respondent groups
   output[['table_respondent_groups']] <- renderTable({
-      factor_table <- table(factor(split_col_responses()[['QualtricsTools Custom Split']]))
+    split_cols <- input[['split_response_columns']]
+    qt_split_col <- paste0(c("split", split_cols), collapse=" ")
+    factor_table <- table(factor(split_col_responses()[[qt_split_col]]))
       factor_table <- as.data.frame(factor_table)
       if (ncol(factor_table) >= 2) {
         colnames(factor_table) <- c("Respondent Group", "N")
         factor_table
       }
-    }, include.rownames=FALSE)
+  }, include.rownames=FALSE)
 
 
   ########## Download Buttons
