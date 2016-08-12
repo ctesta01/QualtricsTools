@@ -877,12 +877,12 @@ split_respondents <- function(response_column, responses, survey, headerrows, al
     split_questions[[i]] <- generate_results(split_questions[[i]])
     split_blocks[[i]] <- questions_into_blocks(split_questions[[i]], split_blocks[[i]])
     split_blocks[[i]][['header']] <- c(split_blocks[[i]][['header']],
-                                       paste0("Survey Respondents who had ",
+                                       paste0("Respondents with ",
                                               names(split_responses)[[i]],
                                               " in the ",
                                               response_column,
                                               " column"),
-                                       paste0("Number of Respondents in Respondent Group: ",
+                                       paste0("Size of Respondent Group: ",
                                               nrow(split_responses[[i]])))
   }
 
