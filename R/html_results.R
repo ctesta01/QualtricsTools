@@ -230,6 +230,7 @@ text_appendices_table <- function(blocks, original_first_row, flow) {
   # 2) a response column containing the string "TEXT".
   for (i in block_ordering) {
     if ('BlockElements' %in% names(blocks[[i]])) {
+      tables <- c(tables, paste0("<h5>", blocks[[i]][['Description']], "</h5><br>"))
       for (j in 1:length(blocks[[i]][['BlockElements']])) {
         if (!"qtSkip" %in% names(blocks[[i]][['BlockElements']][[j]]) ||
             blocks[[i]][['BlockElements']][[j]][['qtSkip']] != TRUE) {
