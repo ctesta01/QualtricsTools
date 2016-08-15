@@ -335,8 +335,8 @@ shinyServer(
       fs <- c()
       split_blocks <- split_blocks()
       for (i in 1:length(split_blocks)) {
-        fs <- c(fs, html_2_pandoc(tabelize_blocks(split_blocks[[i]]), paste0("results_tables_", i, ".docx")))
-        fs <- c(fs, html_2_pandoc(text_appendices_table(split_blocks[[i]]), paste0("text_appendices_", i, ".docx")))
+        fs <- c(fs, html_2_pandoc(c(blocks_header_to_html(split_blocks[[i]]), tabelize_blocks(split_blocks[[i]])), paste0("results_tables_", i, ".docx")))
+        fs <- c(fs, html_2_pandoc(c(blocks_header_to_html(split_blocks[[i]]), text_appendices_table(split_blocks[[i]])), paste0("text_appendices_", i, ".docx")))
       }
       zip(zipfile=fname, files=fs, flags="-j")
     },
