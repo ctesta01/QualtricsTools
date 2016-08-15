@@ -653,6 +653,10 @@ matrix_multiple_answer_results <- function(question, original_first_rows) {
                                          function(x) question[['Payload']][['Choices']][[x]][[1]])
   }
 
+  # clean html out of the colnames and rownames
+  rownames(responses_tabled) <- sapply(rownames(responses_tabled), clean_html)
+  colnames(responses_tabled) <- sapply(colnames(responses_tabled), clean_html)
+
   # include the rownames as the first row
   responses_tabled <- cbind(rownames(responses_tabled), responses_tabled)
   colnames(responses_tabled)[1] <- " "
