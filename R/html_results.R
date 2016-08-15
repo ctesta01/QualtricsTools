@@ -250,14 +250,27 @@ text_appendices_table <- function(blocks, original_first_row, flow) {
             # number of responses,
             # and last add a <br> (html line break) to separate the next
             # text appendix
-            if (blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionType']] == "TE") {
-              responses <- blocks[[i]][['BlockElements']][[j]][['Responses']]
+            if (length(text_columns) == 1) {
+              responses <- blocks[[i]][['BlockElements']][[j]][['Responses']][text_columns]
               responses <- as.data.frame(responses[!apply(responses, 1, function(x) any(x=="")),])
               responses <- as.data.frame(responses[!apply(responses, 1, function(x) any(x==-99)),])
-              colnames(responses) <- colnames(blocks[[i]][['BlockElements']][[j]][['Responses']])
+              colnames(responses) <- colnames(blocks[[i]][['BlockElements']][[j]][['Responses']][text_columns])
+
+              # write the question text
+              if (!missing(original_first_row)) {
+                response_column <- names(blocks[[i]][['BlockElements']][[j]][['Responses']])[text_columns[[1]]]
+                choice_text <- choice_text_from_response_column(response_column, original_first_row, blocks)
+                if (choice_text != "") {
+                  question_text <- paste0(blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
+                                          "-",
+                                          choice_text)
+                } else {
+                  question_text <- blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']]
+                }
+              }
 
               if (nrow(responses) == 0) {
-                No_Respondents <- c(blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
+                No_Respondents <- c(question_text,
                                     "Verbatim responses -- these have not been edited in any way.",
                                     "",
                                     "No respondents answered this question")
@@ -274,20 +287,6 @@ text_appendices_table <- function(blocks, original_first_row, flow) {
 
                 # write the message for how many respondents responded
                 response_n <- paste0("Responses: (", nrow(responses), ")")
-
-                # write the question text
-                if (!missing(original_first_rows)) {
-                  response_column <- names(blocks[[i]][['BlockElements']][[j]][['Responses']])[text_columns[[k]]]
-                  choice_text <- choice_text_from_response_column(response_column, original_first_row, blocks)
-                  if (choice_text != "") {
-                    question_text <- paste0(blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
-                                            "-",
-                                            choice_text)
-                  } else {
-                    question_text <- blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']]
-                  }
-                }
-
 
 
                 # generate the header for the text appendix
@@ -328,7 +327,7 @@ text_appendices_table <- function(blocks, original_first_row, flow) {
               # the question text and number of responses,
               # and last add a <br> (html line break) to separate
               # the next text appendix.
-            } else if (length(text_columns) > 0) {
+            } else if (length(text_columns) > 1) {
               for (k in 1:length(text_columns)) {
 
                 # if the original_first_row is available, use it to construct the question text
