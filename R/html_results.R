@@ -275,10 +275,24 @@ text_appendices_table <- function(blocks, original_first_row, flow) {
                 # write the message for how many respondents responded
                 response_n <- paste0("Responses: (", nrow(responses), ")")
 
+                # write the question text
+                if (!missing(original_first_rows)) {
+                  response_column <- names(blocks[[i]][['BlockElements']][[j]][['Responses']])[text_columns[[k]]]
+                  choice_text <- choice_text_from_response_column(response_column, original_first_row, blocks)
+                  if (choice_text != "") {
+                    question_text <- paste0(blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
+                                            "-",
+                                            choice_text)
+                  } else {
+                    question_text <- blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']]
+                  }
+                }
+
+
 
                 # generate the header for the text appendix
                 text_appendix_header <- c(paste0("Appendix ", appendix_lettering(e)),
-                                          blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
+                                          question_text,
                                           "Verbatim responses -- these have not been edited in any way.",
                                           "",
                                           response_n)
