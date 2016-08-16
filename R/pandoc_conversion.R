@@ -12,7 +12,7 @@
 #' @param output_dir an optional parameter for specifying an output folder
 #'
 #' @return the path to the docx file created from converting the html.
-html_2_pandoc <- function(html, file_name, format) {
+html_2_pandoc <- function(html, file_name, format, output_dir) {
   # it is necessary that we save the file in UTF-8 format, otherwise Pandoc
   # will not be able to read it.
   options("encoding" = "UTF-8")
@@ -48,6 +48,11 @@ html_2_pandoc <- function(html, file_name, format) {
 	if (!missing(file_name)) {
 	  file.rename(from=temp_output, to=file_name)
 	  temp_output_full <- file.path(temp_dir, file_name)
+	}
+
+	if (!missing(output_dir)) {
+	  file.rename(from=temp_output_full, to=file.path(output_dir, basename(temp_output_full)))
+	  temp_output_full <- file.path(output_dir, basename(temp_output_full))
 	}
 
 	# make sure the path is safe for Windows
