@@ -275,18 +275,21 @@ text_appendices_table <- function(blocks, original_first_row, flow) {
                 # write the message for how many respondents responded
                 response_n <- paste0("Responses: (", nrow(responses), ")")
 
+                # generate the headers for each column
+                text_appendix_header <- list()
+                for (l in 1:ncol(responses)) {
+                  choice_text <- choice_text_from_response_column(colnames(responses)[[l]], original_first_row, blocks)
+                  text_appendix_header[[l]] <- c(paste0("Appendix ", appendix_lettering(e)),
+                                                 paste0(blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
+                                                        "-",
+                                                        choice_text),
+                                                 "Verbatim responses -- these have not been edited in any way.",
+                                                 "",
+                                                 response_n)
+                }
+                text_appendix_header <- do.call(cbind.data.frame, text_appendix_header)
 
-                # generate the header for the text appendix
-                text_appendix_header <- c(paste0("Appendix ", appendix_lettering(e)),
-                                          blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
-                                          "Verbatim responses -- these have not been edited in any way.",
-                                          "",
-                                          response_n)
-                text_appendix_header <- as.data.frame(text_appendix_header)
-
-                # repeat the header for each response column, and
-                # use the responses' column names
-                if (ncol(responses) > 1) for (l in 1:(ncol(responses)-1)) text_appendix_header <- cbind(text_appendix_header, text_appendix_header[,1])
+                # set colnames as response column names
                 colnames(text_appendix_header) <- colnames(responses)
 
                 # bind the header and responses together to make the text appendix
