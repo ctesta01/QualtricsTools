@@ -305,11 +305,17 @@ shinyServer(
     content = function(fname) {
       fs <- c()
       tmpdir <- tempdir()
-      rt_docx <- html_2_pandoc(results_tables(), "results_tables.docx")
+      rt_docx <- html_2_pandoc(html = results_tables(),
+                               file_name = as.character(download_names()['results_tables']),
+                               format = gsub(".*\\.", "", download_names()['results_tables'], perl=TRUE))
       write.csv(question_dictionary(), row.names=FALSE, file=file.path(tmpdir, "question_dictionary.csv"))
       qd_csv <- file.path(tmpdir, "question_dictionary.csv")
-      dl_docx <- html_2_pandoc(display_logic(), "display_logic.docx")
-      ta_docx <- html_2_pandoc(text_appendices(), "text_appendices.docx")
+      dl_docx <- html_2_pandoc(html=display_logic(),
+                               file_name = as.character(download_names()['display_logic']),
+                               format = gsub(".*\\.", "", download_names()['display_logic'], perl=TRUE))
+      ta_docx <- html_2_pandoc(html=text_appendices(),
+                               file_name = as.character(download_names()['text_appendices']),
+                               format = gsub(".*\\.", "", download_names()['text_appendices'], perl=TRUE))
 
       # repath the CSV in case it needs it for a Windows path
       # https://www.r-bloggers.com/stop-fiddling-around-with-copied-paths-in-windows-r/
@@ -341,8 +347,14 @@ shinyServer(
       original_first_rows <- survey_and_responses()[[3]]
       original_first_row <- original_first_rows[1,]
       for (i in 1:length(split_blocks)) {
-        fs <- c(fs, html_2_pandoc(c(blocks_header_to_html(split_blocks[[i]]), tabelize_blocks(split_blocks[[i]], flow)), paste0("results_tables_", i, ".docx")))
-        fs <- c(fs, html_2_pandoc(c(blocks_header_to_html(split_blocks[[i]]), text_appendices_table(split_blocks[[i]], original_first_row, flow)), paste0("text_appendices_", i, ".docx")))
+        fs <- c(fs, html_2_pandoc(html=c(blocks_header_to_html(split_blocks[[i]]), tabelize_blocks(split_blocks[[i]], flow)),
+                                  file_name = paste0("results_tables_", i, ".", gsub(".*\\.", "", download_names()['results_tables'], perl=TRUE)),
+                                  format = gsub(".*\\.", "", download_names()['results_tables'], perl=TRUE)))
+
+
+        fs <- c(fs, html_2_pandoc(html=c(blocks_header_to_html(split_blocks[[i]]), text_appendices_table(split_blocks[[i]], original_first_row, flow)),
+                                  file_name=paste0("text_appendices_", i, ".", gsub(".*\\.", "", download_names()['text_appendices'], perl=TRUE)),
+                                  format = gsub(".*\\.", "", download_names()['text_appendices'], perl=TRUE)))
       }
       zip(zipfile=fname, files=fs, flags="-j")
     },
