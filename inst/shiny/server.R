@@ -334,9 +334,15 @@ shinyServer(
     content = function(fname) {
       fs <- c()
       split_blocks <- split_blocks()
+      survey <- survey_and_responses()[[1]]
+      flow <- which(sapply(survey[['SurveyElements']], function(x) x[['Element']] == "FL"))
+      flow <- sapply(survey[['SurveyElements']][[flow]][['Payload']][['Flow']], function(x) x[['ID']])
+      flow <- unlist(flow)
+      original_first_rows <- survey_and_responses()[[3]]
+      original_first_row <- original_first_rows[1,]
       for (i in 1:length(split_blocks)) {
-        fs <- c(fs, html_2_pandoc(c(blocks_header_to_html(split_blocks[[i]]), tabelize_blocks(split_blocks[[i]])), paste0("results_tables_", i, ".docx")))
-        fs <- c(fs, html_2_pandoc(c(blocks_header_to_html(split_blocks[[i]]), text_appendices_table(split_blocks[[i]])), paste0("text_appendices_", i, ".docx")))
+        fs <- c(fs, html_2_pandoc(c(blocks_header_to_html(split_blocks[[i]]), tabelize_blocks(split_blocks[[i]], flow)), paste0("results_tables_", i, ".docx")))
+        fs <- c(fs, html_2_pandoc(c(blocks_header_to_html(split_blocks[[i]]), text_appendices_table(split_blocks[[i]], original_first_row, flow)), paste0("text_appendices_", i, ".docx")))
       }
       zip(zipfile=fname, files=fs, flags="-j")
     },
