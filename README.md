@@ -4,7 +4,9 @@ This is a project I'm working on to automate creating reports from
 Qualtrics survey data and responses. This is an R package that 
 comes with a Shiny application that can be used for automatic report generation. 
 
-![carosel of views](https://fat.gfycat.com/ImmaterialUnnaturalBlackrussianterrier.gif)
+[![screenshot of application](https://i.imgur.com/A4zQizk.png)](https://www.youtube.com/watch?v=rmUC5EVGJiU)
+
+Checkout my [YouTube video](https://www.youtube.com/watch?v=rmUC5EVGJiU) for an informal overview of the application. 
 
 #### installing
 
