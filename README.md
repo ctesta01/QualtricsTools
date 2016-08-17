@@ -10,7 +10,7 @@ Checkout my [YouTube video](https://www.youtube.com/watch?v=rmUC5EVGJiU) for an 
 
 #### installing
 
-To get setup, you'll need to have R or [Rstudio](https://www.rstudio.com/), [devtools](https://github.com/hadley/devtools), and [Pandoc](http://pandoc.org/installing.html).
+To get setup, you'll need to have R or [Rstudio](https://www.rstudio.com/), [devtools](https://github.com/hadley/devtools), [Rtools](https://cran.r-project.org/bin/windows/Rtools/) if you're on Windows, and [Pandoc](http://pandoc.org/installing.html).
 
     devtools::install_github("ctesta01/QualtricsTools")
     library(QualtricsTools)
