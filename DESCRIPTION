@@ -10,6 +10,7 @@ LazyData: true
 Imports:
     gdata,
     gtools,
+    htmltools,
     httpuv,
     magrittr,
     reshape,
