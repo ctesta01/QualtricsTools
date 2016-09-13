@@ -210,7 +210,7 @@ link_responses_to_questions <- function (questions, responses, original_first_ro
   if (!missing(original_first_rows) && nrow(original_first_rows) >= 2) {
     for (i in 1:length(questions)) {
       question_id <- questions[[i]][['Payload']][['QuestionID']]
-      matching_responses <- which(grepl(paste0(question_id, "[#-_]*"), original_first_rows[2,]))
+      matching_responses <- which(grepl(paste0(question_id, "$", "|", question_id, "[#_-]+.*$"), original_first_rows[2,], perl=TRUE))
       if (length(matching_responses) > 0) {
         matching_responses_names <- colnames(original_first_rows)[matching_responses]
         matching_responses <- as.data.frame(as.data.frame(responses)[, matching_responses_names])
