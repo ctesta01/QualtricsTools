@@ -278,9 +278,10 @@ questions_into_blocks <- function(questions, blocks) {
         # create matching_question as a list of indices of questions which
         # have the corresponding QuestionID
         matching_question <- which(sapply(questions,
-                                    function(x) isTRUE(x[['Payload']][['QuestionID']] ==
-                                      blocks[[i]][['BlockElements']][[j]][['QuestionID']])))
-
+                                          function(x) isTRUE(x[['Payload']][['QuestionID']] ==
+                                                               blocks[[i]][['BlockElements']][[j]][['QuestionID']]) ||
+                                            isTRUE(x[['Payload']][['QuestionID']] ==
+                                                     blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionID']])))
         # if matching_question is a list of length 1 then we've matched the
         # question uniquely and can replace the BlockElement with the actual question
         if (length(matching_question) == 1) {

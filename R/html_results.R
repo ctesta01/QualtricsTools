@@ -223,7 +223,7 @@ text_appendices_table <- function(blocks, original_first_row, flow) {
   # text appendices tables.
   tables <- list()
   no_respondents_tables <- list()
-  e <- 0
+  e <- 1
 
   # loop through every response column that is EITHER
   # 1) the only response column to a TextEntry question, or
@@ -234,6 +234,28 @@ text_appendices_table <- function(blocks, original_first_row, flow) {
       for (j in 1:length(blocks[[i]][['BlockElements']])) {
         if (!"qtSkip" %in% names(blocks[[i]][['BlockElements']][[j]]) ||
             blocks[[i]][['BlockElements']][[j]][['qtSkip']] != TRUE) {
+
+          if ('CodedComments' %in% names(blocks[[i]][['BlockElements']][[j]])) {
+            text_appendix_header <- c(paste0("Appendix ", appendix_lettering(e)),
+                                      blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
+                                      "Coded Comments",
+                                      "")
+
+            text_appendix_header <- as.data.frame(text_appendix_header)
+            text_appendix_header <- do.call("cbind", replicate(2, text_appendix_header, simplify=FALSE))
+            coded_comment_names <- c(paste0(blocks[[i]][['BlockElements']][[j]][['Payload']][['DataExportTag']]),
+                                     paste0(blocks[[i]][['BlockElements']][[j]][['Payload']][['DataExportTag']], " "))
+            colnames(text_appendix_header) <- coded_comment_names
+            names(blocks[[i]][['BlockElements']][[j]][['CodedComments']]) <- coded_comment_names
+            blocks[[i]][['BlockElements']][[j]][['CodedComments']] <- rbind(c("Responses", "N"), blocks[[i]][['BlockElements']][[j]][['CodedComments']])
+            text_appendix <- rbind(text_appendix_header, blocks[[i]][['BlockElements']][[j]][['CodedComments']])
+            tables <- c(tables, capture.output(print(xtable::xtable(text_appendix),
+                                                     type="html",
+                                                     html.table.attributes='class="text_appendices data table table-bordered table-condensed"',
+                                                     include.rownames=FALSE)))
+            tables <- c(tables, "<br>")
+
+          }
           if ('Responses' %in% names(blocks[[i]][['BlockElements']][[j]]) &&
               ncol(blocks[[i]][['BlockElements']][[j]][['Responses']]) > 0) {
 
@@ -270,7 +292,6 @@ text_appendices_table <- function(blocks, original_first_row, flow) {
               }
 
               if (length(as.list(responses)) > 0) {
-                e <- e+1
 
                 # write the message for how many respondents responded
                 response_n <- paste0("Responses: (", nrow(responses), ")")
@@ -303,6 +324,7 @@ text_appendices_table <- function(blocks, original_first_row, flow) {
 
 
                 tables <- c(tables, "<br>")
+                e <- e+1
               }
 
               # if the question isn't a TextEntry question, but does
@@ -363,6 +385,7 @@ text_appendices_table <- function(blocks, original_first_row, flow) {
                                           "Verbatim responses -- these have not been edited in any way.",
                                           "",
                                           response_n)
+
                 text_appendix_header <- as.data.frame(text_appendix_header)
 
                 # repeat the header for each response column, and
@@ -379,6 +402,7 @@ text_appendices_table <- function(blocks, original_first_row, flow) {
                                                          html.table.attributes='class="text_appendices data table table-bordered table-condensed"',
                                                          include.rownames=FALSE)))
                 tables <- c(tables, "<br>")
+                e <- e+1
               }
             }
           }
