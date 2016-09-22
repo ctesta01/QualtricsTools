@@ -174,7 +174,7 @@ question_description <- function(question) {
 #' question text, and the text responses for each
 #' text appendix.
 text_appendices_table <- function(blocks, original_first_row, flow) {
-
+  options(stringsAsFactors = FALSE)
   # appendix_lettering takes a number
   # and returns the corresponding lettered index.
   # examples:
@@ -222,7 +222,6 @@ text_appendices_table <- function(blocks, original_first_row, flow) {
   # tables is for storing the HTML for all of the
   # text appendices tables.
   tables <- list()
-  no_respondents_tables <- list()
   e <- 1
 
   # loop through every response column that is EITHER
@@ -279,15 +278,19 @@ text_appendices_table <- function(blocks, original_first_row, flow) {
               colnames(responses) <- colnames(blocks[[i]][['BlockElements']][[j]][['Responses']])
 
               if (nrow(responses) == 0) {
-                No_Respondents <- c(blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
+                No_Respondents <- c(paste0("Appendix ", appendix_lettering(e)),
+                                    blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
                                     "Verbatim responses -- these have not been edited in any way.",
                                     "",
                                     "No respondents answered this question")
-                no_respondents_tables <- c(no_respondents_tables, capture.output(print(xtable::xtable(as.data.frame(No_Respondents)),
-                                                                                       type="html",
-                                                                                       html.table.attributes='class="text_appendices data table table-bordered table-condensed"',
-                                                                                       include.rownames=FALSE)))
-                no_respondents_tables <- c(no_respondents_tables, "<br>")
+                No_Respondents <- as.data.frame(No_Respondents)
+                colnames(No_Respondents)[1] <- blocks[[i]][['BlockElements']][[j]][['Payload']][['DataExportTag']]
+                tables <- c(tables, capture.output(print(xtable::xtable(No_Respondents),
+                                                         type="html",
+                                                         html.table.attributes='class="text_appendices data table table-bordered table-condensed"',
+                                                         include.rownames=FALSE)))
+                tables <- c(tables, "<br>")
+                e <- e+1
                 next
               }
 
@@ -364,15 +367,19 @@ text_appendices_table <- function(blocks, original_first_row, flow) {
                 colnames(responses) <- colnames(blocks[[i]][['BlockElements']][[j]][['Responses']][text_columns[[k]]])
 
                 if (nrow(responses) == 0) {
-                  No_Respondents <- c(blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
+                  No_Respondents <- c(paste0("Appendix ", appendix_lettering(e)),
+                                      blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
                                       "Verbatim responses -- these have not been edited in any way.",
                                       "",
                                       "No respondents answered this question")
-                  no_respondents_tables <- c(no_respondents_tables, capture.output(print(xtable::xtable(as.data.frame(No_Respondents)),
-                                                                                         type="html",
-                                                                                         html.table.attributes='class="text_appendices data table table-bordered table-condensed"',
-                                                                                         include.rownames=FALSE)))
-                  no_respondents_tables <- c(no_respondents_tables, "<br>")
+                  No_Respondents <- as.data.frame(No_Respondents)
+                  colnames(No_Respondents)[1] <- blocks[[i]][['BlockElements']][[j]][['Payload']][['DataExportTag']]
+                  tables <- c(tables, capture.output(print(xtable::xtable(No_Respondents),
+                                                           type="html",
+                                                           html.table.attributes='class="text_appendices data table table-bordered table-condensed"',
+                                                           include.rownames=FALSE)))
+                  tables <- c(tables, "<br>")
+                  e <- e+1
                   next
                 }
 
@@ -410,7 +417,6 @@ text_appendices_table <- function(blocks, original_first_row, flow) {
       }
     }
   }
-  tables <- c(tables, no_respondents_tables)
   return(unlist(lapply(tables, paste)))
 }
 
