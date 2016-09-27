@@ -322,3 +322,38 @@ number_of_blocks <- function(blocks) {
     return(block_length)
   }
 }
+
+#' Generate a List of Questions from Those Contained in the Blocks
+#'
+#' This function iterates through the blocks and anything that has a DataExportTag
+#' is added to a list of questions, and it returns that list of questions from
+#' the blocks.
+questions_from_blocks <- function(blocks) {
+  questions <- list()
+  e <- 1
+  for (i in 1:length(blocks)) {
+    if ('BlockElements' %in% names(blocks[[i]])) {
+      for (j in 1:length(blocks[[i]][['BlockElements']])) {
+        if ('Payload' %in% names(blocks[[i]][['BlockElements']][[j]]) &&
+            'DataExportTag' %in% names(blocks[[i]][['BlockElements']][[j]][['Payload']])) {
+          questions[[e]] <- blocks[[i]][['BlockElements']][[j]]
+          e <- e + 1
+        }
+      }
+    }
+  }
+  return(questions)
+}
+
+#' Get the Flow out of the Survey
+#'
+#' The 'Flow' is a list of Block IDs in the order that they are presented
+#' in the survey as it is taken by a respondent. The flow list that is returned
+#' from this function is used by functions like text_appendices_table and
+#' tabelize_blocks to get the ordering of the survey in the preview correct.
+flow_from_survey <- function(survey) {
+  flow <- which(sapply(survey[['SurveyElements']], function(x) x[['Element']] == "FL"))
+  flow <- sapply(survey[['SurveyElements']][[flow]][['Payload']][['Flow']], function(x) x[['ID']])
+  flow <- unlist(flow)
+  return(flow)
+}

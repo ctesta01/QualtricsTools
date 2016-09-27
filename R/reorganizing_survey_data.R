@@ -839,7 +839,7 @@ split_respondents <- function(response_column, responses, survey, headerrows, al
     if (!exists("survey", where = -1)) {
       survey <- sample_survey
     } else {
-      survey <- get("survey", envir=-1)
+      survey <- get(x="survey", envir=-1)
     }
 
     if (!exists("responses", where = -1)) {
