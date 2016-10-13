@@ -839,30 +839,35 @@ split_respondents <- function(response_column, responses, survey, headerrows, al
     if (!exists("survey", where = -1)) {
       survey <- sample_survey
     } else {
-      survey <- get(x="survey", envir=-1)
+      survey <- get(x="survey", envir=globalenv())
     }
 
     if (!exists("responses", where = -1)) {
       responses <- sample_responses
     } else {
-      responses <- get("responses", envir=-1)
+      responses <- get("responses", envir=globalenv())
+    }
+
+    if (!exists("blocks", where = -1)) {
+      # process the blocks and questions as per usual
+      blocks <- blocks_from_survey(survey)
+      questions <- questions_from_survey(survey)
+      questions <- remove_trash_questions(questions, blocks)
+      questions <- clean_question_text(questions)
+      questions <- human_readable_qtype(questions)
+      blocks <- remove_trash_blocks(blocks)
+    } else {
+      blocks <- get(x="blocks", envir=globalenv())
     }
   }
 
   # split the respondents by their responses to in the response_column
   split_responses <- split(responses, responses[response_column], drop=TRUE)
 
-  # process the blocks and questions as per usual
-  blocks <- blocks_from_survey(survey)
-  questions <- questions_from_survey(survey)
-  questions <- remove_trash_questions(questions, blocks)
-  questions <- clean_question_text(questions)
-  questions <- human_readable_qtype(questions)
-  blocks <- remove_trash_blocks(blocks)
 
   # insert the header into the blocks
   blocks[['header']] <- c(paste0("Survey Name: ",
-                          survey[['SurveyEntry']][['SurveyName']]),
+                                 survey[['SurveyEntry']][['SurveyName']]),
                           paste0("Total Number of Original Respondents: ",
                                  nrow(responses)))
 
