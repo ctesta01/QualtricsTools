@@ -818,7 +818,7 @@ display_logic_from_question <- function(question) {
 #'  might look something like split_blocks[[1]][[1]][['BlockElements']][[1]] and
 #'  split_blocks[[2]][[1]][['BlockElements']][[1]]. These refer to the first and second respondent
 #'  groups, the first block, and the first block element.
-split_respondents <- function(response_column, responses, survey, headerrows, already_loaded) {
+split_respondents <- function(response_column, responses, survey, blocks, questions, headerrows, already_loaded) {
   if (missing(headerrows)) {
     headerrows <- 3
   }
@@ -836,19 +836,19 @@ split_respondents <- function(response_column, responses, survey, headerrows, al
   }
 
   if (already_loaded == TRUE) {
-    if (!exists("survey", where = -1)) {
+    if (!exists("survey", where = globalenv())) {
       survey <- sample_survey
     } else {
       survey <- get(x="survey", envir=globalenv())
     }
 
-    if (!exists("responses", where = -1)) {
+    if (!exists("responses", where = globalenv())) {
       responses <- sample_responses
     } else {
       responses <- get("responses", envir=globalenv())
     }
 
-    if (!exists("blocks", where = -1)) {
+    if (!exists("blocks", where = globalenv())) {
       # process the blocks and questions as per usual
       blocks <- blocks_from_survey(survey)
       questions <- questions_from_survey(survey)
@@ -858,6 +858,7 @@ split_respondents <- function(response_column, responses, survey, headerrows, al
       blocks <- remove_trash_blocks(blocks)
     } else {
       blocks <- get(x="blocks", envir=globalenv())
+      questions <- get(x="questions", envir=globalenv())
     }
   }
 
