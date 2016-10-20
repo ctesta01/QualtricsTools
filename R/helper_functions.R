@@ -353,7 +353,12 @@ questions_from_blocks <- function(blocks) {
 #' tabelize_blocks to get the ordering of the survey in the preview correct.
 flow_from_survey <- function(survey) {
   flow <- which(sapply(survey[['SurveyElements']], function(x) x[['Element']] == "FL"))
-  flow <- sapply(survey[['SurveyElements']][[flow]][['Payload']][['Flow']], function(x) x[['ID']])
+  flow <- sapply(survey[['SurveyElements']][[flow]][['Payload']][['Flow']], function(x)
+    if ('ID' %in% names(x)) {
+      x[['ID']]
+    } else if ('Flow' %in% names(x)) {
+      sapply(x[['Flow']], function(y) y[['ID']])
+    })
   flow <- unlist(flow)
   return(flow)
 }
