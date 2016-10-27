@@ -357,7 +357,7 @@ flow_from_survey <- function(survey) {
     if ('ID' %in% names(x)) {
       x[['ID']]
     } else if ('Flow' %in% names(x)) {
-      sapply(x[['Flow']], function(y) y[['ID']])
+      sapply(x[['Flow']], function(y) if ('ID' %in% names(y)) y[['ID']])
     })
   flow <- unlist(flow)
   return(flow)

@@ -168,7 +168,7 @@ shinyServer(
       blocks <- processed_questions_and_blocks()[[2]]
       original_first_row <- original_first_rows[1,]
       survey <- survey_and_responses()[[1]]
-      flow <- flow_from_survey(flow)
+      flow <- flow_from_survey(survey)
       if (!is.null(choose_split_block())) blocks <- choose_split_block()
       c(blocks_header_to_html(blocks),
         text_appendices_table(blocks, original_first_row, flow))
