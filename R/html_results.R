@@ -300,6 +300,24 @@ text_appendices_table <- function(blocks, original_first_row, flow) {
                     next
                   }
 
+                  # Skip Single Answer questions with too many text entry components to table correctly
+                  if (is_mc_single_answer(blocks[[i]][['BlockElements']][[j]]) &&
+                      length(which(sapply(blocks[[i]][['BlockElements']][[j]][['Payload']][['Choices']], function(x) 'TextEntry' %in% names(x) && x[['TextEntry']] == "true"))) > 1) {
+                    question_message <- list()
+                    question_message <- c(blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
+                                        "",
+                                        "This question could not be processed automatically because the CSV data does not separate the responses for each text entry component of this question.")
+                    question_message <- as.data.frame(question_message)
+                    colnames(question_message)[1] <- blocks[[i]][['BlockElements']][[j]][['Payload']][['DataExportTag']]
+                    tables <- list()
+                    tables <- c(tables, capture.output(print(xtable::xtable(question_message),
+                                                             type="html",
+                                                             html.table.attributes='class="text_appendices data table table-bordered table-condensed"',
+                                                             include.rownames=FALSE)))
+                    tables <- c(tables, "<br>")
+                    next
+                  }
+
                   # Table Non-Text Entry Questions
                   tables <- c(tables, table_non_text_entry(
                     blocks[[i]][['BlockElements']][[j]],
