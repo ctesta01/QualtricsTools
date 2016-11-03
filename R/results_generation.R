@@ -381,6 +381,11 @@ matrix_single_answer_results <- function(question, original_first_rows) {
     }
   }
 
+  # Reorder using the AnswerOrder
+  if ("AnswerOrder" %in% names(question[['Payload']])) {
+    valid_responses <- valid_responses[, unlist(question$Payload$AnswerOrder)]
+  }
+
   # translate the choice indices to choice text
   colnames(valid_responses) <- lapply(colnames(valid_responses), function(x) question[['Payload']][['Answers']][[x]][[1]])
   if (has_na) colnames(na_responses) <- lapply(colnames(na_responses), function(x) question[['Payload']][['Answers']][[x]][[1]])
