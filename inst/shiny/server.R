@@ -343,7 +343,7 @@ shinyServer(
       fs <- c()
       split_blocks <- split_blocks()
       survey <- survey_and_responses()[[1]]
-      flow <- flow_from_survey(flow)
+      flow <- flow_from_survey(survey)
       original_first_rows <- survey_and_responses()[[3]]
       original_first_row <- original_first_rows[1,]
       for (i in 1:length(split_blocks)) {

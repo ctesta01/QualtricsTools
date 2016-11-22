@@ -382,7 +382,7 @@ matrix_single_answer_results <- function(question, original_first_rows) {
   }
 
   # Reorder using the AnswerOrder
-  if ("AnswerOrder" %in% names(question[['Payload']])) {
+  if ("AnswerOrder" %in% names(question[['Payload']]) && should_use_ofr) {
     valid_responses <- valid_responses[, unlist(question$Payload$AnswerOrder)]
   }
 

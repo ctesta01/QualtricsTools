@@ -223,7 +223,7 @@ text_appendices_table <- function(blocks, original_first_row, flow) {
           if ('CodedComments' %in% names(blocks[[i]][['BlockElements']][[j]])) {
             for (k in 1:length(blocks[[i]][['BlockElements']][[j]][['CodedComments']])) {
               tables <- c(tables,
-                          table_coded_comments(blocks[[i]][['BlockElements']][[j]],
+                          table_html_coded_comments(blocks[[i]][['BlockElements']][[j]],
                                                k,
                                                e,
                                                blocks,
@@ -450,7 +450,7 @@ appendix_lettering <- function(number) {
 
 
 # CODED COMMENTS:
-table_coded_comments <- function(question, cc_index, appendix_e, blocks, original_first_row) {
+table_html_coded_comments <- function(question, cc_index, appendix_e, blocks, original_first_row) {
   response_column <- question[['CodedComments']][[cc_index]][[1]]
   choice_text <- choice_text_from_response_column(response_column, original_first_row, blocks)
   if (choice_text != "") {
