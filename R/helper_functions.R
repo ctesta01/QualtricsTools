@@ -125,7 +125,12 @@ app <- function() {
 #' try to get the survey, responses, and original_first_rows from the global scope
 #' instead of asking the user for them. If they aren't there, then the function
 #' will use the sample data included in the package.
-get_setup <- function(headerrows, already_loaded) {
+get_setup <- function(
+  headerrows,
+  already_loaded,
+  qsf_path,
+  csv_path
+  ) {
   # default to headerrows = 3
   if (missing(headerrows)) {
     headerrows <- 3
@@ -136,10 +141,23 @@ get_setup <- function(headerrows, already_loaded) {
     already_loaded <- FALSE
   }
 
+  # default split side by sides to true
+  if (missing(split_sbs)) {
+    split_sbs <- TRUE
+  }
+
   # ask the user for the CSV and the QSF if the
   if (already_loaded == FALSE) {
-    survey <- ask_for_qsf()
-    responses <- ask_for_csv(headerrows=headerrows)
+    if (missing(qsf_path)) {
+      survey <- ask_for_qsf()
+    } else {
+      survey <- ask_for_qsf(qsf_path)
+    }
+    if (missing(csv_path)) {
+      responses <- ask_for_csv(headerrows=headerrows)
+    } else {
+      responses <- ask_for_csv(csv_path, headerrows=headerrows)
+    }
     original_first_rows <- as.data.frame(responses[[2]])
     responses <- as.data.frame(responses[[1]])
   }
