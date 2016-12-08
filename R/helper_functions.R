@@ -141,11 +141,6 @@ get_setup <- function(
     already_loaded <- FALSE
   }
 
-  # default split side by sides to true
-  if (missing(split_sbs)) {
-    split_sbs <- TRUE
-  }
-
   # ask the user for the CSV and the QSF if the
   if (already_loaded == FALSE) {
     if (missing(qsf_path)) {

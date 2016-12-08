@@ -891,6 +891,7 @@ split_respondents <- function(response_column, responses, survey, blocks, questi
                                               " column"),
                                        paste0("Size of Respondent Group: ",
                                               nrow(split_responses[[i]])))
+    split_blocks[[i]][['split_group']] <- names(split_responses)[[i]]
   }
 
   return(split_blocks)
