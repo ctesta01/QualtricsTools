@@ -383,7 +383,12 @@ matrix_single_answer_results <- function(question, original_first_rows) {
 
   # Reorder using the AnswerOrder
   if ("AnswerOrder" %in% names(question[['Payload']]) && should_use_ofr) {
-    valid_responses <- valid_responses[, unlist(question$Payload$AnswerOrder)]
+    if (has_na) {
+      valid_answers <- which(question[['Payload']][['RecodeValues']][unlist(question[['Payload']][['AnswerOrder']])] >= 0)
+      valid_responses <- valid_responses[, valid_answers]
+    } else {
+      valid_responses <- valid_responses[, unlist(question$Payload$AnswerOrder)]
+    }
   }
 
   # translate the choice indices to choice text
