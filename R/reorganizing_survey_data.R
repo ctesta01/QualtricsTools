@@ -818,7 +818,7 @@ display_logic_from_question <- function(question) {
 #'  might look something like split_blocks[[1]][[1]][['BlockElements']][[1]] and
 #'  split_blocks[[2]][[1]][['BlockElements']][[1]]. These refer to the first and second respondent
 #'  groups, the first block, and the first block element.
-split_respondents <- function(response_column, responses, survey, blocks, questions, headerrows, already_loaded) {
+split_respondents <- function(response_column, responses, survey, blocks, questions, headerrows, already_loaded, original_first_rows) {
   if (missing(headerrows)) {
     headerrows <- 3
   }
@@ -880,7 +880,7 @@ split_respondents <- function(response_column, responses, survey, blocks, questi
   # questions for that respondent group, generate the question's results,
   # and then insert the questions into the blocks for that respondent group.
   for (i in 1:length(split_responses)) {
-    split_questions[[i]] <- link_responses_to_questions(split_questions[[i]], split_responses[[i]])
+    split_questions[[i]] <- link_responses_to_questions(split_questions[[i]], split_responses[[i]], original_first_rows)
     split_questions[[i]] <- generate_results(split_questions[[i]])
     split_blocks[[i]] <- questions_into_blocks(split_questions[[i]], split_blocks[[i]])
     split_blocks[[i]][['header']] <- c(split_blocks[[i]][['header']],

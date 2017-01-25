@@ -77,6 +77,7 @@ shinyServer(
     if ('split_response_columns' %in% names(input) &&
         !is.null(input[['split_response_columns']])) {
       survey <- survey_and_responses()[[1]]
+      original_first_rows <- survey_and_responses()[[3]]
       questions <- processed_questions_and_blocks()[[1]]
       blocks <- processed_questions_and_blocks()[[2]]
       responses <- split_col_responses()
@@ -88,7 +89,8 @@ shinyServer(
                         responses = responses,
                         blocks = blocks,
                         questions = questions,
-                        headerrows = headerrows
+                        headerrows = headerrows,
+                        original_first_rows = original_first_rows
                         )
     } else return(NULL)
   })
