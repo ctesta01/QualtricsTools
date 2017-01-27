@@ -862,6 +862,8 @@ split_respondents <- function(response_column, responses, survey, blocks, questi
     }
   }
 
+  for (i in 1:length(questions)) questions[[i]]$qtNotes <- NULL
+
   # split the respondents by their responses to in the response_column
   split_responses <- split(responses, responses[response_column], drop=TRUE)
 
