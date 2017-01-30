@@ -79,7 +79,7 @@ question_description <- function(question) {
 
   # the question header is the data export tag, the question text (stripped of html),
   # and then display logic.
-  description <- c(question[['Payload']][['DataExportTag']],
+  description <- c(paste("Export Tag:", question[['Payload']][['DataExportTag']]),
                    question[['Payload']][['QuestionTextClean']],
                    display_logic)
 
