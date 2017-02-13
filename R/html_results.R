@@ -73,8 +73,24 @@ question_description <- function(question) {
   # if the display logic is too long, write a note saying
   # that there is complex display logic, and to refer to the
   # Display Logic output.
-  if (length(display_logic) > 3) {
-    display_logic <- list("This question contains complex display logic. Please refer to the Display Logic panel.")
+  has_display_logic <- function(question) {
+    has_dl <- FALSE
+    if ('DisplayLogic' %in% names(question[['Payload']])) has_dl <- TRUE
+    if ("Choices" %in% names(question[['Payload']])) {
+      if (any(sapply(question[['Payload']][['Choices']], function(x) "DisplayLogic" %in% names(x)))) {
+        has_dl <- TRUE
+      }
+    }
+    if ("Answers" %in% names(question[['Payload']])) {
+      if (any(sapply(question[['Payload']][['Answers']], function(x) "DisplayLogic" %in% names(x)))) {
+        has_dl <- TRUE
+      }
+    }
+    return(has_dl)
+  }
+
+  if (has_display_logic(question)) {
+    display_logic <- list("Refer to the Display Logic panel for this question's logic.")
   }
 
   # the question header is the data export tag, the question text (stripped of html),
