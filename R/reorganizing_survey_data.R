@@ -30,6 +30,10 @@ get_coded_questions_and_blocks <- function(survey, responses, original_first_row
   questions <- questions_and_blocks[[1]]
   blocks <- questions_and_blocks[[2]]
 
+  # insert notes into their corresponding questions
+  notes <- notes_from_survey(survey)
+  questions <- insert_notes_into_questions(questions, notes)
+
   # clean the question text of HTML and CSS tags
   questions <- clean_question_text(questions)
 
@@ -80,6 +84,35 @@ blocks_from_survey <- function(survey) {
     blocks <- Filter(function(x) x[['Element']] == "BL", survey[['SurveyElements']])
     blocks <- blocks[[1]][['Payload']]
     return(blocks)
+}
+
+#' Generate a List of Notes Blocks
+#'
+#' @param survey This should be a Qualtrics survey in the form of a list
+#' imported from the JSON-formatted QSF file.
+#'
+#' @return This returns a list of blocks
+notes_from_survey <- function(survey) {
+    blocks <- Filter(function(x) x[['Element']] == "NT", survey[['SurveyElements']])
+    return(blocks)
+}
+
+#' Insert the Notes for a question into its qtNotes
+insert_notes_into_questions <- function(questions, notes) {
+  for (note in notes) {
+    qid = note[['Payload']][['ParentID']]
+    qid_index = find_question_index_by_qid(questions, qid)
+    if (!"qtNotes" %in% names(questions[[qid_index]])) {
+      questions[[qid_index]][['qtNotes']] <- list()
+    }
+    notes_list <- sapply(note[['Payload']][['Notes']], function(x) {
+      if (x[['Removed']] != 'TRUE') return(paste0('User Note: ', x[['Message']]))
+      })
+
+    questions[[qid_index]][['qtNotes']] <- c(questions[[qid_index]][['qtNotes']], notes_list)
+  }
+
+  return(questions)
 }
 
 #' Generate a List of Questions

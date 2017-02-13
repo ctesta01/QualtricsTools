@@ -230,6 +230,12 @@ find_question_index <- function(questions, exporttag) {
   return(matched_question_index)
 }
 
+#' Find a Question by its QuestionID
+find_question_index_by_qid <- function(questions, qid) {
+  matched_question_index <- which(sapply(questions, function(x) x[['Payload']][['QuestionID']] == qid))
+  return(matched_question_index)
+}
+
 
 #' Get the Choice Text from the First Row of the Responses
 #'
