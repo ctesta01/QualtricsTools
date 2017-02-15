@@ -136,8 +136,13 @@ shinyServer(
       flow <- flow_from_survey(survey)
       blocks <- processed_questions_and_blocks()[[2]]
       if (!is.null(choose_split_block())) blocks <- choose_split_block()
-      return(c(blocks_header_to_html(blocks),
-        tabelize_blocks(blocks, flow)))
+      if (input[['ignoreflow']] == FALSE) {
+        return(c(blocks_header_to_html(blocks),
+                 tabelize_blocks(blocks, flow)))
+      } else {
+        return(c(blocks_header_to_html(blocks),
+                 tabelize_blocks(blocks)))
+      }
     }
   })
 
@@ -172,8 +177,13 @@ shinyServer(
       survey <- survey_and_responses()[[1]]
       flow <- flow_from_survey(survey)
       if (!is.null(choose_split_block())) blocks <- choose_split_block()
-      c(blocks_header_to_html(blocks),
-        text_appendices_table(blocks, original_first_row, flow))
+      if (input[['ignoreflow']] == FALSE) {
+        return(c(blocks_header_to_html(blocks),
+          text_appendices_table(blocks, original_first_row, flow)))
+      } else {
+        return(c(blocks_header_to_html(blocks),
+          text_appendices_table(blocks, original_first_row)))
+      }
     }
   })
 

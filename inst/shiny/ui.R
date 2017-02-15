@@ -110,6 +110,11 @@ body <- dashboardBody(
                 tableOutput('table_respondent_groups'),
                 downloadButton('downloadSplit', 'Download All Split Reports and Appendices', class="btn-primary")
               )
+            ),
+            sidebarPanel(
+                h3('Ignore Survey Flow'),
+                checkboxInput("ignoreflow", "Check this box if you would like the report to render without reordering
+                              the questions according to the survey's ordering.", FALSE)
             )
           )
    ))
