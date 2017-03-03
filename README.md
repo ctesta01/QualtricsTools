@@ -1,16 +1,37 @@
-### the QualtricsTools project
+# QualtricsTools
 
-This is a project I'm working on to automate creating reports from 
-Qualtrics survey data and responses. This is an R package that 
-comes with a Shiny application that can be used for automatic report generation. 
+QualtricsTools is a package and web application that allows users to process
+Qualtrics Survey Files (QSF) and survey response data into results tables, 
+question dictionaries, text appendices and more. The application and package
+were built using R, Shiny, and Pandoc.
 
-[![screenshot of application](https://i.imgur.com/A4zQizk.png)](https://www.youtube.com/watch?v=rmUC5EVGJiU)
+![A slideshow of the QualtricsTools web app](https://i.imgur.com/zkkKxeR.gif)
 
-Checkout my [YouTube video](https://www.youtube.com/watch?v=rmUC5EVGJiU) for an informal overview of the application. 
+## What does QualtricsTools do? (Features)
+The QualtricsTools app can be run as a local web-application which acts as
+a graphical interface to the tools built into the package. After uploading
+a QSF and CSV, it calculates frequencies and percentage responses to the 
+questions in a survey, tables relevant information about the questions, 
+includes a description of the survey logic and flow, and lists all
+free response answers to questions in the text appendices. All of this data
+can be readily exported into a number of different formats (xlsx, csv, docx,
+html, md, pdf, and more) facilitated by document conversion through pandoc. 
 
-#### installing
+The R package that the app is built on top of provides a richer set 
+of functionalities including automatically reshaping the response data
+from long to lean format, stitching categorical comment coding data into
+a survey's text appendices, and more. The package is intended to provide
+an interface in R through which one can begin to work with Qualtrics survey
+and response data.
 
-To get setup, you'll need to have R or [Rstudio](https://www.rstudio.com/), [devtools](https://github.com/hadley/devtools), [Rtools](https://cran.r-project.org/bin/windows/Rtools/) if you're on Windows, and [Pandoc](http://pandoc.org/installing.html).
+## Installation
+Before installing, you must install [R or Rstudio](https://www.rstudio.com/), 
+[devtools](https://github.com/hadley/devtools), 
+[Rtools](https://cran.r-project.org/bin/windows/Rtools/) (if you're on Windows), 
+and [Pandoc](http://pandoc.org/). Follow the previous links, and there 
+are directions on each page on how to install them. For Rtools with Windows, 
+[please make sure Rtools is added to the `Path` environment variable](http://stackoverflow.com/a/29480538/3161979). 
+After installing each of these, run the following commands in R:
 
     devtools::install_github("ctesta01/QualtricsTools")
     library(QualtricsTools)
@@ -18,7 +39,77 @@ To get setup, you'll need to have R or [Rstudio](https://www.rstudio.com/), [dev
 
 The QualtricsTools Shiny app should now be running! Enjoy!
 
-#### more to come soon!
+To update your version of QualtricsTools, just run `devtools::install_github("ctesta01/QualtricsTools")` again.
 
-If you have questions, please feel free to email me at christian.testa@tufts.edu. Otherwise, the [wiki](https://github.com/ctesta01/QualtricsTools/wiki/) has some neat stuff. 
+## Usage and Reference Guides
+
+The functionality of the web application and R package are documented in the following guides. Beyond this,
+almost all functions have Roxygen generated documentation which means that after running `library(QualtricsTools)`
+you can run `help(function)` on any function in QualtricsTools, like `help(get_setup)`, to check out the
+documentation pages.
+
+- How do I use the app?
+  - Running the App
+  - Parts of the App
+    - The Report:
+      - Results Tables
+      - Question Dictionary
+      - Text Appendices
+      - Survey Logic
+    - Including/Excluding Questions
+    - Downloading Documents
+    - Spliting Surveys by Responses
+- How do I use the R package?
+  - Generating Results Tables (with & w/out get-setup)
+  - Generating Question Dictionaries
+  - Generating Text Appendices
+  - Generating Survey Logic
+  - Split by Responses (single col / multi-col)
+  - Tableau Reshaping
+  - Question Dictionary
+  - Comment Coding
+  - Including/Excluding  Questions
+  - Processing a Specific Question
+  - Exporting to Different Filetypes
+- How does it work? (Reference)
+  - Understanding the QSF
+  - Understanding the source code
+
+## FAQ
+Q: My results tables look wrong. What could be causing it?
+
+A: If you're generating them in the app, it could be that you've uploaded CSV data which does 
+not match the formatting indicated by the "Insights?" checkbox. If you're working on the 
+command line, I have made the mistake several times trying to generate reports without 
+keeping my global scope tidy. I recommend clearing the environment variables before 
+using QualtricsTools to generate a report.
+
+
+Q: The results tables can't process my questions?
+
+A: As of now, the QualtricsTools application only processes questions which are
+multiple choice, likert matrix single or multiple answer, bipolar matrix, side-by-side, 
+or text-entry questions. 
+
+
+Q: When trying to export to xlsx or reshaping my data to lean data, R is unable to find 
+Perl even though I installed it? 
+
+A: Perl is necessary for the readxl, gdata, WriteXLS, and other package to work correctly. Further, 
+R can only find Perl if it's in an operating system environment variable called the `PATH`.
+The process for adding the path to Perl on Windows is similar to [the process 
+for adding Rtools to the `PATH`](http://stackoverflow.com/a/29480538/3161979), but using 
+something more like "C:/Perl64/bin/perl" or a similar string. Analogous steps for ensuring
+Rtools and Perl are in the `PATH` need to be taken on any operating system. 
+
+
+Q: My survey's ordering in the results tables or text appendices seems wrong or is missing parts. 
+Why?
+
+A: Does your survey contain particularly complex flow or logic? If so, and your survey contains
+things like randomized logic or branching, then your best bet is to process the survey without
+using the survey flow data. QualtricsTools only very naively can use the survey flow to 
+order the survey data, and it doesn't know what to do with more complex examples, so the ordering
+will have to be left to after outputting the data. 
+
 
