@@ -324,7 +324,7 @@ text_appendices_table <- function(blocks, original_first_row, flow) {
                                         "",
                                         "This question could not be processed automatically because the CSV data does not separate the responses for each text entry component of this question.")
                     question_message <- as.data.frame(question_message)
-                    colnames(question_message)[1] <- blocks[[i]][['BlockElements']][[j]][['Payload']][['DataExportTag']]
+                    colnames(question_message)[1] <- paste0('Export Tag: ', blocks[[i]][['BlockElements']][[j]][['Payload']][['DataExportTag']])
                     tables <- list()
                     tables <- c(tables, capture.output(print(xtable::xtable(question_message),
                                                              type="html",
@@ -483,8 +483,8 @@ table_html_coded_comments <- function(question, cc_index, appendix_e, blocks, or
 
   text_appendix_header <- as.data.frame(text_appendix_header)
   text_appendix_header <- do.call("cbind", replicate(2, text_appendix_header, simplify=FALSE))
-  coded_comment_names <- c(paste0(question[['Payload']][['DataExportTag']]),
-                           paste0(question[['Payload']][['DataExportTag']], " "))
+  coded_comment_names <- c(paste0('Export Tag: ', question[['Payload']][['DataExportTag']]),
+                           paste0('Export Tag: ', question[['Payload']][['DataExportTag']], " "))
   colnames(text_appendix_header) <- coded_comment_names
   colnames(question[['CodedComments']][[cc_index]][[2]]) <- coded_comment_names
   response_n <- t(as.data.frame(c("Responses", "N")))
@@ -511,7 +511,7 @@ table_no_respondents <- function(question, appendix_e) {
                       "",
                       "No respondents answered this question")
   No_Respondents <- as.data.frame(No_Respondents)
-  colnames(No_Respondents)[1] <- question[['Payload']][['DataExportTag']]
+  colnames(No_Respondents)[1] <- paste0('Export Tag: ', question[['Payload']][['DataExportTag']])
   tables <- list()
   tables <- c(tables, capture.output(print(xtable::xtable(No_Respondents),
                                            type="html",
@@ -577,7 +577,7 @@ table_non_text_entry <- function(question, responses, appendix_e){
   # repeat the header for each response column, and
   # use the responses' column names
   if (ncol(responses) > 1) for (l in 1:(ncol(responses)-1)) text_appendix_header <- cbind(text_appendix_header, text_appendix_header[,1])
-  colnames(text_appendix_header) <- colnames(responses)
+  colnames(text_appendix_header) <- sapply(colnames(responses), function(x) paste0('Export Tag: ', x))
 
   # bind the header and responses together to make the text appendix
   text_appendix <- rbind(text_appendix_header, responses)

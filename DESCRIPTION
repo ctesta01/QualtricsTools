@@ -15,6 +15,7 @@ Imports:
     magrittr,
     reshape,
     rjson,
+    Rcpp,
     shiny,
     shinydashboard,
     tidyr,
