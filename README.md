@@ -92,6 +92,23 @@ multiple choice, likert matrix single or multiple answer, bipolar matrix, side-b
 or text-entry questions. 
 
 
+Q: I can't export to Word or Excel, or it's taking too long. What should I do?
+
+A: Sometimes I think Word has trouble with large file sizes. My recommendation is to export your data to HTML and then "Open As" a Word document. Word can parse HTML, and from there you will just have to change the document layout to Print from Web. The same trick works for Excel, but one could also export to a CSV sheet rather than an Excel document in most cases.
+
+
+Q: I need to clean my data, but I still want to be able to use QualtricsTools after cleaning it. What can and can't I do?
+
+A: I would advise against is editing the QSF and the column names of the CSV dataset. These are crucial structural components to the survey, and are integral in how QualtricsTools processes the survey data. However, you may 
+remove complete rows and columns of respondent data without affecting QualtricsTools' ability to process your survey, and 
+you may change responses as long as they are still valid responses to the provided question. Check out the [usage guide](https://github.com/ctesta01/QualtricsTools/wiki/Usage-Requirements) to see more. 
+
+
+Q: Qualtrics has many different ways to download data. Which format should I use if I want to use QualtricsTools on it?
+
+A: Right now, you can download Qualtrics Surveys only as QSF files. However, the data can be downloaded in many different formats. QualtricsTools only supports CSV data, but it supports data from both Legacy and Insights. Check out the appendix in this [usage guide](https://github.com/ctesta01/QualtricsTools/wiki/Usage-Requirements) to see more. 
+
+
 Q: When trying to export to xlsx or reshaping my data to lean data, R is unable to find 
 Perl even though I installed it? 
 
