@@ -1,7 +1,6 @@
-library(readxl)
-
 #' Turn a Directory into a list of Coded Comment Data Frames (unprocessed)
 directory_get_coded_comment_sheets <- function(directory) {
+
   # ask for directory if not provided
   if (missing(directory)) directory <- choose.dir()
 
@@ -10,66 +9,57 @@ directory_get_coded_comment_sheets <- function(directory) {
   files_list <- files_list[lapply(files_list, function(x) grepl("*.xlsx$|*.xls$|*.csv$", x)) == TRUE]
   files_list <- files_list[lapply(files_list, function(x) grepl("^~", basename(x))) == FALSE]
 
-  # create coded comment tables
-  #coded_appendix_tables <- lapply(files_list, function(x) {
-  #  get_coded_comment_sheet(x)
-  #})
 
-  warnings_list <<- list()
-  test_warning <<-list()
-  numeric_message <<- "expecting numeric: got"
+  # If there are warnings in reading in the Excel sheets,
+  # Save them as we go. Additionally, save the corresponding sheet's filenames.
+  # If everything goes smoothly, we will construct a list of sheets which
+  # contain coded comments, called the coded_appendix_tables
+  warnings_list <- list()
+  warning_files_list <- list()
+  test_warning <-list()
   coded_appendix_tables <- list()
-  this_should_be_changed <<-list()
 
   for (i in 1:length(files_list)) {
-    #coded_appendix_tables[[i]] <- get_coded_comment_sheet(files_list[[i]])
 
-    test <<- tryCatch(coded_appendix_tables[[i]] <- get_coded_comment_sheet(files_list[[i]]),
-                      warning = function(w) {
-                        warnings_list[[i]] <<- files_list[[i]]
-                        #print(w)
-                        this_should_be_changed[[i]] <<- w
-
-                      })
-
-    #if (length(last.warning) != 0) {
-    #  test_warning[[i]] <<- last.warning
-    #}
+    # For each file in the files_list, try to get its coded comment sheet.
+    # If it warns, save the error and filename to warnings_list and warning_files_list.
+    tryCatch(coded_appendix_tables[[i]] <- get_coded_comment_sheet(files_list[[i]]),
+             warning = function(w) {
+               warning_files_list[[i]] <- files_list[[i]]
+               warnings_list[[i]] <- w
+             })
 
   }
 
-  this_should_be_changed <<- this_should_be_changed[lapply(this_should_be_changed, length) != 0]
-  warnings_list <<- warnings_list[lapply(warnings_list, length) != 0]
+  # Subset the warnings_list and warning_files_list's to only include non-empty entries
+  warnings_list <- warnings_list[lapply(warnings_list, length) != 0]
+  warning_files_list <- warning_files_list[lapply(warning_files_list, length) != 0]
 
-  #print(length(warnings_list))
-  if (length(warnings_list) > 0) {
+  # Print the first warning for each sheet
+  if (length(warning_files_list) > 0) {
     print("There were errors getting the coded comment sheets")
-    print("Theses are the following files that had errors and the first error message")
-    for (i in 1:length(warnings_list)) {
-      print(warnings_list[[i]])
-      #print(this_should_be_changed[[i]])
-      #warning_message <- toString(names(this_should_be_changed[[i]]))
-      #print(warning_message)
-      if (grepl(numeric_message, (this_should_be_changed[[i]]))) {
+    print("Theses are the following files that had errors and the first error message for each.")
+
+    for (i in 1:length(warning_files_list)) {
+      # print the filename the warning is generated from
+      print(warning_files_list[[i]])
+
+      # If it was an 'expecting numeric' message, include a message explaining
+      # that it's an issue with the typing of data in the columns in the Excel sheets
+      numeric_message <- "expecting numeric: got"
+      if (grepl(numeric_message, (warnings_list[[i]]))) {
         print("Some of the cells that should be stored as numeric are stored as strings")
         print("Please go back into the file and change them to numeric")
         print("Here is the first error message:")
-        print(this_should_be_changed[[i]])
-      } else {
-        print(this_should_be_changed[[i]])
       }
+
+      # print the warning
+      print(warnings_list[[i]])
     }
+
+    # if warnings were returned, return NULL
     return(NULL)
   }
-
-
-
-  #if (grepl(numeric_message, conditionMessage(this_should_be_changed))) {
-  #  print("WARNING: Some values are not stored as numeric in the coded comments")
-  #  print("Go back and change them to numeric values before running again")
-
-  #}
-
 
   return(coded_appendix_tables)
 }
@@ -259,13 +249,13 @@ insert_split_survey_comments <- function(split_blocks, split_coded_comment_sheet
 
 generate_split_coded_comments <- function(qsf_file, csv_file, sheets_dir, output_dir, split_by) {
 
-  #
-  #Don't touch this is for formatting purposes
-  #
+  # This turns the split_by list into a name for the column
+  # which will contain the concatenation of the entries of responses
+  # which are being split over. That is if split_by = c('column1', 'column2', 'column3'),
+  # then this constructs split_string = 'column1-column2-column3'
   split_string <- toString(paste(split_by, "-"))
   split_string <- gsub(' ', '', split_string)
   split_string <- gsub(',', '', split_string)
-  split_string <- tolower(split_string)
   split_string <- substr(split_string, 1, nchar(split_string)-1)
 
   # Declares paths for the qsf and csv files
@@ -281,21 +271,17 @@ generate_split_coded_comments <- function(qsf_file, csv_file, sheets_dir, output
   grad_comments_directory <- sheets_dir
 
   coded_sheets <- directory_get_coded_comment_sheets(grad_comments_directory)
-  #coded_sheets <- directory_get_coded_comment_sheets(sheets_dir)
 
   if (is.null(coded_sheets)) {
     stop("Please fix errors before attempting again")
   }
 
   split_comment_tables <- format_and_split_comment_sheets(coded_sheets, responses, split_string)
-
   split_blocks <- split_respondents(split_string, responses, survey, blocks, questions, headerrows=3)
-
   split_blocks <- insert_split_survey_comments(split_blocks, split_comment_tables, split_string, original_first_rows)
-
   output_dir <- out_dir
 
-  #Keeps the flow of the survey consistent with the output
+  #Used with html_2_pandoc below to keeps the flow of the survey consistent with the output
   flow = flow_from_survey(survey)
 
   #Appends .docx to the file names collected by splitting the data to output them as Word Documents
