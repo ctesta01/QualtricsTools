@@ -16,7 +16,6 @@ directory_get_coded_comment_sheets <- function(directory) {
   # contain coded comments, called the coded_appendix_tables
   warnings_list <- list()
   warning_files_list <- list()
-  test_warning <-list()
   coded_appendix_tables <- list()
 
   for (i in 1:length(files_list)) {

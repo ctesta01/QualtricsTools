@@ -8,7 +8,7 @@ load_qsf_data(file1)
 }
 \arguments{
 \item{file2}{This should be a QSF file received from a file upload made in the Shiny UI,
-which includes a file1$datapath where the data can be located.}
+which includes a file1[['datapath']] where the data can be located.}
 }
 \value{
 The return value is the survey list object

@@ -4,11 +4,13 @@
 \alias{lean_responses}
 \title{Create Long and Lean Response Dictionary}
 \usage{
-lean_responses(panel_columns)
+lean_responses(question_blocks, survey_responses)
 }
 \arguments{
-\item{panel_columns}{A list of names of response columns to include in the
-output formatted as panel data.}
+\item{question_blocks}{A list of blocks, with questions inserted in place of the
+BlockElements representing them.}
+
+\item{survey_responses}{The responses to the survey, as imported by ask_for_csv()}
 }
 \value{
 a data frame with each row detailing an individual survey response.
@@ -16,9 +18,8 @@ a data frame with each row detailing an individual survey response.
 \description{
 lean_responses() creates a data frame where each row corresponds to
 an individual response to the survey. Each response contains
-the respondents' id, the question data export tag, the response column's name,
-the question text, the question type(s), the variable response, and the coded
-response, and then that individual's responses to any questions chosen for inclusion
-as panel data.
+the respondents' id, the response column's name,
+the variable response, and the coded
+response.
 }
 

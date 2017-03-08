@@ -4,11 +4,11 @@
 \alias{tabelize_blocks}
 \title{Create a List of HTML Versions of the Results Tables}
 \usage{
-tabelize_blocks(blocks)
+tabelize_blocks(blocks, flow, include_block_headers)
 }
 \arguments{
 \item{questions}{A list of questions with the relevant results tables
-stored as data frames under the questions[[i]]$Table element. Create
+stored as data frames under the questions[[i]][['Table']] element. Create
 such a list of questions by using generate_results function}
 }
 \value{

@@ -4,11 +4,11 @@
 \alias{mc_single_answer_results}
 \title{Create the Results Table for a Multiple Choice Single Answer Question}
 \usage{
-mc_single_answer_results(question)
+mc_single_answer_results(question, original_first_rows)
 }
 \arguments{
 \item{question}{The question must have a paired response column placed into the question
-under $Responses}
+under [['Responses']]}
 }
 \value{
 a table with an N, Percent, and choice column, detailing the number of responses for each

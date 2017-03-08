@@ -15,7 +15,7 @@ questions and false otherwise.
 }
 \description{
 A question is considered a matrix multiple answer question if it
-is a `$Payload$QuestionType == "Matrix"` question with
-`$Payload$SubSelector == "MultipleAnswer"`
+is a `[['Payload']][['QuestionType']] == "Matrix"` question with
+`[['Payload']][['SubSelector']] == "MultipleAnswer"`
 }
 

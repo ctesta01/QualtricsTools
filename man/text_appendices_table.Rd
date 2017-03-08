@@ -4,11 +4,15 @@
 \alias{text_appendices_table}
 \title{Create HTML Tables for the Text Entry Questions}
 \usage{
-text_appendices_table(blocks)
+text_appendices_table(blocks, original_first_row, flow)
 }
 \arguments{
 \item{blocks}{A list of blocks with block elements replaced
 by the question with its paired responses.}
+
+\item{original_first_row}{This is the original first row of the
+response set. If you have the original_first_rows, you can
+pass original_first_rows[1,] to}
 }
 \value{
 an html string containing a title,

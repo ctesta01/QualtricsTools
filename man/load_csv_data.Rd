@@ -8,7 +8,7 @@ load_csv_data(file2, file1, headerrows)
 }
 \arguments{
 \item{file1}{This should be a CSV received from a file upload made in the Shiny UI,
-which includes a file1$datapath where the data can be located.}
+which includes a file1[['datapath']] where the data can be located.}
 }
 \value{
 The return value is the responses data frame

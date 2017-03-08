@@ -17,8 +17,8 @@ questions and false otherwise.
 Each of the is-functions defined in the qualtrics package are used
 for determining which response parsing function should be used. A
 function is considered multiple choice if it is listed in
-the qsf file as having $Payload$QuestionType == "MC"
-(standing for Multiple Choice), and the `$Payload$Selector` is set to one of the
+the qsf file as having [['Payload']][['QuestionType']] == "MC"
+(standing for Multiple Choice), and the `[['Payload']][['Selector']]` is set to one of the
 following:
 "Multiple Answer Vertical",
 "Multiple Answer Horizontal",

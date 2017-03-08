@@ -4,22 +4,22 @@
 \alias{generate_results}
 \title{Create Results Tables and Pair Them to Questions}
 \usage{
-generate_results(questions)
+generate_results(questions, original_first_rows)
 }
 \arguments{
 \item{questions}{A list of questions with the relevant response columns
-stored as a data frame under the questions[[i]]$Responses element. Create
+stored as a data frame under the questions[[i]][['Responses']] element. Create
 such a list of questions by using link_responses_to_questions.}
 }
 \value{
 A list of questions with their results tables paired to them
-under the questions[[i]]$Table
+under the questions[[i]][['Table']]
 }
 \description{
 The generate_results function takes a list of questions which have
 their responses paired to them, determines their question type,
 uses the results generation functions to create their results table,
-and saves the table to the question's $Table element. The function
+and saves the table to the question's [['Table']] element. The function
 returns the list of questions with their paired results tables.
 }
 

@@ -4,7 +4,7 @@
 \name{sample_responses}
 \alias{sample_responses}
 \title{Sample Qualtrics Response Data}
-\format{An object of class \code{data.frame} with 26 rows and 64 columns.}
+\format{An object of class \code{data.frame} with 10 rows and 38 columns.}
 \usage{
 sample_responses
 }

@@ -4,12 +4,14 @@
 \alias{get_coded_questions_and_blocks}
 \title{Get Questions (with Responses) and Blocks (with Questions)}
 \usage{
-get_coded_questions_and_blocks(survey, responses)
+get_coded_questions_and_blocks(survey, responses, original_first_rows)
 }
 \arguments{
 \item{survey}{A qualtrics survey, uploaded from a qsf/json file}
 
 \item{responses}{Qualtrics responses to a survey, uploaded from csv as a data frame}
+
+\item{original_first_rows}{The original header rows to the CSV response set}
 }
 \value{
 a list with two elements, the first being the survey questions,

@@ -4,11 +4,16 @@
 \alias{get_setup}
 \title{Setup the Global Environment for a Survey}
 \usage{
-get_setup(headerrows, already_loaded)
+get_setup(headerrows, already_loaded, qsf_path, csv_path)
 }
 \arguments{
 \item{headerrows}{An optional parameter for specifying the number of
 headerrows in the response csv.}
+
+\item{already_loaded}{can be set to TRUE to indicate that get_setup should
+try to get the survey, responses, and original_first_rows from the global scope
+instead of asking the user for them. If they aren't there, then the function
+will use the sample data included in the package.}
 }
 \description{
 This function sets up the .GlobalEnv to include survey, responses, questions

@@ -13,7 +13,7 @@ remove_trash_blocks(blocks)
 The list of blocks is returned without any Trash blocks
 }
 \description{
-This function finds among the trash blocks which has its $Type value
+This function finds among the trash blocks which has its [['Type']] value
 set to "Trash" and then removes it from the blocks list. The iteration
 in this function is backwards because it assigns NULL to any list
 items which need to be removed. Therefore, if it assigns NULL

@@ -12,13 +12,13 @@ questions_into_blocks(questions, blocks)
 \item{blocks}{A list of blocks from a Qualtrics survey}
 }
 \value{
-a list of blocks including questions under blocks[[i]]$BlockElements
+a list of blocks including questions under blocks[[i]][['BlockElements']]
 for each index i.
 }
 \description{
 This function takes a blocks list (create this with blocks_from_survey and
 then remove_trash_blocks), inserts the questions from a survey
 appropriately into the blocks element, and then returns the
-blocks list including the questions as elements in the blocks[[i]]$BlockElements.
+blocks list including the questions as elements in the blocks[[i]][['BlockElements']].
 }
 
