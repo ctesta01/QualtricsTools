@@ -483,8 +483,8 @@ table_html_coded_comments <- function(question, cc_index, appendix_e, blocks, or
 
   text_appendix_header <- as.data.frame(text_appendix_header)
   text_appendix_header <- do.call("cbind", replicate(2, text_appendix_header, simplify=FALSE))
-  coded_comment_names <- c(paste0('Question Tag: ', question[['Payload']][['DataExportTag']]),
-                           paste0('Question Tag: ', question[['Payload']][['DataExportTag']], " "))
+  coded_comment_names <- c(paste0('Export Tag: ', question[['Payload']][['DataExportTag']]),
+                           paste0('Export Tag: ', question[['Payload']][['DataExportTag']], " "))
   colnames(text_appendix_header) <- coded_comment_names
   colnames(question[['CodedComments']][[cc_index]][[2]]) <- coded_comment_names
   response_n <- t(as.data.frame(c("Responses", "N")))
@@ -511,7 +511,7 @@ table_no_respondents <- function(question, appendix_e) {
                       "",
                       "No respondents answered this question")
   No_Respondents <- as.data.frame(No_Respondents)
-  colnames(No_Respondents)[1] <- paste0('Question Tag: ', question[['Payload']][['DataExportTag']])
+  colnames(No_Respondents)[1] <- paste0('Export Tag: ', question[['Payload']][['DataExportTag']])
   tables <- list()
   tables <- c(tables, capture.output(print(xtable::xtable(No_Respondents),
                                            type="html",
@@ -550,7 +550,7 @@ table_text_entry <- function(question, responses, appendix_e, blocks, original_f
   text_appendix <- rbind(text_appendix_header,responses)
 
   # set colnames as response column names
-  colnames(text_appendix) <- sapply(colnames(responses), function (x) paste0('Question Tag: ', x))
+  colnames(text_appendix) <- sapply(colnames(responses), function (x) paste0('Export Tag: ', x))
 
   tables <- list()
   # turn the text appendix into an html table, and add it to the tables list
@@ -583,8 +583,8 @@ table_non_text_entry <- function(question, responses, appendix_e){
   colnames(text_appendix_header) <- colnames(responses)
   text_appendix <- rbind(text_appendix_header, responses)
 
-  # update the response columns names to have the "Question Tag: " prepended
-  colnames(text_appendix) <- sapply(colnames(responses), function(x) paste0('Question Tag: ', x))
+  # update the response columns names to have the "Export Tag: " prepended
+  colnames(text_appendix) <- sapply(colnames(responses), function(x) paste0('Export Tag: ', x))
 
   tables <- list()
   # turn the text appendix into an html table, and add it to the tables list
