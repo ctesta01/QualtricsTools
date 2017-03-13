@@ -72,7 +72,7 @@ documentation pages.
   - Processing a Specific Question
   - Exporting to Different Filetypes
 - How does it work? (Reference)
-  - Understanding the QSF
+  - [Understanding the QSF](https://gist.github.com/ctesta01/d4255959dace01431fb90618d1e8c241)
   - Understanding the source code
 
 ## FAQ
