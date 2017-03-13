@@ -113,14 +113,10 @@ insert_notes_into_questions <- function(questions, notes) {
     notes_list <- sapply(note[['Payload']][['Notes']], function(x) {
       if (x[['Removed']] != 'TRUE') return(paste0('User Note: ', x[['Message']]))
       })
-
     # get only the non-NULL notes, because if the note was 'Removed'
     # then it will appear in the sapply output as NULL
-    notes_list <- notes_list[-which(sapply(notes_list, is.null))]
-
-    print(qid)
-    print(note[['Payload']][['Notes']])
-    print(notes_list)
+    valid_notes <- which(sapply(notes_list, function(x) length(x) != 0))
+    notes_list <- notes_list[valid_notes]
 
     # Append the formatted notes strings to the corresponding question's
     # qtNotes
