@@ -49,7 +49,7 @@ you can run `help(function)` on any function in QualtricsTools, like `help(get_s
 documentation pages.
 
 - How do I use the app?
-  - Running the App
+  - [Running the App](https://github.com/ctesta01/QualtricsTools/wiki/Installing-and-Running-the-Shiny-App)
   - Parts of the App
     - The Report:
       - Results Tables
