@@ -71,14 +71,14 @@ get_coded_comment_sheet <- function(codedfile){
 
   # Pick out the sheet called "Coded"
   # Error if there isn't one
-  sheetindex <- which(tolower(excel_sheets(codedfile))=="coded")
+  sheetindex <- which(tolower(readxl::excel_sheets(codedfile))=="coded")
   if (length(sheetindex) == 0) {
     cat(paste0(codedfile, " did not have a Coded tab\n"))
     return(NA)
   }
 
   # Load the Coded Comments as a Data Frame
-  coded_orig <- read_excel(codedfile, sheet=sheetindex)
+  coded_orig <- readxl::read_excel(codedfile, sheet=sheetindex)
 
   # Strip out the Blank Rows
   blank_rows <- which(is.na(coded_orig[1]) | nchar(coded_orig[1])<5)
@@ -124,7 +124,7 @@ format_coded_comments <- function(coded_comment_sheet) {
 
 
   # add "Total" and the total N to the list of coded comments and Ns
-  n_comments <- nrow(unique(coded_comment_sheet[, 1]))
+  n_comments <- length(unique(coded_comment_sheet[, 1]))
   coded_table <- rbind(coded_table,c("Total", n_comments))
 
 
@@ -246,7 +246,7 @@ insert_split_survey_comments <- function(split_blocks, split_coded_comment_sheet
 
 # Includes the comment coding pre-defined functions
 
-generate_split_coded_comments <- function(qsf_file, csv_file, sheets_dir, output_dir, split_by) {
+generate_split_coded_comments <- function(qsf_file, csv_file, sheets_dir, output_dir, split_by, n_threshold) {
 
   # This turns the split_by list into a name for the column
   # which will contain the concatenation of the entries of responses
@@ -267,9 +267,7 @@ generate_split_coded_comments <- function(qsf_file, csv_file, sheets_dir, output
   # In this case School, DegType, and Porgram merged into school-degtype-program
   responses <- create_merged_response_column(split_by, split_string, blocks, responses)
 
-  grad_comments_directory <- sheets_dir
-
-  coded_sheets <- directory_get_coded_comment_sheets(grad_comments_directory)
+  coded_sheets <- directory_get_coded_comment_sheets(sheets_dir)
 
   if (is.null(coded_sheets)) {
     stop("Please fix errors before attempting again")
@@ -293,7 +291,8 @@ generate_split_coded_comments <- function(qsf_file, csv_file, sheets_dir, output
       html = c(blocks_header_to_html(split_blocks[[i]]),
                text_appendices_table(blocks = split_blocks[[i]],
                                      original_first_row = original_first_rows,
-                                     flow = flow)),
+                                     flow = flow,
+                                     n_threshold = n_threshold)),
       file_name = filenames[[i]],
       output_dir = output_dir
     )

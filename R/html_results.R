@@ -193,7 +193,7 @@ question_description <- function(question) {
 #' @return an html string containing a title,
 #' question text, and the text responses for each
 #' text appendix.
-text_appendices_table <- function(blocks, original_first_row, flow) {
+text_appendices_table <- function(blocks, original_first_row, flow, n_threshold = 15) {
   options(stringsAsFactors = FALSE)
 
   # determine the order of the block indices that we will use to
@@ -238,12 +238,17 @@ text_appendices_table <- function(blocks, original_first_row, flow) {
           # Table Coded Comments
           if ('CodedComments' %in% names(blocks[[i]][['BlockElements']][[j]])) {
             for (k in 1:length(blocks[[i]][['BlockElements']][[j]][['CodedComments']])) {
-              tables <- c(tables,
-                          table_html_coded_comments(blocks[[i]][['BlockElements']][[j]],
-                                               k,
-                                               e,
-                                               blocks,
-                                               original_first_row))
+              nrow_comments = nrow(blocks[[i]][['BlockElements']][[j]][['CodedComments']][[k]][[2]])
+              n_responses = blocks[[i]][['BlockElements']][[j]][['CodedComments']][[k]][[2]][[nrow_comments, 2]]
+              n_responses = as.integer(n_responses)
+              if (n_responses > n_threshold) {
+                tables <- c(tables,
+                            table_html_coded_comments(blocks[[i]][['BlockElements']][[j]],
+                                                      k,
+                                                      e,
+                                                      blocks,
+                                                      original_first_row))
+              }
             }
           }
 
