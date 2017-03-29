@@ -246,7 +246,7 @@ insert_split_survey_comments <- function(split_blocks, split_coded_comment_sheet
 
 # Includes the comment coding pre-defined functions
 
-generate_split_coded_comments <- function(qsf_file, csv_file, sheets_dir, output_dir, split_by) {
+generate_split_coded_comments <- function(qsf_file, csv_file, sheets_dir, output_dir, split_by, n_threshold) {
 
   # This turns the split_by list into a name for the column
   # which will contain the concatenation of the entries of responses
@@ -291,7 +291,8 @@ generate_split_coded_comments <- function(qsf_file, csv_file, sheets_dir, output
       html = c(blocks_header_to_html(split_blocks[[i]]),
                text_appendices_table(blocks = split_blocks[[i]],
                                      original_first_row = original_first_rows,
-                                     flow = flow)),
+                                     flow = flow,
+                                     n_threshold = n_threshold)),
       file_name = filenames[[i]],
       output_dir = output_dir
     )
