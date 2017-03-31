@@ -204,7 +204,7 @@ get_setup <- function(
        exists("blocks", 1) &&
        exists("original_first_rows")
   ) {
-    cat("The survey, responses, the response set's original_first_rows, questions, and blocks variables have all been made globally available in your R session.")
+    cat("The survey, responses, the response set's original_first_rows, questions, and blocks variables have all been made globally available in your R session.\n")
   }
 }
 
