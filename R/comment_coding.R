@@ -252,7 +252,8 @@ generate_split_coded_comments <- function(qsf_file, csv_file, sheets_dir, output
   # which will contain the concatenation of the entries of responses
   # which are being split over. That is if split_by = c('column1', 'column2', 'column3'),
   # then this constructs split_string = 'column1-column2-column3'
-  split_string <- toString(paste(split_by, "-"))
+  split_string <- c(split_by, "split")
+  split_string <- toString(paste(split_string, "-"))
   split_string <- gsub(' ', '', split_string)
   split_string <- gsub(',', '', split_string)
   split_string <- substr(split_string, 1, nchar(split_string)-1)
