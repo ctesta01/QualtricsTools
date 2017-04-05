@@ -50,15 +50,7 @@ documentation pages.
 
 - How do I use the app?
   - [Running the App](https://github.com/ctesta01/QualtricsTools/wiki/Installing-and-Running-the-Shiny-App)
-  - Parts of the App
-    - The Report:
-      - Results Tables
-      - Question Dictionary
-      - Text Appendices
-      - Survey Logic
-    - Including/Excluding Questions
-    - Downloading Documents
-    - Spliting Surveys by Responses
+  - [Parts of the App](https://github.com/ctesta01/QualtricsTools/wiki/Parts-of-the-Shiny-App)
 - How do I use the R package?
   - Generating Results Tables (with & w/out get-setup)
   - Generating Question Dictionaries
