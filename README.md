@@ -65,7 +65,7 @@ documentation pages.
   - Generating Text Appendices
   - Generating Survey Logic
   - Split by Responses (single col / multi-col)
-  - Tableau Reshaping
+  - [Tableau Reshaping](https://github.com/ctesta01/QualtricsTools/wiki/Reshaping-Responses-for-Tableau)
   - Question Dictionary
   - Comment Coding
   - Including/Excluding  Questions
