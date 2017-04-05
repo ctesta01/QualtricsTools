@@ -54,7 +54,7 @@ documentation pages.
   - [Usage Guidelines](https://github.com/ctesta01/QualtricsTools/wiki/Usage-Guidelines)
 - How do I use the R package?
   - [Generating Results Tables](https://github.com/ctesta01/QualtricsTools/wiki/Generating-Results-Tables)
-  - Generating Question Dictionaries
+  - [Generating Question Dictionaries](https://github.com/ctesta01/QualtricsTools/wiki/Generating-Question-Dictionaries)
   - Generating Text Appendices
   - Generating Survey Logic
   - Split by Responses (single col / multi-col)
