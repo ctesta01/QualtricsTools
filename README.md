@@ -53,7 +53,7 @@ documentation pages.
   - [Parts of the App](https://github.com/ctesta01/QualtricsTools/wiki/Parts-of-the-Shiny-App)
   - [Usage Guidelines](https://github.com/ctesta01/QualtricsTools/wiki/Usage-Guidelines)
 - How do I use the R package?
-  - Generating Results Tables (with & w/out get-setup)
+  - [Generating Results Tables](https://github.com/ctesta01/QualtricsTools/wiki/Generating-Results-Tables)
   - Generating Question Dictionaries
   - Generating Text Appendices
   - Generating Survey Logic
