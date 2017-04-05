@@ -94,12 +94,12 @@ Q: I need to clean my data, but I still want to be able to use QualtricsTools af
 
 A: I would advise against is editing the QSF and the column names of the CSV dataset. These are crucial structural components to the survey, and are integral in how QualtricsTools processes the survey data. However, you may 
 remove complete rows and columns of respondent data without affecting QualtricsTools' ability to process your survey, and 
-you may change responses as long as they are still valid responses to the provided question. Check out the [usage guide](https://github.com/ctesta01/QualtricsTools/wiki/Usage-Requirements) to see more. 
+you may change responses as long as they are still valid responses to the provided question. Check out the [usage guide](https://github.com/ctesta01/QualtricsTools/wiki/Usage-Guidelines) to see more. 
 
 
 Q: Qualtrics has many different ways to download data. Which format should I use if I want to use QualtricsTools on it?
 
-A: Right now, you can download Qualtrics Surveys only as QSF files. However, the data can be downloaded in many different formats. QualtricsTools only supports CSV data, but it supports data from both Legacy and Insights. Check out the appendix in this [usage guide](https://github.com/ctesta01/QualtricsTools/wiki/Usage-Requirements) to see more. 
+A: Right now, you can download Qualtrics Surveys only as QSF files. However, the data can be downloaded in many different formats. QualtricsTools only supports CSV data, but it supports data from both Legacy and Insights. Check out the appendix in this [usage guide](https://github.com/ctesta01/QualtricsTools/wiki/Usage-Guidelines) to see more. 
 
 
 Q: When trying to export to xlsx or reshaping my data to lean data, R is unable to find 
