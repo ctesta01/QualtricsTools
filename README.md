@@ -73,7 +73,7 @@ documentation pages.
   - Exporting to Different Filetypes
 - How does it work? (Reference)
   - [Understanding the QSF](https://gist.github.com/ctesta01/d4255959dace01431fb90618d1e8c241)
-  - Understanding the source code
+  - [Understanding the source code](https://github.com/ctesta01/QualtricsTools/wiki/Source-Code-Layout)
 
 ## FAQ
 Q: My results tables look wrong. What could be causing it?
