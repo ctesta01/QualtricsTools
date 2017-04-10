@@ -57,9 +57,9 @@ documentation pages.
   - [Generating Question Dictionaries](https://github.com/ctesta01/QualtricsTools/wiki/Generating-Question-Dictionaries)
   - [Generating Text Appendices](https://github.com/ctesta01/QualtricsTools/wiki/Generating-Text-Appendices)
   - [Generating Survey Logic](https://github.com/ctesta01/QualtricsTools/wiki/Generating-Display-Logic)
-  - Split by Responses (single col / multi-col)
+  - [Split Reports by Responses](https://github.com/ctesta01/QualtricsTools/wiki/Split-Reports)
   - [Tableau Reshaping](https://github.com/ctesta01/QualtricsTools/wiki/Reshaping-Responses-for-Tableau)
-  - Question Dictionary
+  - [Question Dictionary](https://github.com/ctesta01/QualtricsTools/wiki/Generating-Question-Dictionaries)
   - Comment Coding
   - Including/Excluding  Questions
   - Processing a Specific Question
