@@ -197,6 +197,7 @@ get_setup <- function(
   questions <<- questions
   blocks <<- blocks
   original_first_rows <<- original_first_rows
+  flow <<- flow_from_survey(survey)
 
   if ( exists("survey", 1) &&
        exists("responses", 1) &&
@@ -204,7 +205,7 @@ get_setup <- function(
        exists("blocks", 1) &&
        exists("original_first_rows")
   ) {
-    cat("The survey, responses, the response set's original_first_rows, questions, and blocks variables have all been made globally available in your R session.\n")
+    cat("The survey, responses, questions, blocks, the responses' original_first_rows, and flow have been made global variables.\n")
   }
 }
 
