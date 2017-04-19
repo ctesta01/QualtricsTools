@@ -5,7 +5,7 @@ Qualtrics Survey Files (QSF) and survey response data into results tables,
 question dictionaries, text appendices and more. The application and package
 were built using R, Shiny, and Pandoc.
 
-![A slideshow of the QualtricsTools web app](https://raw.githubusercontent.com/ctesta01/QualtricsTools/master/QualtricsTools%20animated.gif)
+![A slideshow of the QualtricsTools web app](https://github.com/ctesta01/QualtricsTools/blob/master/pics/animation.gif?raw=true)
 
 ## What does QualtricsTools do? (Features)
 The QualtricsTools app can be run as a local web-application which acts as
