@@ -137,7 +137,7 @@ format_coded_comments <- function(coded_comment_sheet) {
 
 
   # add "Total" and the total N to the list of coded comments and Ns
-  n_comments <- length(unique(coded_comment_sheet[, 1]))
+  n_comments <- length(unique(as.data.frame(coded_comment_sheet)[,1]))
   coded_table <- rbind(coded_table,c("Total", n_comments))
 
 
@@ -269,6 +269,43 @@ insert_split_survey_comments <- function(split_blocks, split_coded_comment_sheet
   return(split_blocks)
 }
 
+generate_coded_comments <- function(qsf_file, csv_file, sheets_dir, output_dir, filename = 'text appendices.docx', n_threshold=15, headerrows=3) {
+
+  # Declares paths for the qsf and csv files
+  if (!any(c(missing(qsf_file), missing(csv_file)))) {
+    qt_vals = get_setup(qsf_path = qsf_file,
+                        csv_path = csv_file,
+                        return_data=TRUE)
+    varnames = c('survey', 'responses', 'questions', 'blocks', 'original_first_rows', 'flow')
+    for (i in 1:length(varnames)) {
+      assign(varnames[[i]], qt_vals[[i]])
+    }
+    original_first_rows = as.data.frame(original_first_rows)
+    responses = as.data.frame(responses)
+  }
+
+  coded_sheets <- directory_get_coded_comment_sheets(sheets_dir)
+
+  if (is.null(coded_sheets)) {
+    stop("Please fix errors before attempting again")
+  }
+
+  comment_tables <- format_coded_comment_sheets(coded_comment_sheets = coded_sheets)
+  blocks <- insert_coded_comments(blocks=blocks, original_first_rows=original_first_rows, coded_comments = comment_tables)
+
+  #Used with html_2_pandoc below to keeps the flow of the survey consistent with the output
+  flow = flow_from_survey(survey)
+
+  html_2_pandoc(
+      html = c(blocks_header_to_html(blocks),
+               text_appendices_table(blocks = blocks,
+                                     original_first_row = original_first_rows,
+                                     flow = flow,
+                                     n_threshold = n_threshold)),
+      file_name = filename,
+      output_dir = output_dir
+    )
+}
 
 #' Split a Survey's Split Coded Comment Appendices
 #'
@@ -294,10 +331,12 @@ generate_split_coded_comments <- function(qsf_file, csv_file, sheets_dir, output
   split_string <- substr(split_string, 1, nchar(split_string)-1)
 
   # Declares paths for the qsf and csv files
-  get_setup(
-    qsf_path = qsf_file,
-    csv_path = csv_file,
-    headerrows = headerrows)
+  if (!any(c(missing(qsf_file), missing(csv_file), missing(headerrows)))) {
+    get_setup(
+      qsf_path = qsf_file,
+      csv_path = csv_file,
+      headerrows = headerrows)
+  }
 
   # Merges the selected columns into one name
   # In this case School, DegType, and Porgram merged into school-degtype-program

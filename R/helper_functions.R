@@ -129,7 +129,8 @@ get_setup <- function(
   headerrows,
   already_loaded,
   qsf_path,
-  csv_path
+  csv_path,
+  return_data = FALSE
   ) {
   # default to headerrows = 3
   if (missing(headerrows)) {
@@ -191,23 +192,42 @@ get_setup <- function(
                                  survey[['SurveyEntry']][['SurveyName']]),
                           paste0("Number of Respondents: ",
                                  nrow(responses)))
+  survey <- survey
+  responses <- responses
+  questions <- questions
+  blocks <- blocks
+  original_first_rows <- original_first_rows
+  flow <- flow_from_survey(survey)
 
-  survey <<- survey
-  responses <<- responses
-  questions <<- questions
-  blocks <<- blocks
-  original_first_rows <<- original_first_rows
-  flow <<- flow_from_survey(survey)
+  if (return_data) {
+    return_vals = list()
+    return_vals[[1]] = survey
+    return_vals[[2]] = responses
+    return_vals[[3]] = questions
+    return_vals[[4]] = blocks
+    return_vals[[5]] = original_first_rows
+    return_vals[[6]] = flow
+    return(return_vals)
+  } else {
+    survey <<- survey
+    responses <<- responses
+    questions <<- questions
+    blocks <<- blocks
+    original_first_rows <<- original_first_rows
+    flow <<- flow_from_survey(survey)
 
-  if ( exists("survey", 1) &&
-       exists("responses", 1) &&
-       exists("questions", 1) &&
-       exists("blocks", 1) &&
-       exists("original_first_rows")
-  ) {
-    cat("The survey, responses, questions, blocks, the responses' original_first_rows, and flow have been made global variables.\n")
+    if ( exists("survey", 1) &&
+         exists("responses", 1) &&
+         exists("questions", 1) &&
+         exists("blocks", 1) &&
+         exists("original_first_rows")
+    ) {
+      cat("The survey, responses, questions, blocks, the responses' original_first_rows, and flow have been made global variables.\n")
+    }
   }
 }
+
+
 
 
 #' Find Question from DataExportTag
