@@ -61,7 +61,7 @@ documentation pages.
   - [Tableau Reshaping](https://github.com/ctesta01/QualtricsTools/wiki/Reshaping-Responses-for-Tableau)
   - [Question Dictionary](https://github.com/ctesta01/QualtricsTools/wiki/Generating-Question-Dictionaries)
   - [Uncodeable Questions Dictionary](https://github.com/ctesta01/QualtricsTools/wiki/Uncodeable-Questions)
-  - Comment Coding
+  - [Comment Coding](https://github.com/ctesta01/QualtricsTools/wiki/Comment-Coding)
   - Including/Excluding  Questions
   - Processing a Specific Question
   - Exporting to Different Filetypes
