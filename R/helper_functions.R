@@ -132,10 +132,6 @@ get_setup <- function(
   csv_path,
   return_data = FALSE
   ) {
-  # default to headerrows = 3
-  if (missing(headerrows)) {
-    headerrows <- 3
-  }
 
   # default to already_loaded = FALSE
   if (missing(already_loaded)) {
@@ -144,6 +140,14 @@ get_setup <- function(
 
   # ask the user for the CSV and the QSF if the
   if (already_loaded == FALSE) {
+    # default to headerrows = 3
+    if (missing(headerrows)) {
+      headerrows <- readline(prompt="Enter the number of response data header rows [Default: 3]: ")
+      if (!grepl("^[0-9]+$",headerrows)){
+        cat('Defaulting headerrows=3')
+        headerrows = 3
+      } else headerrows <- as.integer(headerrows)
+    }
     if (missing(qsf_path)) {
       survey <- ask_for_qsf()
     } else {
@@ -200,13 +204,14 @@ get_setup <- function(
   flow <- flow_from_survey(survey)
 
   if (return_data) {
-    return_vals = list()
-    return_vals[[1]] = survey
-    return_vals[[2]] = responses
-    return_vals[[3]] = questions
-    return_vals[[4]] = blocks
-    return_vals[[5]] = original_first_rows
-    return_vals[[6]] = flow
+    return_vals = list(
+      "survey" = survey,
+      "responses" = responses,
+      "questions" = questions,
+      "blocks" = blocks,
+      "original_first_rows" = original_first_rows,
+      "flow" = flow
+    )
     return(return_vals)
   } else {
     survey <<- survey
@@ -226,9 +231,6 @@ get_setup <- function(
     }
   }
 }
-
-
-
 
 #' Find Question from DataExportTag
 #'
@@ -402,3 +404,52 @@ flow_from_survey <- function(survey) {
   flow <- unlist(flow)
   return(flow)
 }
+
+
+
+
+make_results_tables <- function(qsf_path, csv_path, headerrows, output_dir, filename = 'Results Tables.docx') {
+  if (!any(c(missing(qsf_path), missing(csv_path)))) {
+    qt_vals = get_setup(qsf_path = qsf_path,
+                        csv_path = csv_path,
+                        headerrows = headerrows,
+                        return_data=TRUE)
+    varnames = c('survey', 'responses', 'questions', 'blocks', 'original_first_rows', 'flow')
+    for (i in 1:length(varnames)) {
+      assign(varnames[[i]], qt_vals[[i]])
+    }
+    original_first_rows = as.data.frame(original_first_rows)
+    responses = as.data.frame(responses)
+  }
+
+  html_2_pandoc(
+    html=c(blocks_header_to_html(blocks), tabelize_blocks(blocks, flow)),
+    file_name=filename,
+    output_dir=output_dir
+  )
+}
+
+
+
+make_text_appendices <- function(qsf_path, csv_path, headerrows, output_dir, filename = 'Text Appendices.docx') {
+  if (!any(c(missing(qsf_path), missing(csv_path)))) {
+    qt_vals = get_setup(qsf_path = qsf_path,
+                        csv_path = csv_path,
+                        headerrows = headerrows,
+                        return_data=TRUE)
+    varnames = c('survey', 'responses', 'questions', 'blocks', 'original_first_rows', 'flow')
+    for (i in 1:length(varnames)) {
+      assign(varnames[[i]], qt_vals[[i]])
+    }
+    original_first_rows = as.data.frame(original_first_rows)
+    responses = as.data.frame(responses)
+  }
+
+  html_2_pandoc(
+    html=c(blocks_header_to_html(blocks),
+           text_appendices_table(blocks, original_first_rows, flow)),
+    file_name=filename,
+    output_dir=output_dir
+  )
+}
+

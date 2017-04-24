@@ -1015,7 +1015,8 @@ create_response_column_dictionary <- function(question_blocks, orig_first_row) {
   for (b in 1:number_of_blocks(blocks)) {
     if ('BlockElements' %in% names(blocks[[b]])) {
       for (be in 1:length(blocks[[b]][['BlockElements']])) {
-        if ("Responses" %in% names(blocks[[b]][['BlockElements']][[be]])) {
+        if ("Responses" %in% names(blocks[[b]][['BlockElements']][[be]]) &&
+            !is.null(blocks[[b]][['BlockElements']][[be]][['Responses']])) {
           coln <- ncol(blocks[[b]][['BlockElements']][[be]][['Responses']])
           rown <- nrow(blocks[[b]][['BlockElements']][[be]][['Responses']])
           if (coln > 0) {
