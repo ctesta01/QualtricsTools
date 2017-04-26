@@ -104,23 +104,25 @@ insert_notes_into_questions <- function(questions, notes) {
     # the notes contents into the qtNotes list element of that question
     qid = note[['Payload']][['ParentID']]
     qid_index = find_question_index_by_qid(questions, qid)
-    if (!"qtNotes" %in% names(questions[[qid_index]])) {
-      questions[[qid_index]][['qtNotes']] <- list()
-    }
+    if (length(qid_index) > 0) {
+      if (!"qtNotes" %in% names(questions[[qid_index]])) {
+        questions[[qid_index]][['qtNotes']] <- list()
+      }
 
-    # Don't include the 'Removed' notes
-    # And for the notes which aren't removed, prepend them with 'User Note: '
-    notes_list <- sapply(note[['Payload']][['Notes']], function(x) {
-      if (x[['Removed']] != 'TRUE') return(paste0('User Note: ', x[['Message']]))
+      # Don't include the 'Removed' notes
+      # And for the notes which aren't removed, prepend them with 'User Note: '
+      notes_list <- sapply(note[['Payload']][['Notes']], function(x) {
+        if (x[['Removed']] != 'TRUE') return(paste0('User Note: ', x[['Message']]))
       })
-    # get only the non-NULL notes, because if the note was 'Removed'
-    # then it will appear in the sapply output as NULL
-    valid_notes <- which(sapply(notes_list, function(x) length(x) != 0))
-    notes_list <- notes_list[valid_notes]
+      # get only the non-NULL notes, because if the note was 'Removed'
+      # then it will appear in the sapply output as NULL
+      valid_notes <- which(sapply(notes_list, function(x) length(x) != 0))
+      notes_list <- notes_list[valid_notes]
 
-    # Append the formatted notes strings to the corresponding question's
-    # qtNotes
-    questions[[qid_index]][['qtNotes']] <- c(questions[[qid_index]][['qtNotes']], notes_list)
+      # Append the formatted notes strings to the corresponding question's
+      # qtNotes
+      questions[[qid_index]][['qtNotes']] <- c(questions[[qid_index]][['qtNotes']], notes_list)
+    }
   }
 
   return(questions)
