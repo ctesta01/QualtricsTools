@@ -250,12 +250,14 @@ shinyServer(
   output[['table_respondent_groups']] <- renderTable({
     split_cols <- input[['split_response_columns']]
     qt_split_col <- paste0(c("split", split_cols), collapse=" ")
+    if (qt_split_col %in% colnames(split_col_responses())) {
     factor_table <- table(factor(split_col_responses()[[qt_split_col]]))
       factor_table <- as.data.frame(factor_table)
       if (ncol(factor_table) >= 2) {
         colnames(factor_table) <- c("Respondent Group", "N")
         factor_table
       }
+    }
   }, include.rownames=FALSE)
 
 
