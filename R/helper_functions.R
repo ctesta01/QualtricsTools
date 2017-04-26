@@ -129,12 +129,9 @@ get_setup <- function(
   headerrows,
   already_loaded,
   qsf_path,
-  csv_path
+  csv_path,
+  return_data = FALSE
   ) {
-  # default to headerrows = 3
-  if (missing(headerrows)) {
-    headerrows <- 3
-  }
 
   # default to already_loaded = FALSE
   if (missing(already_loaded)) {
@@ -143,6 +140,14 @@ get_setup <- function(
 
   # ask the user for the CSV and the QSF if the
   if (already_loaded == FALSE) {
+    # default to headerrows = 3
+    if (missing(headerrows)) {
+      headerrows <- readline(prompt="Enter the number of response data header rows [Default: 3]: ")
+      if (!grepl("^[0-9]+$",headerrows)){
+        cat('Defaulting headerrows=3')
+        headerrows = 3
+      } else headerrows <- as.integer(headerrows)
+    }
     if (missing(qsf_path)) {
       survey <- ask_for_qsf()
     } else {
@@ -173,41 +178,51 @@ get_setup <- function(
     }
   }
 
-  blocks <- blocks_from_survey(survey)
-  questions <- questions_from_survey(survey)
-  questions <- remove_trash_questions(questions, blocks)
-  blocks <- remove_trash_blocks(blocks)
-  questions_and_blocks <- split_side_by_sides(questions, blocks)
+  questions_and_blocks <- get_coded_questions_and_blocks(survey, responses, original_first_rows)
   questions <- questions_and_blocks[[1]]
   blocks <- questions_and_blocks[[2]]
-  questions <- clean_question_text(questions)
-  questions <- human_readable_qtype(questions)
-  questions <- link_responses_to_questions(questions, responses, original_first_rows)
-  questions <- generate_results(questions, original_first_rows)
-  blocks <- questions_into_blocks(questions, blocks)
+
 
   # insert a header into the blocks
   blocks[['header']] <- c(paste0("Survey Name: ",
                                  survey[['SurveyEntry']][['SurveyName']]),
                           paste0("Number of Respondents: ",
                                  nrow(responses)))
+  survey <- survey
+  responses <- responses
+  questions <- questions
+  blocks <- blocks
+  original_first_rows <- original_first_rows
+  flow <- flow_from_survey(survey)
 
-  survey <<- survey
-  responses <<- responses
-  questions <<- questions
-  blocks <<- blocks
-  original_first_rows <<- original_first_rows
+  if (return_data) {
+    return_vals = list(
+      "survey" = survey,
+      "responses" = responses,
+      "questions" = questions,
+      "blocks" = blocks,
+      "original_first_rows" = original_first_rows,
+      "flow" = flow
+    )
+    return(return_vals)
+  } else {
+    survey <<- survey
+    responses <<- responses
+    questions <<- questions
+    blocks <<- blocks
+    original_first_rows <<- original_first_rows
+    flow <<- flow_from_survey(survey)
 
-  if ( exists("survey", 1) &&
-       exists("responses", 1) &&
-       exists("questions", 1) &&
-       exists("blocks", 1) &&
-       exists("original_first_rows")
-  ) {
-    cat("The survey, responses, the response set's original_first_rows, questions, and blocks variables have all been made globally available in your R session.")
+    if ( exists("survey", 1) &&
+         exists("responses", 1) &&
+         exists("questions", 1) &&
+         exists("blocks", 1) &&
+         exists("original_first_rows")
+    ) {
+      cat("The survey, responses, questions, blocks, the responses' original_first_rows, and flow have been made global variables.\n")
+    }
   }
 }
-
 
 #' Find Question from DataExportTag
 #'
@@ -381,3 +396,52 @@ flow_from_survey <- function(survey) {
   flow <- unlist(flow)
   return(flow)
 }
+
+
+
+
+make_results_tables <- function(qsf_path, csv_path, headerrows, output_dir, filename = 'Results Tables.docx') {
+  if (!any(c(missing(qsf_path), missing(csv_path)))) {
+    qt_vals = get_setup(qsf_path = qsf_path,
+                        csv_path = csv_path,
+                        headerrows = headerrows,
+                        return_data=TRUE)
+    varnames = c('survey', 'responses', 'questions', 'blocks', 'original_first_rows', 'flow')
+    for (i in 1:length(varnames)) {
+      assign(varnames[[i]], qt_vals[[i]])
+    }
+    original_first_rows = as.data.frame(original_first_rows)
+    responses = as.data.frame(responses)
+  }
+
+  html_2_pandoc(
+    html=c(blocks_header_to_html(blocks), tabelize_blocks(blocks, flow)),
+    file_name=filename,
+    output_dir=output_dir
+  )
+}
+
+
+
+make_text_appendices <- function(qsf_path, csv_path, headerrows, output_dir, filename = 'Text Appendices.docx') {
+  if (!any(c(missing(qsf_path), missing(csv_path)))) {
+    qt_vals = get_setup(qsf_path = qsf_path,
+                        csv_path = csv_path,
+                        headerrows = headerrows,
+                        return_data=TRUE)
+    varnames = c('survey', 'responses', 'questions', 'blocks', 'original_first_rows', 'flow')
+    for (i in 1:length(varnames)) {
+      assign(varnames[[i]], qt_vals[[i]])
+    }
+    original_first_rows = as.data.frame(original_first_rows)
+    responses = as.data.frame(responses)
+  }
+
+  html_2_pandoc(
+    html=c(blocks_header_to_html(blocks),
+           text_appendices_table(blocks, original_first_rows, flow)),
+    file_name=filename,
+    output_dir=output_dir
+  )
+}
+

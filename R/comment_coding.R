@@ -1,4 +1,11 @@
 #' Turn a Directory into a list of Coded Comment Data Frames (unprocessed)
+#'
+#' This function takes as an argument a string representative of a
+#' directory, loads the CSVs and Excel data from that directory,
+#' looks for 'Coded' sheets, extracts the coded sheets,
+#' and saves the coded comment table and the question ID
+#' as a pair in the output coded_appendix_tables list. If there
+#' are sheets which contain non-numeric data, warnings are raised.
 directory_get_coded_comment_sheets <- function(directory) {
 
   # ask for directory if not provided
@@ -64,6 +71,9 @@ directory_get_coded_comment_sheets <- function(directory) {
 }
 
 #' Turn a Single Coded File into a Data Frame
+#'
+#' This retrieves the raw content of a 'Coded' sheet in the
+#' coded comments of an excel or CSV file.
 get_coded_comment_sheet <- function(codedfile){
 
   # Ask for the Coded File if there isn't one provided
@@ -97,6 +107,9 @@ get_coded_comment_sheet <- function(codedfile){
 }
 
 #' Turn the original coded comments sheet into a pair: (Question, Data Frame)
+#'
+#' This extracts from the coded sheet the Question ID and the
+#' frequencies of the comments across the coded categories.
 format_coded_comments <- function(coded_comment_sheet) {
   # determine which column to start with
   index_qname <- which(tolower(names(coded_comment_sheet))=="varname")
@@ -124,7 +137,7 @@ format_coded_comments <- function(coded_comment_sheet) {
 
 
   # add "Total" and the total N to the list of coded comments and Ns
-  n_comments <- length(unique(coded_comment_sheet[, 1]))
+  n_comments <- length(unique(as.data.frame(coded_comment_sheet)[,1]))
   coded_table <- rbind(coded_table,c("Total", n_comments))
 
 
@@ -166,7 +179,12 @@ merge_split_column_into_comment_sheet <- function(coded_comment_sheet, responses
   return(coded_comment_sheet)
 }
 
-# Format and Split a list of Unprocessed Coded Comment Sheets
+#' Format and Split a list of Unprocessed Coded Comment Sheets
+#'
+#' When splitting the respondents of a survey to create split reports,
+#' the coded comments are split by this function and then returned as a list of lists.
+#' The first list is a list for each split group, and each list within those is a
+#' list of pairs of question IDs and their coded comments tables.
 format_and_split_comment_sheets <- function(coded_comment_sheets, responses, split_column) {
 
   # split_coded_comment_sheets will be a list of coded comment sheets for each respondent group
@@ -199,6 +217,12 @@ format_and_split_comment_sheets <- function(coded_comment_sheets, responses, spl
 }
 
 #' Insert Coded Comments into Blocks
+#'
+#' This takes a list of pairs of question IDs and coded comments tables
+#' and finds their corresponding question based on the question ID in a list
+#' of blocks and then inserts the coded comments table into the question.
+#' The returned list is a list of blocks where the questions have had their
+#' coded comments inserted.
 insert_coded_comments <- function(blocks, original_first_rows, coded_comments) {
 
   r_col_dictionary <- create_response_column_dictionary(blocks, original_first_rows[1,])
@@ -228,7 +252,9 @@ insert_coded_comments <- function(blocks, original_first_rows, coded_comments) {
 
 #' Split Survey and Insert Split Coded Comments
 #'
-#' The responses should already include the split column
+#' This function splits the survey's response data and the
+#' coded comments, then inserts the split coded comments into the split
+#' surveys.
 insert_split_survey_comments <- function(split_blocks, split_coded_comment_sheets, split_column, original_first_rows) {
   # grab the original first rows if not included
   if (missing(original_first_rows)) original_first_rows <- get(x="original_first_rows", envir=globalenv())
@@ -243,10 +269,57 @@ insert_split_survey_comments <- function(split_blocks, split_coded_comment_sheet
   return(split_blocks)
 }
 
+generate_coded_comments <- function(qsf_path, csv_path, sheets_dir, output_dir, filename = 'text appendices.docx', n_threshold=15, headerrows) {
 
-# Includes the comment coding pre-defined functions
+  # Declares paths for the qsf and csv files
+  if (!any(c(missing(qsf_path), missing(csv_path)))) {
+    qt_vals = get_setup(qsf_path = qsf_path,
+                        csv_path = csv_path,
+                        headerrows = headerrows,
+                        return_data=TRUE)
+    varnames = c('survey', 'responses', 'questions', 'blocks', 'original_first_rows', 'flow')
+    for (i in 1:length(varnames)) {
+      assign(varnames[[i]], qt_vals[[i]])
+    }
+    original_first_rows = as.data.frame(original_first_rows)
+    responses = as.data.frame(responses)
+  }
 
-generate_split_coded_comments <- function(qsf_file, csv_file, sheets_dir, output_dir, split_by, n_threshold=15, headerrows=3) {
+  coded_sheets <- directory_get_coded_comment_sheets(sheets_dir)
+
+  if (is.null(coded_sheets)) {
+    stop("Please fix errors before attempting again")
+  }
+
+  comment_tables <- format_coded_comment_sheets(coded_comment_sheets = coded_sheets)
+  blocks <- insert_coded_comments(blocks=blocks, original_first_rows=original_first_rows, coded_comments = comment_tables)
+
+  #Used with html_2_pandoc below to keeps the flow of the survey consistent with the output
+  flow = flow_from_survey(survey)
+
+  html_2_pandoc(
+      html = c(blocks_header_to_html(blocks),
+               text_appendices_table(blocks = blocks,
+                                     original_first_row = original_first_rows,
+                                     flow = flow,
+                                     n_threshold = n_threshold)),
+      file_name = filename,
+      output_dir = output_dir
+    )
+}
+
+#' Split a Survey's Split Coded Comment Appendices
+#'
+#' This question automates the entire process of splitting a
+#' survey's text appendices by specific response columns. The QSF
+#' and CSV file are passed as string arguments,
+#' the sheets_dir specifies where the coded comments excel or csv
+#' data is stored, and the output_dir specifies where the split
+#' coded comment appendices should be saved. The n_threshold
+#' specifies how many coded comments there must be before the coded
+#' comment appendices are included, and headerrows is an argument
+#' necessary to process the survey results correctly.
+generate_split_coded_comments <- function(qsf_path, csv_path, sheets_dir, output_dir, split_by, n_threshold=15, headerrows) {
 
   # This turns the split_by list into a name for the column
   # which will contain the concatenation of the entries of responses
@@ -259,10 +332,18 @@ generate_split_coded_comments <- function(qsf_file, csv_file, sheets_dir, output
   split_string <- substr(split_string, 1, nchar(split_string)-1)
 
   # Declares paths for the qsf and csv files
-  get_setup(
-    qsf_path = qsf_file,
-    csv_path = csv_file,
-    headerrows = headerrows)
+  if (!any(c(missing(qsf_path), missing(csv_path)))) {
+    qt_vals = get_setup(qsf_path = qsf_path,
+                        csv_path = csv_path,
+                        headerrows = headerrows,
+                        return_data=TRUE)
+    varnames = c('survey', 'responses', 'questions', 'blocks', 'original_first_rows', 'flow')
+    for (i in 1:length(varnames)) {
+      assign(varnames[[i]], qt_vals[[i]])
+    }
+    original_first_rows = as.data.frame(original_first_rows)
+    responses = as.data.frame(responses)
+  }
 
   # Merges the selected columns into one name
   # In this case School, DegType, and Porgram merged into school-degtype-program
@@ -275,7 +356,7 @@ generate_split_coded_comments <- function(qsf_file, csv_file, sheets_dir, output
   }
 
   split_comment_tables <- format_and_split_comment_sheets(coded_sheets, responses, split_string)
-  split_blocks <- split_respondents(split_string, responses, survey, blocks, questions, headerrows=3)
+  split_blocks <- split_respondents(split_string, responses, survey, blocks, questions, headerrows)
   split_blocks <- insert_split_survey_comments(split_blocks, split_comment_tables, split_string, original_first_rows)
 
   #Used with html_2_pandoc below to keeps the flow of the survey consistent with the output
