@@ -93,7 +93,7 @@ A: Sometimes I think Word has trouble with large file sizes. My recommendation i
 
 Q: I need to clean my data, but I still want to be able to use QualtricsTools after cleaning it. What can and can't I do?
 
-A: I would advise against is editing the QSF and the column names of the CSV dataset. These are crucial structural components to the survey, and are integral in how QualtricsTools processes the survey data. However, you may 
+A: I would advise against editing the QSF and the column names of the CSV dataset. These are crucial structural components to the survey, and are integral in how QualtricsTools processes the survey data. However, you may 
 remove complete rows and columns of respondent data without affecting QualtricsTools' ability to process your survey, and 
 you may change responses as long as they are still valid responses to the provided question. Check out the [usage guide](https://github.com/ctesta01/QualtricsTools/wiki/Usage-Guidelines) to see more. 
 
