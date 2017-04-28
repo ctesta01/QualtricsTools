@@ -29,7 +29,7 @@ directory_get_coded_comment_sheets <- function(directory) {
 
     # For each file in the files_list, try to get its coded comment sheet.
     # If it warns, save the error and filename to warnings_list and warning_files_list.
-    tryCatch(coded_appendix_tables[[i]] <- get_coded_comment_sheet(files_list[[i]]),
+    tryCatch(coded_appendix_tables[[length(coded_appendix_tables)+1]] <- get_coded_comment_sheet(files_list[[i]]),
              warning = function(w) {
                warning_files_list[[i]] <- files_list[[i]]
                warnings_list[[i]] <- w

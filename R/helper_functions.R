@@ -174,7 +174,7 @@ get_setup <- function(
       original_first_rows <<- sample_original_first_rows
     } else {
       responses <- get("responses", envir=-1)
-      original_first_rows <- get("original_first_rows", envir=1)
+      original_first_rows <- get("original_first_rows", envir=-1)
     }
   }
 

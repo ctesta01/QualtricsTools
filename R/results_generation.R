@@ -690,11 +690,6 @@ matrix_multiple_answer_results <- function(question, original_first_rows) {
 #' @return A list of questions with their results tables paired to them
 #' under the questions[[i]][['Table']]
 generate_results <- function(questions, original_first_rows) {
-  # should we use the original_first_rows?
-  if (!missing(original_first_rows) &&
-      nrow(original_first_rows) >= 2) {
-    should_use_ofr <- TRUE
-  } else should_use_ofr <- FALSE
 
   # loop through all the questions that have responses,
   # and for each question that has responses, determine
@@ -702,51 +697,65 @@ generate_results <- function(questions, original_first_rows) {
   # results generating functions), then generate the results for
   # that question and save them to that question.
   for (i in 1:length(questions)) {
-    if (is.null(questions[[i]][['Responses']])) {
-      has_responses <- FALSE
-    } else {
-      has_responses <- ncol(questions[[i]][['Responses']]) != 0
-    }
+    questions[[i]] <- process_question_results(questions[[i]], original_first_rows)
+  }
+  return(questions)
+}
 
-    if (has_responses) {
-      questions[[i]][['Table']] <- NULL
+process_question_results <- function(question, original_first_rows) {
+  # get original_first_rows from global scope if not passed directly
+  if (missing(original_first_rows)) original_first_rows <- get("original_first_rows", envir=globalenv())
 
-      try({
-        # multiple choice multiple answer
-        if (is_mc_multiple_answer(questions[[i]])) {
-          if (should_use_ofr) {
-            questions[[i]] <- mc_multiple_answer_results(questions[[i]], original_first_rows)
-          } else {
-            questions[[i]] <- mc_multiple_answer_results(questions[[i]])
-          }
+  # we should only use original_first_rows if they're greater than 2 rows
+  if (!missing(original_first_rows) &&
+      nrow(original_first_rows) >= 2) {
+    should_use_ofr <- TRUE
+  } else should_use_ofr <- FALSE
 
-          # multiple choice single answer
-        } else if (is_mc_single_answer(questions[[i]])) {
-          if(should_use_ofr) {
-            questions[[i]] <- mc_single_answer_results(questions[[i]], original_first_rows)
-          } else {
-            questions[[i]] <- mc_single_answer_results(questions[[i]])
-          }
-
-          # matrix multiple answer
-        } else if (is_matrix_multiple_answer(questions[[i]])) {
-          if (should_use_ofr) {
-            questions[[i]] <- matrix_multiple_answer_results(questions[[i]], original_first_rows)
-          } else {
-            questions[[i]] <- matrix_multiple_answer_results(questions[[i]])
-          }
-
-          # matrix single answer
-        } else if (is_matrix_single_answer(questions[[i]])) {
-          if (should_use_ofr) {
-            questions[[i]] <- matrix_single_answer_results(questions[[i]], original_first_rows)
-          } else {
-            questions[[i]] <- matrix_single_answer_results(questions[[i]])
-          }
-        }
-      }, silent=TRUE)
-    }
+  # Only process questions which have results
+  if (is.null(question[['Responses']])) {
+    has_responses <- FALSE
+  } else {
+    has_responses <- ncol(question[['Responses']]) != 0
   }
 
-  return(questions)
+  if (has_responses) {
+    question[['Table']] <- NULL
+
+    try({
+      # multiple choice multiple answer
+      if (is_mc_multiple_answer(question)) {
+        if (should_use_ofr) {
+          question <- mc_multiple_answer_results(question, original_first_rows)
+        } else {
+          question <- mc_multiple_answer_results(question)
+        }
+
+        # multiple choice single answer
+      } else if (is_mc_single_answer(question)) {
+        if(should_use_ofr) {
+          question <- mc_single_answer_results(question, original_first_rows)
+        } else {
+          question <- mc_single_answer_results(question)
+        }
+
+        # matrix multiple answer
+      } else if (is_matrix_multiple_answer(question)) {
+        if (should_use_ofr) {
+          question <- matrix_multiple_answer_results(question, original_first_rows)
+        } else {
+          question <- matrix_multiple_answer_results(question)
+        }
+
+        # matrix single answer
+      } else if (is_matrix_single_answer(question)) {
+        if (should_use_ofr) {
+          question <- matrix_single_answer_results(question, original_first_rows)
+        } else {
+          question <- matrix_single_answer_results(question)
+        }
+      }
+    }, silent=TRUE)
+  }
+  return(question)
 }
