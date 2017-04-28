@@ -230,6 +230,7 @@ get_setup <- function(
 #' looks for the matching question. It will try to select
 #' the question uniquely.
 find_question <- function(questions, exporttag) {
+  if (missing(questions)) questions <- get('questions', envir=globalenv())
   matched_question_index <- which(sapply(questions, function(x) x[['Payload']][['DataExportTag']] == exporttag))
   return(questions[[matched_question_index]])
 }
@@ -241,12 +242,14 @@ find_question <- function(questions, exporttag) {
 #' looks for the matching question. It returns the index(es) of
 #' the questions with that Question Data Export Tag.
 find_question_index <- function(questions, exporttag) {
+  if (missing(questions)) questions <- get('questions', envir=globalenv())
   matched_question_index <- which(sapply(questions, function(x) x[['Payload']][['DataExportTag']] == exporttag))
   return(matched_question_index)
 }
 
 #' Find a Question by its QuestionID
 find_question_index_by_qid <- function(questions, qid) {
+  if (missing(questions)) questions <- get('questions', envir=globalenv())
   matched_question_index <- which(sapply(questions, function(x) x[['Payload']][['QuestionID']] == qid))
   return(matched_question_index)
 }
