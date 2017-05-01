@@ -62,7 +62,7 @@ documentation pages.
   - [Question Dictionary](https://github.com/ctesta01/QualtricsTools/wiki/Generating-Question-Dictionaries)
   - [Uncodeable Questions Dictionary](https://github.com/ctesta01/QualtricsTools/wiki/Uncodeable-Questions)
   - [Comment Coding](https://github.com/ctesta01/QualtricsTools/wiki/Comment-Coding)
-  - Including/Excluding  Questions
+  - [Including/Excluding  Questions](https://github.com/ctesta01/QualtricsTools/wiki/Including-Excluding-a-Specific-Question)
   - Processing a Specific Question
   - Exporting to Different Filetypes
 - How does it work? (Reference)
