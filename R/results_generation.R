@@ -327,19 +327,21 @@ matrix_single_answer_results <- function(question, original_first_rows) {
 
   # table the responses
   valid_responses <- sapply(relevant_responses, function(x) table(factor(x, valid_factors)))
-  if (is.null(nrow(valid_responses))) {
+  if (! is.data.frame(valid_responses)) {
     valid_responses <- as.data.frame(valid_responses)
+    valid_responses <- t(valid_responses)
     colnames(valid_responses) <- valid_factors
     rownames(valid_responses) <- colnames(relevant_responses)
   } else valid_responses <- t(valid_responses)
   if (has_na) {
     na_responses <- sapply(relevant_responses, function(x) table(factor(x, na_factors)))
-    if (is.null(nrow(na_responses))) {
+    if (! is.data.frame(na_responses)) {
       na_responses <- as.data.frame(na_responses)
       colnames(na_responses) <- na_factors
       rownames(na_responses) <- colnames(relevant_responses)
     } else na_responses <- t(na_responses)
   }
+  valid_responses <- as.data.frame(valid_responses)
 
   # convert the number of respondents for each answer (row) by choice (column) combination
   # to a percentage
@@ -384,7 +386,8 @@ matrix_single_answer_results <- function(question, original_first_rows) {
   # Reorder using the AnswerOrder
   if ("AnswerOrder" %in% names(question[['Payload']]) && should_use_ofr) {
     if (has_na) {
-      valid_answers <- which(question[['Payload']][['RecodeValues']][unlist(question[['Payload']][['AnswerOrder']])] >= 0)
+      answers <- sapply(unlist(question[['Payload']][['AnswerOrder']]), function(x) question[['Payload']][['RecodeValues']][[toString(x)]])
+      valid_answers <- which(answers >= 0)
       valid_responses <- valid_responses[, valid_answers]
     } else {
       valid_responses <- valid_responses[, unlist(question$Payload$AnswerOrder)]
@@ -425,7 +428,6 @@ matrix_single_answer_results <- function(question, original_first_rows) {
   question[['Table']] <- results_table
   return(question)
 }
-
 
 #' Create the Results Table for a Matrix Multiple Answer Question
 #'
