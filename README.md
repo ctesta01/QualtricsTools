@@ -62,8 +62,8 @@ documentation pages.
   - [Question Dictionary](https://github.com/ctesta01/QualtricsTools/wiki/Generating-Question-Dictionaries)
   - [Uncodeable Questions Dictionary](https://github.com/ctesta01/QualtricsTools/wiki/Uncodeable-Questions)
   - [Comment Coding](https://github.com/ctesta01/QualtricsTools/wiki/Comment-Coding)
-  - Including/Excluding  Questions
-  - Processing a Specific Question
+  - [Including/Excluding  Questions](https://github.com/ctesta01/QualtricsTools/wiki/Including-Excluding-a-Specific-Question)
+  - [Processing a Specific Question](https://github.com/ctesta01/QualtricsTools/wiki/Processing-a-Specific-Question)
   - Exporting to Different Filetypes
 - How does it work? (Reference)
   - [Understanding the QSF](https://gist.github.com/ctesta01/d4255959dace01431fb90618d1e8c241)
@@ -93,7 +93,7 @@ A: Sometimes I think Word has trouble with large file sizes. My recommendation i
 
 Q: I need to clean my data, but I still want to be able to use QualtricsTools after cleaning it. What can and can't I do?
 
-A: I would advise against is editing the QSF and the column names of the CSV dataset. These are crucial structural components to the survey, and are integral in how QualtricsTools processes the survey data. However, you may 
+A: I would advise against editing the QSF and the column names of the CSV dataset. These are crucial structural components to the survey, and are integral in how QualtricsTools processes the survey data. However, you may 
 remove complete rows and columns of respondent data without affecting QualtricsTools' ability to process your survey, and 
 you may change responses as long as they are still valid responses to the provided question. Check out the [usage guide](https://github.com/ctesta01/QualtricsTools/wiki/Usage-Guidelines) to see more. 
 
