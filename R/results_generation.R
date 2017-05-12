@@ -355,7 +355,7 @@ matrix_single_answer_results <- function(question, original_first_rows) {
 #      na_responses <- t(na_responses)
 #      colnames(na_responses) <- na_factors
 #      rownames(na_responses) <- colnames(relevant_responses)
-    } else na_responses <- t(na_responses)
+    } # else na_responses <- t(na_responses)
   
   valid_responses <- as.data.frame(valid_responses)
 
