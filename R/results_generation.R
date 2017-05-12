@@ -329,19 +329,34 @@ matrix_single_answer_results <- function(question, original_first_rows) {
   valid_responses <- sapply(relevant_responses, function(x) table(factor(x, valid_factors)))
   if (! is.data.frame(valid_responses)) {
     valid_responses <- as.data.frame(valid_responses)
+  }
+    
+  if (!all(colnames(relevant_responses)==rownames(valid_responses))) {
     valid_responses <- t(valid_responses)
     colnames(valid_responses) <- valid_factors
     rownames(valid_responses) <- colnames(relevant_responses)
-  } else valid_responses <- t(valid_responses)
+  }
+    
+    
+#  } else valid_responses <- t(valid_responses)
   if (has_na) {
     na_responses <- sapply(relevant_responses, function(x) table(factor(x, na_factors)))
     if (! is.data.frame(na_responses)) {
       na_responses <- as.data.frame(na_responses)
+    }
+      
+    if (!(nrow(na_responses)==ncol(relevant_responses) && ncol(na_responses)==length(na_factors))){
       na_responses <- t(na_responses)
-      colnames(na_responses) <- na_factors
-      rownames(na_responses) <- colnames(relevant_responses)
+    }
+      
+    colnames(na_responses) <- na_factors
+    rownames(na_responses) <- colnames(relevant_responses)
+    
+#      na_responses <- t(na_responses)
+#      colnames(na_responses) <- na_factors
+#      rownames(na_responses) <- colnames(relevant_responses)
     } else na_responses <- t(na_responses)
-  }
+  
   valid_responses <- as.data.frame(valid_responses)
 
   # convert the number of respondents for each answer (row) by choice (column) combination
