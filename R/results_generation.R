@@ -175,8 +175,8 @@ mc_multiple_answer_results <- function(question, original_first_rows) {
 
   # calculate the total denominator
   total_denominator <- length(which(apply(relevant_responses, 1, function(x) {
-    !(all(x == -99) | all(x == "") | all(x == 0))
-  })))
+    !(all(x %in% c(-99,"",0)))})))
+
 
   # calculate the percent for each column:
   # if it's an NA-column use the total denominator,

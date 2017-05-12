@@ -929,7 +929,7 @@ split_respondents <- function(response_column, responses, survey, blocks, questi
   # and then insert the questions into the blocks for that respondent group.
   for (i in 1:length(split_responses)) {
     split_questions[[i]] <- link_responses_to_questions(split_questions[[i]], split_responses[[i]], original_first_rows)
-    split_questions[[i]] <- generate_results(split_questions[[i]])
+    split_questions[[i]] <- generate_results(split_questions[[i]], original_first_rows)
     split_blocks[[i]] <- questions_into_blocks(split_questions[[i]], split_blocks[[i]])
     split_blocks[[i]][['header']] <- c(split_blocks[[i]][['header']],
                                        paste0("Respondents with ",
