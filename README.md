@@ -64,7 +64,7 @@ documentation pages.
   - [Comment Coding](https://github.com/ctesta01/QualtricsTools/wiki/Comment-Coding)
   - [Including/Excluding  Questions](https://github.com/ctesta01/QualtricsTools/wiki/Including-Excluding-a-Specific-Question)
   - [Processing a Specific Question](https://github.com/ctesta01/QualtricsTools/wiki/Processing-a-Specific-Question)
-  - Exporting to Different Filetypes
+  - [Exporting to Different Filetypes](https://github.com/ctesta01/QualtricsTools/wiki/Exporting-to-Different-Filetypes)
 - How does it work? (Reference)
   - [Understanding the QSF](https://gist.github.com/ctesta01/d4255959dace01431fb90618d1e8c241)
   - [Understanding the source code](https://github.com/ctesta01/QualtricsTools/wiki/Source-Code-Layout)
