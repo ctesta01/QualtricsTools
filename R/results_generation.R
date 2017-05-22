@@ -331,7 +331,8 @@ matrix_single_answer_results <- function(question, original_first_rows) {
     valid_responses <- as.data.frame(valid_responses)
   }
     
-  if (!all(colnames(relevant_responses)==rownames(valid_responses))) {
+  if (! (length(colnames(relevant_responses))==length(rownames(valid_responses))
+      && all(colnames(relevant_responses)==rownames(valid_responses)))) {
     valid_responses <- t(valid_responses)
     colnames(valid_responses) <- valid_factors
     rownames(valid_responses) <- colnames(relevant_responses)
