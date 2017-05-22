@@ -265,9 +265,9 @@ matrix_single_answer_results <- function(question, original_first_rows) {
   if (should_use_ofr) {
     # if we should use the original_first_rows, then replace the column names with the import tags,
     # then remove the question-ID from those import tags, leaving only the choice indices
-    names(relevant_responses) <- lapply(names(relevant_responses), function(x) original_first_rows[2, x])
+#    names(relevant_responses) <- lapply(names(relevant_responses), function(x) original_first_rows[2, x]) #Move to later; keep here for now
     question_id <- question[['Payload']][['QuestionID']]
-    colnames(relevant_responses) <- lapply(names(relevant_responses), function(x) gsub(paste0(question_id, "-"), "", x))
+#    colnames(relevant_responses) <- lapply(names(relevant_responses), function(x) gsub(paste0(question_id, "-"), "", x)) #Move to later; keep here for now
   } else {
     # create a list of possible variations of the data export tag
     data_export_tag <- paste0("^", question[['Payload']][['DataExportTag']])
@@ -334,6 +334,8 @@ matrix_single_answer_results <- function(question, original_first_rows) {
   if (! (length(colnames(relevant_responses))==length(rownames(valid_responses))
       && all(colnames(relevant_responses)==rownames(valid_responses)))) {
     valid_responses <- t(valid_responses)
+    
+    #Think these should already be true?
     colnames(valid_responses) <- valid_factors
     rownames(valid_responses) <- colnames(relevant_responses)
   }
@@ -417,6 +419,11 @@ matrix_single_answer_results <- function(question, original_first_rows) {
   colnames(valid_responses) <- lapply(colnames(valid_responses), clean_html)
   if (has_na) colnames(na_responses) <- lapply(colnames(na_responses), clean_html)
 
+  #Lines added from above to rename row values
+  #EM insertion
+  rownames(valid_responses) <- lapply(rownames(valid_responses), function(x) original_first_rows[2, x])
+  rownames(valid_responses) <- lapply(rownames(valid_responses), function(x) gsub(paste0(question_id, "-"), "", x))
+  
   # get the answer text as a list
   choices <- rownames(valid_responses)
   if ('ChoiceDataExportTags' %in% names(question[['Payload']]) &&
