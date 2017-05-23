@@ -1,4 +1,4 @@
-# QualtricsTools
+# QualtricsTools 
 
 QualtricsTools is a package and web application that allows users to process
 Qualtrics Survey Files (QSF) and survey response data into results tables, 
