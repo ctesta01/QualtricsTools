@@ -124,3 +124,12 @@ order the survey data, and it doesn't know what to do with more complex examples
 will have to be left to after outputting the data. 
 
 
+Q: How do I get help on the functions in the QualtricsTools package? 
+
+A: [The R-project's recommended ways to get help](https://www.r-project.org/help.html) are recommended, but in addition to these I suggest using the RStudio's Help viewer. If you've opened the package as an RStudio project, then you can use the file/function search in RStudio (this can be opened with Ctrl+. or found in RStudio's toolbar).
+
+![](http://i.imgur.com/9InH9Gd.png)
+
+![](http://i.imgur.com/ZzvLEpc.png)
+
+![](http://i.imgur.com/C2z13Eg.png)
