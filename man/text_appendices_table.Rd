@@ -4,7 +4,7 @@
 \alias{text_appendices_table}
 \title{Create HTML Tables for the Text Entry Questions}
 \usage{
-text_appendices_table(blocks, original_first_row, flow)
+text_appendices_table(blocks, original_first_row, flow, n_threshold = 15)
 }
 \arguments{
 \item{blocks}{A list of blocks with block elements replaced

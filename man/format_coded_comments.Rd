@@ -7,6 +7,7 @@
 format_coded_comments(coded_comment_sheet)
 }
 \description{
-Turn the original coded comments sheet into a pair: (Question, Data Frame)
+This extracts from the coded sheet the Question ID and the
+frequencies of the comments across the coded categories.
 }
 

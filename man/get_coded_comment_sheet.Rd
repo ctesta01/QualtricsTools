@@ -7,6 +7,7 @@
 get_coded_comment_sheet(codedfile)
 }
 \description{
-Turn a Single Coded File into a Data Frame
+This retrieves the raw content of a 'Coded' sheet in the
+coded comments of an excel or CSV file.
 }
 

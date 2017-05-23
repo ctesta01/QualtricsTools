@@ -7,6 +7,10 @@
 insert_coded_comments(blocks, original_first_rows, coded_comments)
 }
 \description{
-Insert Coded Comments into Blocks
+This takes a list of pairs of question IDs and coded comments tables
+and finds their corresponding question based on the question ID in a list
+of blocks and then inserts the coded comments table into the question.
+The returned list is a list of blocks where the questions have had their
+coded comments inserted.
 }
 

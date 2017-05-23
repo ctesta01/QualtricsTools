@@ -4,7 +4,7 @@
 \alias{get_setup}
 \title{Setup the Global Environment for a Survey}
 \usage{
-get_setup(headerrows, already_loaded, qsf_path, csv_path)
+get_setup(headerrows, already_loaded, qsf_path, csv_path, return_data = FALSE)
 }
 \arguments{
 \item{headerrows}{An optional parameter for specifying the number of

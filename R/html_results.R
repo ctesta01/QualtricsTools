@@ -449,14 +449,14 @@ tabelize_display_logic <- function(blocks) {
   return(unlist(lapply(tables, paste)))
 }
 
-# appendix_lettering takes a number
-# and returns the corresponding lettered index.
-# examples:
-# 1 -> A
-# 2 -> B
-# 27 -> AA
-# 29 -> AC
-# ... and so forth.
+#' `appendix_lettering` takes a number
+#' and returns the corresponding lettered index.
+#' examples:
+#' 1 -> A
+#' 2 -> B
+#' 27 -> AA
+#' 29 -> AC
+#' and so on.
 appendix_lettering <- function(number) {
   if (number %in% 1:26) {
     return(LETTERS[[number]])

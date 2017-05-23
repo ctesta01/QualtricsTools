@@ -7,6 +7,11 @@
 directory_get_coded_comment_sheets(directory)
 }
 \description{
-Turn a Directory into a list of Coded Comment Data Frames (unprocessed)
+This function takes as an argument a string representative of a
+directory, loads the CSVs and Excel data from that directory,
+looks for 'Coded' sheets, extracts the coded sheets,
+and saves the coded comment table and the question ID
+as a pair in the output coded_appendix_tables list. If there
+are sheets which contain non-numeric data, warnings are raised.
 }
 
