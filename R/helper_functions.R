@@ -402,7 +402,9 @@ flow_from_survey <- function(survey) {
 
 
 
-
+#' Export a file containing the results tables for a survey
+#'
+#'
 make_results_tables <- function(qsf_path, csv_path, headerrows, output_dir, filename = 'Results Tables.docx') {
   if (!any(c(missing(qsf_path), missing(csv_path)))) {
     qt_vals = get_setup(qsf_path = qsf_path,
