@@ -797,8 +797,8 @@ display_logic_from_question <- function(question) {
   if ("Choices" %in% names(question[['Payload']])) {
     choices_with_logic <- sapply(question[['Payload']][['Choices']], function(x) "DisplayLogic" %in% names(x))
     has_choice_logic <- any(choices_with_logic)
-    choices_with_logic <- which(choices_with_logic)
     if (has_choice_logic) {
+      choices_with_logic <- which(choices_with_logic)
       e <- e+1
       for (i in choices_with_logic) {
         display_logic[[e]] <- paste0("Choice Display Logic for ", question[['Payload']][['Choices']][[i]][['Display']], ":")
