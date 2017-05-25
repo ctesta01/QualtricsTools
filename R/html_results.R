@@ -108,8 +108,16 @@ question_description <- function(question) {
   # and then display logic.
   description <-
     c(paste("Export Tag:", question[['Payload']][['DataExportTag']]),
-      question[['Payload']][['QuestionTextClean']],
-      display_logic)
+      question[['Payload']][['QuestionTextClean']])
+
+  # Check for notes, and include them where necessary
+  if ('qtNotes' %in% names(question)) {
+    description <- c(description, question[['qtNotes']])
+  }
+
+  # Append display logic after question notes
+  description <- c(description, display_logic)
+
 
   # if there's no results table, append a message to the question
   # description accordingly.
@@ -160,11 +168,6 @@ question_description <- function(question) {
         )
       }
     }
-  }
-
-  # Check for notes, and include them where necessary
-  if ('qtNotes' %in% names(question)) {
-    description <- c(description, question[['qtNotes']])
   }
 
   # reshape the data into a data frame
