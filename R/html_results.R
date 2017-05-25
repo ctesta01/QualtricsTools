@@ -401,7 +401,7 @@ text_appendices_table <-
                         as.data.frame(question_message)
                       colnames(question_message)[1] <-
                         paste0('Export Tag: ', blocks[[i]][['BlockElements']][[j]][['Payload']][['DataExportTag']])
-                      tables <- list()
+                      # tables <- list()
                       tables <-
                         c(tables, capture.output(
                           print(
