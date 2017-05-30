@@ -50,7 +50,7 @@ documentation pages.
 
 - How do I use the app?
   - [Running the App](https://github.com/ctesta01/QualtricsTools/wiki/Installing-and-Running-the-Shiny-App)
-  - [Parts of the App](https://github.com/ctesta01/QualtricsTools/wiki/Parts-of-the-Shiny-App)
+  - [The Shiny Web App](https://github.com/ctesta01/QualtricsTools/wiki/The-Shiny-Web-Application#explaining-the-shiny-app-components)
   - [Usage Guidelines](https://github.com/ctesta01/QualtricsTools/wiki/Usage-Guidelines)
 - How do I use the R package?
   - [Generating Results Tables](https://github.com/ctesta01/QualtricsTools/wiki/Generating-Results-Tables)
@@ -68,6 +68,7 @@ documentation pages.
 - How does it work? (Reference)
   - [Understanding the QSF](https://gist.github.com/ctesta01/d4255959dace01431fb90618d1e8c241)
   - [Understanding the source code](https://github.com/ctesta01/QualtricsTools/wiki/Source-Code-Layout)
+  - [Understanding the Shiny App](https://github.com/ctesta01/QualtricsTools/wiki/The-Shiny-Web-Application#understanding-the-code)
 
 ## FAQ
 Q: My results tables look wrong. What could be causing it?
