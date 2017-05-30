@@ -1,5 +1,3 @@
-
-
 #' Create a List of HTML Versions of the Results Tables
 #'
 #' @param questions A list of questions with the relevant results tables
@@ -557,7 +555,19 @@ appendix_lettering <- function(number) {
 }
 
 
-# CODED COMMENTS:
+#' Create a Text Appendix for Coded Comments
+#'
+#' This returns a list containing two tables: the question's description table and the categorical
+#' breakdown of the responses into the coded comments' categories. The description includes an
+#' "Appendix ##" title, the question text, and a tag which states the following appendix is
+#' "Coded Comments." The coded comments table has two columns: the "Responses" and "N", in which
+#' the categories and their frequencies are listed.
+#'
+#' @param question is the question to which the coded comments belong.
+#' @param cc_index is the index of the coded comments to appendicize.
+#' @param appendix_e is the number of the appendix in the text appendices report.
+#' @param blocks is the list of survey blocks.
+#' @param original_first_row is the original header information from the CSV response data.
 table_html_coded_comments <-
   function(question,
            cc_index,
@@ -611,7 +621,10 @@ table_html_coded_comments <-
   }
 
 
-# NO RESPONDENTS:
+#' Create a standard "No Respondents answered this question" text appendix
+#'
+#' @param question is the question for which the text appendix is being created.
+#' @param appendix_e is the number of the appendix in the text appendices report.
 table_no_respondents <- function(question, appendix_e) {
   No_Respondents <-
     c(
@@ -639,7 +652,17 @@ table_no_respondents <- function(question, appendix_e) {
 }
 
 
-# TEXT ENTRY QUESTIONS:
+#' Create Text Appendices for Text Entry Type Questions
+#'
+#' The `table_text_entry` function creates a text appendix with as many
+#' columns as there are text entry components to the given question and fills
+#' them with the responses from each respondent across the rows.
+#'
+#' @param question is the question for which the text appendix is being created.
+#' @param responses is a data frame of text responses to the question given.
+#' @param appendix_e is the number of the appendix in the text appendices report.
+#' @param blocks is the list of survey blocks.
+#' @param original_first_row is the original header information from the CSV response data.
 table_text_entry <-
   function(question,
            responses,
@@ -697,7 +720,16 @@ table_text_entry <-
     return(tables)
   }
 
-# NON TEXT-ENTRY TABLES:
+#' Create Text Appendices for Non-Text Entry Type Questions
+#'
+#' This function creates text appendices, with a description table and
+#' responses table, for questions which are not text-entry type questions.
+#' The description table contains a text appendix title, like "Appendix A"
+#' and the responses are tabled verbatim beneath it.
+#'
+#' @param question is the question for which the text appendix is being created.
+#' @param responses is a data frame of text responses to the question given.
+#' @param appendix_e is the number of the appendix in the text appendices report.
 table_non_text_entry <- function(question, responses, appendix_e) {
   response_n <- paste0("Responses: (", nrow(responses), ")")
 

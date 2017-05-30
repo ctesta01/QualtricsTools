@@ -402,9 +402,22 @@ flow_from_survey <- function(survey) {
 
 
 
-#' Export a file containing the results tables for a survey
+#' Export a file containing the results tables
 #'
+#' `make_results_tables` uses `get_setup` and `html_2_pandoc` to process a
+#' survey and then save its results into a file. If the `qsf_path,` and `csv_path`
+#' are included as parameters, then they will be passed to `get_setup` along with a
+#' `return_data=TRUE` parameter in order to return the survey, responses,
+#' questions, blocks, original_first_rows, and flow as variables local to the function
+#' scope. If they are not passed, they will be retrieved as needed from the global scope.
+#' The function then uses the blocks, original_first_rows, and flow with `html_2_pandoc`
+#' to produce the desired output file.
 #'
+#' @param qsf_path (optional) is the string path location of the .qsf file to be processed.
+#' @param csv_path (optional) is the string path location of the .csv file to be processed.
+#' @param headerrows (optional) specifies the number of header rows in the CSV data.
+#' @param output_dir specifies the path of the directory to save the output file in.
+#' @param filename specifies the name of the output file.
 make_results_tables <- function(qsf_path, csv_path, headerrows, output_dir, filename = 'Results Tables.docx') {
   if (!any(c(missing(qsf_path), missing(csv_path)))) {
     qt_vals = get_setup(qsf_path = qsf_path,
@@ -427,7 +440,22 @@ make_results_tables <- function(qsf_path, csv_path, headerrows, output_dir, file
 }
 
 
-
+#' Export a file containing the text appendices
+#'
+#' `make_text_appendices` uses `get_setup` and `html_2_pandoc` to process a
+#' survey and then save its results into a file. If the `qsf_path,` and `csv_path`
+#' are included as parameters, then they will be passed to `get_setup` along with a
+#' `return_data=TRUE` parameter in order to return the survey, responses,
+#' questions, blocks, original_first_rows, and flow as variables local to the function
+#' scope. If they are not passed, they will be retrieved as needed from the global scope.
+#' The function then uses the blocks, original_first_rows, and flow with `html_2_pandoc`
+#' to produce the desired output file.
+#'
+#' @param qsf_path (optional) is the string path location of the .qsf file to be processed.
+#' @param csv_path (optional) is the string path location of the .csv file to be processed.
+#' @param headerrows (optional) specifies the number of header rows in the CSV data.
+#' @param output_dir specifies the path of the directory to save the output file in.
+#' @param filename specifies the name of the output file.
 make_text_appendices <- function(qsf_path, csv_path, headerrows, output_dir, filename = 'Text Appendices.docx') {
   if (!any(c(missing(qsf_path), missing(csv_path)))) {
     qt_vals = get_setup(qsf_path = qsf_path,
