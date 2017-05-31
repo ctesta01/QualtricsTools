@@ -57,4 +57,7 @@ documentation.
   - [The Package Source Code Layout](https://github.com/ctesta01/QualtricsTools/wiki/Source-Code-Layout)
   - [The Shiny App's Code](https://github.com/ctesta01/QualtricsTools/wiki/The-Shiny-Web-Application#understanding-the-code)
 
-## Check out our [Frequently Asked Questions](https://github.com/ctesta01/QualtricsTools/wiki/Frequently-Asked-Questions) for More Help
+## Frequently Asked Questions 
+Check out our [FAQ](https://github.com/ctesta01/QualtricsTools/wiki/Frequently-Asked-Questions) for more help.
+
+
