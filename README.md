@@ -1,28 +1,15 @@
 # QualtricsTools 
 
-QualtricsTools is a package and web application that allows users to process
-Qualtrics Survey Files (QSF) and survey response data into results tables, 
-question dictionaries, text appendices and more. The application and package
-were built using R, Shiny, and Pandoc.
+QualtricsTools is an R package that automatically processes Qualtrics survey data into 
+reports showing the breakdowns of responses to each question. The package can create 
+question response reports, appendices of free responses, question 
+dictionaries, and even reports split into response based categories of respondents. 
+This package uses the R web-application framework [Shiny](https://shiny.rstudio.com/), 
+a universal document converter called [Pandoc](http://pandoc.org/), 
+[Roxygen2](https://cran.r-project.org/web/packages/roxygen2/vignettes/roxygen2.html) documentation, 
+and much more. 
 
 ![A slideshow of the QualtricsTools web app](https://github.com/ctesta01/QualtricsTools/blob/master/pics/animation.gif?raw=true)
-
-## What does QualtricsTools do? (Features)
-The QualtricsTools app can be run as a local web-application which acts as
-a graphical interface to the tools built into the package. After uploading
-a QSF and CSV, it calculates frequencies and percentage responses to the 
-questions in a survey, tables relevant information about the questions, 
-includes a description of the survey logic and flow, and lists all
-free response answers to questions in the text appendices. All of this data
-can be readily exported into a number of different formats (xlsx, csv, docx,
-html, md, pdf, and more) facilitated by document conversion through pandoc. 
-
-The R package that the app is built on top of provides a richer set 
-of functionalities including automatically reshaping the response data
-from long to lean format, stitching categorical comment coding data into
-a survey's text appendices, and more. The package is intended to provide
-an interface in R through which one can begin to work with Qualtrics survey
-and response data.
 
 ## Installation
 Before installing, you must install [R or Rstudio](https://www.rstudio.com/), 
