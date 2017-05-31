@@ -29,6 +29,26 @@ To run the Shiny app, load the package and then call the app() function.
 The QualtricsTools Shiny app should now be running! Enjoy. To update your version of QualtricsTools
 to the most recent version, run `devtools::install_github("ctesta01/QualtricsTools")` again.
 
+## Most Useful Functions
+
+Here are some of the most high level functions in the application. Be sure to `library(QualtricsTools)` before 
+trying to run any of these. Check out the documentation for how to use each of these explicitly. Running these
+commands without parameters like as follows results in interactive prompts for the survey data and other settings
+in order to cut down on the need to repeatedly type or copy long file paths. 
+
+    # Load and Process Survey Data into R
+    get_setup()
+    
+    # Start and run the Shiny app
+    app()
+    
+    # Create a Report of Question Results Tables
+    make_results_tables()
+    
+    # Create a Report of Text Appendices, for each free response part of the survey
+    make_text_appendices()
+    
+
 ## Usage and Reference Guides
 
 The functionality of the web application and R package are documented in the following guides. Beyond this,
