@@ -11,6 +11,9 @@ and much more.
 
 ![A slideshow of the QualtricsTools web app](https://github.com/ctesta01/QualtricsTools/blob/master/pics/animation.gif?raw=true)
 
+I have written this package for the Office of Institutional Research and Evaluation at Tufts University. However, 
+anyone is welcome to use it.
+
 ## Installation
 Before installing, you must install [R or Rstudio](https://www.rstudio.com/), 
 [devtools](https://github.com/hadley/devtools), 
