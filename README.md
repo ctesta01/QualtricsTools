@@ -5,7 +5,7 @@ reports showing the breakdowns of responses to each question. The package can cr
 question response reports, appendices of free responses, question 
 dictionaries, and even reports split into response based categories of respondents. 
 This package uses the R web-application framework [Shiny](https://shiny.rstudio.com/), 
-a universal document converter called [Pandoc](http://pandoc.org/), 
+the universal document converter [Pandoc](http://pandoc.org/), 
 [Roxygen2](https://cran.r-project.org/web/packages/roxygen2/vignettes/roxygen2.html) documentation, 
 and much more. 
 
@@ -17,15 +17,17 @@ Before installing, you must install [R or Rstudio](https://www.rstudio.com/),
 [Rtools](https://cran.r-project.org/bin/windows/Rtools/) (if you're on Windows), 
 and [Pandoc](http://pandoc.org/). For Rtools with Windows, 
 [please make sure Rtools is added to the `Path` environment variable](http://stackoverflow.com/a/29480538/3161979). 
-After installing each of these, run the following commands in R:
+After installing each of the prerequisites, to install QualtricsTools run the following in R:
 
     devtools::install_github("ctesta01/QualtricsTools")
+    
+To run the Shiny app, load the package and then call the app() function.
+
     library(QualtricsTools)
     QualtricsTools::app()
 
-The QualtricsTools Shiny app should now be running! Enjoy!
-
-To update your version of QualtricsTools, just run `devtools::install_github("ctesta01/QualtricsTools")` again.
+The QualtricsTools Shiny app should now be running! Enjoy. To update your version of QualtricsTools
+to the most recent version, run `devtools::install_github("ctesta01/QualtricsTools")` again.
 
 ## Usage and Reference Guides
 
