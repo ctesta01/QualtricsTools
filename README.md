@@ -15,8 +15,7 @@ and much more.
 Before installing, you must install [R or Rstudio](https://www.rstudio.com/), 
 [devtools](https://github.com/hadley/devtools), 
 [Rtools](https://cran.r-project.org/bin/windows/Rtools/) (if you're on Windows), 
-and [Pandoc](http://pandoc.org/). Follow the previous links, and there 
-are directions on each page on how to install them. For Rtools with Windows, 
+and [Pandoc](http://pandoc.org/). For Rtools with Windows, 
 [please make sure Rtools is added to the `Path` environment variable](http://stackoverflow.com/a/29480538/3161979). 
 After installing each of these, run the following commands in R:
 
