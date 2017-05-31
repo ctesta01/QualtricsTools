@@ -9,10 +9,10 @@ the universal document converter [Pandoc](http://pandoc.org/),
 [Roxygen2](https://cran.r-project.org/web/packages/roxygen2/vignettes/roxygen2.html) documentation, 
 and much more. 
 
-![A slideshow of the QualtricsTools web app](https://github.com/ctesta01/QualtricsTools/blob/master/pics/animation.gif?raw=true)
-
-This package was developed for Tufts University's Office of Institutional Research and Evaluation. 
+This package was developed for Tufts University's [Office of Institutional Research and Evaluation](http://provost.tufts.edu/institutionalresearch/). 
 Anyone is welcome to use it.
+
+![A slideshow of the QualtricsTools web app](https://github.com/ctesta01/QualtricsTools/blob/master/pics/animation.gif?raw=true)
 
 ## Installation
 Before installing, you must install [R or Rstudio](https://www.rstudio.com/), 
