@@ -33,30 +33,29 @@ to the most recent version, run `devtools::install_github("ctesta01/QualtricsToo
 
 The functionality of the web application and R package are documented in the following guides. Beyond this,
 almost all functions have Roxygen generated documentation which means that after running `library(QualtricsTools)`
-you can run `help(function)` on any function in QualtricsTools, like `help(get_setup)`, to check out the
-documentation pages.
+you can run `help(function)` or `?function` on any function in QualtricsTools to check out the Roxygen2 generated 
+documentation. 
 
 - How do I use the app?
-  - [Running the App](https://github.com/ctesta01/QualtricsTools/wiki/Installing-and-Running-the-Shiny-App)
   - [The Shiny Web App](https://github.com/ctesta01/QualtricsTools/wiki/The-Shiny-Web-Application#explaining-the-shiny-app-components)
+  - [Running the App](https://github.com/ctesta01/QualtricsTools/wiki/Installing-and-Running-the-Shiny-App)
   - [Usage Guidelines](https://github.com/ctesta01/QualtricsTools/wiki/Usage-Guidelines)
 - How do I use the R package?
   - [Generating Results Tables](https://github.com/ctesta01/QualtricsTools/wiki/Generating-Results-Tables)
   - [Generating Question Dictionaries](https://github.com/ctesta01/QualtricsTools/wiki/Generating-Question-Dictionaries)
+  - [Generating the Unprocessed Questions Dictionary](https://github.com/ctesta01/QualtricsTools/wiki/Uncodeable-Questions)
   - [Generating Text Appendices](https://github.com/ctesta01/QualtricsTools/wiki/Generating-Text-Appendices)
   - [Generating Survey Logic](https://github.com/ctesta01/QualtricsTools/wiki/Generating-Display-Logic)
-  - [Split Reports by Responses](https://github.com/ctesta01/QualtricsTools/wiki/Split-Reports)
-  - [Tableau Reshaping](https://github.com/ctesta01/QualtricsTools/wiki/Reshaping-Responses-for-Tableau)
-  - [Question Dictionary](https://github.com/ctesta01/QualtricsTools/wiki/Generating-Question-Dictionaries)
-  - [Uncodeable Questions Dictionary](https://github.com/ctesta01/QualtricsTools/wiki/Uncodeable-Questions)
-  - [Comment Coding](https://github.com/ctesta01/QualtricsTools/wiki/Comment-Coding)
-  - [Including/Excluding  Questions](https://github.com/ctesta01/QualtricsTools/wiki/Including-Excluding-a-Specific-Question)
+  - [Generating Split Reports by Responses](https://github.com/ctesta01/QualtricsTools/wiki/Split-Reports)
+  - [Reshaping for Tableau](https://github.com/ctesta01/QualtricsTools/wiki/Reshaping-Responses-for-Tableau)
+  - [Inserting Coded Comments into Text Appendices](https://github.com/ctesta01/QualtricsTools/wiki/Comment-Coding)
+  - [Including/Excluding  Questions from Reports](https://github.com/ctesta01/QualtricsTools/wiki/Including-Excluding-a-Specific-Question)
   - [Processing a Specific Question](https://github.com/ctesta01/QualtricsTools/wiki/Processing-a-Specific-Question)
-  - [Exporting to Different Filetypes](https://github.com/ctesta01/QualtricsTools/wiki/Exporting-to-Different-Filetypes)
+  - [Using Pandoc to Export to Different Filetypes](https://github.com/ctesta01/QualtricsTools/wiki/Exporting-to-Different-Filetypes)
 - How does it work? (Reference)
-  - [Understanding the QSF](https://gist.github.com/ctesta01/d4255959dace01431fb90618d1e8c241)
-  - [Understanding the source code](https://github.com/ctesta01/QualtricsTools/wiki/Source-Code-Layout)
-  - [Understanding the Shiny App](https://github.com/ctesta01/QualtricsTools/wiki/The-Shiny-Web-Application#understanding-the-code)
+  - [Understanding the Qualtrics Survey File (QSF)](https://gist.github.com/ctesta01/d4255959dace01431fb90618d1e8c241)
+  - [The Package Source Code Layout](https://github.com/ctesta01/QualtricsTools/wiki/Source-Code-Layout)
+  - [The Shiny App's Code](https://github.com/ctesta01/QualtricsTools/wiki/The-Shiny-Web-Application#understanding-the-code)
 
 ## FAQ
 Q: My results tables look wrong. What could be causing it?
