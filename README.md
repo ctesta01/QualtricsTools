@@ -32,9 +32,10 @@ to the most recent version, run `devtools::install_github("ctesta01/QualtricsToo
 ## Most Useful Functions
 
 Here are some of the most high level functions in the application. Be sure to `library(QualtricsTools)` before 
-trying to run any of these. Check out the documentation for how to use each of these explicitly. Running these
+trying to run any of these. Running these
 commands without parameters like as follows results in interactive prompts for the survey data and other settings
 in order to cut down on the need to repeatedly type or copy long file paths. 
+Check out the documentation for how to use each of these explicitly. 
 
     # Load and Process Survey Data into R
     get_setup()
