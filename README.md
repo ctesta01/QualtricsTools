@@ -1,6 +1,6 @@
 # QualtricsTools 
 
-QualtricsTools is an R package that automatically processes Qualtrics survey data into 
+QualtricsTools is an [R](https://www.r-project.org/) package that automatically processes Qualtrics survey data into 
 reports showing the breakdowns of responses to each question. The package can create 
 question response reports, appendices of free responses, question 
 dictionaries, and even reports split into response based categories of respondents. 
