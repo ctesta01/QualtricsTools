@@ -8,6 +8,6 @@ choice_text_from_question(question, choice)
 }
 \description{
 Input a question and a choice, and this function will
-do its best to give you back the choice text.
+return the choice text.
 }
 

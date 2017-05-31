@@ -36,7 +36,7 @@ question_from_response_column <- function(blocks, response_name) {
 #' Get the Choice Text based on the Choice from a Question
 #'
 #' Input a question and a choice, and this function will
-#' do its best to give you back the choice text.
+#' return the choice text.
 choice_text_from_question <- function(question, choice) {
   original <- choice
   choice <- as.character(choice)
@@ -113,18 +113,89 @@ app <- function() {
 
 #' Setup the Global Environment for a Survey
 #'
-#' This function sets up the .GlobalEnv to include survey, responses, questions
-#' (without trash questions, with clean question text,
-#' with a human readable question type, with responses, and with results if
-#' automatically generateable), and blocks (without trash blocks, with questions
-#' inserted in place of the BlockElements representing them).
+#' This function sets the user up with the survey, responses, questions,
+#' blocks, questions, original_first_rows, and flow. By default, these are
+#' returned to the global scope (referred to by .GlobalEnv or globalenv()).
+#' If return_data is passed as TRUE, then the data is returned from
+#' the function as a list. The blocks and questions are redundant as they
+#' are already included in the survey, but they are often useful to
+#' have already pulled out of the survey. Among the many processing steps this
+#' function (directly and as subsequent nested function calls), the question
+#' text is cleaned and stripped of HTML and any unwanted characters,
+#' the trash questions and blocks are removed, response columns are matched
+#' and inserted into the corresponding questions, and results tables detailing
+#' the frequencies and breakdowns of respondents among each question's choices
+#' are automatically inserted into each applicable question. This function can
+#' be called in multiple ways, specifying the parameters explicitly, or by
+#' specifying them interactively. For example, calling get_setup() with no
+#' parameters will result in a prompt asking for the number of headerrows in
+#' your response data and two subsequent dialogue boxes asking the user
+#' to choose the corresponding QSF and CSV files. If already_loaded=TRUE is
+#' passed, then the get_setup function pulls the survey list and responses
+#' dataframe from the global environment. If none are found, but
+#' already_loaded=TRUE was passed, then a sample survey is loaded.
 #'
 #' @param headerrows An optional parameter for specifying the number of
 #' headerrows in the response csv.
 #' @param already_loaded can be set to TRUE to indicate that get_setup should
 #' try to get the survey, responses, and original_first_rows from the global scope
 #' instead of asking the user for them. If they aren't there, then the function
-#' will use the sample data included in the package.
+#' will uses sample data included in the package.
+#' @param qsf_path is the string location of the survey as a .QSF (Qualtrics Survey File)
+#' @param csv_path is the string location of the survey's responses, downloaded from Qualtrics
+#' @param return_data is an optional boolean parameter which dictates whether the processed
+#' survey data should be returned to the global scope if return_data=FALSE or is missing,
+#' or if the processed should be returned as a list in the order
+#' c(survey, responses, questions, blocks, original_first_rows, flow) if return_data=TRUE.
+#'
+#' @examples
+#' # An Interactive Example
+#'
+#' > get_setup()
+#' Enter the number of response data header rows [Default: 3]:
+#' Defaulting to headerrows=3
+#' [1] "Select Qualtrics Survey File:"
+#' [1] "Select CSV Response File:"
+#'
+#' survey, responses, questions, blocks, original_first_rows,
+#' and flow are now global variables.
+#'
+#' # An Explicit Example
+#'
+#' > get_setup(
+#'     qsf_path = "C:/Example/Path/to/QSF/File.qsf",
+#'     csv_path = "C:/Example/Path/to/CSV/File.csv",
+#'     headerrows = 3)
+#'
+#' survey, responses, questions, blocks, original_first_rows,
+#' and flow are now global variables.
+#'
+#' # An Example with return_data=TRUE
+#'
+#' > qualtricstools_values = get_setup(
+#'     qsf_path = "C:/Example/Path/to/QSF/File.qsf",
+#'     csv_path = "C:/Example/Path/to/CSV/File.csv",
+#'     headerrows = 3,
+#'     return_data=TRUE)
+#'
+#' > varnames = c(
+#'     'survey', 'responses', 'questions', 'blocks',
+#'     'original_first_rows', 'flow')
+#' > for (i in 1:length(varnames))
+#'     assign(varnames[[i]], qualtricstools_values[[i]])
+#' > rm(qualtricstools_values, varnames, i)
+#' > ls()
+#'
+#' [1] "blocks"              "flow"                "original_first_rows"
+#' [5] "questions"           "responses"           "survey"
+#'
+#' # Loading a Sample Survey
+#'
+#' > rm(list=ls()) # Make sure your environment is empty first
+#' > get_setup(already_loaded=TRUE)
+#'
+#' survey, responses, questions, blocks, original_first_rows,
+#' and flow are now global variables.
 get_setup <- function(
   headerrows,
   already_loaded,
@@ -144,7 +215,7 @@ get_setup <- function(
     if (missing(headerrows)) {
       headerrows <- readline(prompt="Enter the number of response data header rows [Default: 3]: ")
       if (!grepl("^[0-9]+$",headerrows)){
-        cat('Defaulting headerrows=3')
+        cat('Defaulting to headerrows=3\n')
         headerrows = 3
       } else headerrows <- as.integer(headerrows)
     }
@@ -219,7 +290,8 @@ get_setup <- function(
          exists("blocks", 1) &&
          exists("original_first_rows")
     ) {
-      cat("The survey, responses, questions, blocks, the responses' original_first_rows, and flow have been made global variables.\n")
+      cat("survey, responses, questions, blocks, original_first_rows,
+and flow are now global variables.\n")
     }
   }
 }
@@ -442,13 +514,13 @@ make_results_tables <- function(qsf_path, csv_path, headerrows, output_dir, file
 
 #' Export a file containing the text appendices
 #'
-#' `make_text_appendices` uses `get_setup` and `html_2_pandoc` to process a
-#' survey and then save its results into a file. If the `qsf_path,` and `csv_path`
-#' are included as parameters, then they will be passed to `get_setup` along with a
-#' `return_data=TRUE` parameter in order to return the survey, responses,
+#' make_text_appendices uses get_setup and html_2_pandoc to process a
+#' survey and then save its results into a file. If the qsf_path, and csv_path
+#' are included as parameters, then they will be passed to get_setup along with a
+#' return_data=TRUE parameter in order to return the survey, responses,
 #' questions, blocks, original_first_rows, and flow as variables local to the function
 #' scope. If they are not passed, they will be retrieved as needed from the global scope.
-#' The function then uses the blocks, original_first_rows, and flow with `html_2_pandoc`
+#' The function then uses the blocks, original_first_rows, and flow with html_2_pandoc
 #' to produce the desired output file.
 #'
 #' @param qsf_path (optional) is the string path location of the .qsf file to be processed.

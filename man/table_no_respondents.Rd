@@ -12,6 +12,8 @@ table_no_respondents(question, appendix_e)
 \item{appendix_e}{is the number of the appendix in the text appendices report.}
 }
 \description{
-Create a standard "No Respondents answered this question" text appendix
+This function returns a standardized html table intended to go into a
+document of text appendices indicating that there were no respondents
+who answered the given text entry question.
 }
 

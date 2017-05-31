@@ -330,36 +330,36 @@ matrix_single_answer_results <- function(question, original_first_rows) {
   if (! is.data.frame(valid_responses)) {
     valid_responses <- as.data.frame(valid_responses)
   }
-    
+
   if (! (length(colnames(relevant_responses))==length(rownames(valid_responses))
       && all(colnames(relevant_responses)==rownames(valid_responses)))) {
     valid_responses <- t(valid_responses)
-    
+
     #Think these should already be true?
     colnames(valid_responses) <- valid_factors
     rownames(valid_responses) <- colnames(relevant_responses)
   }
-    
-    
+
+
 #  } else valid_responses <- t(valid_responses)
   if (has_na) {
     na_responses <- sapply(relevant_responses, function(x) table(factor(x, na_factors)))
     if (! is.data.frame(na_responses)) {
       na_responses <- as.data.frame(na_responses)
     }
-      
+
     if (!(nrow(na_responses)==ncol(relevant_responses) && ncol(na_responses)==length(na_factors))){
       na_responses <- t(na_responses)
     }
-      
+
     colnames(na_responses) <- na_factors
     rownames(na_responses) <- colnames(relevant_responses)
-    
+
 #      na_responses <- t(na_responses)
 #      colnames(na_responses) <- na_factors
 #      rownames(na_responses) <- colnames(relevant_responses)
     } # else na_responses <- t(na_responses)
-  
+
   valid_responses <- as.data.frame(valid_responses)
 
   # convert the number of respondents for each answer (row) by choice (column) combination
@@ -423,7 +423,7 @@ matrix_single_answer_results <- function(question, original_first_rows) {
   #EM insertion
   rownames(valid_responses) <- lapply(rownames(valid_responses), function(x) original_first_rows[2, x])
   rownames(valid_responses) <- lapply(rownames(valid_responses), function(x) gsub(paste0(question_id, "-"), "", x))
-  
+
   # get the answer text as a list
   choices <- rownames(valid_responses)
   if ('ChoiceDataExportTags' %in% names(question[['Payload']]) &&
@@ -728,6 +728,18 @@ generate_results <- function(questions, original_first_rows) {
   return(questions)
 }
 
+#' Append the Response Frequency Table to a Question
+#'
+#' This function uses the contents of a question to
+#' determine which kind of question the given question is.
+#' Then it passes the question and the original_first_rows
+#' to the function which processes questions of that specific
+#' question type. After adding the results `Table` to the question,
+#' the question is returned including this table as an additional new
+#' list element.
+#'
+#' @param question
+#' @param original_first_rows
 process_question_results <- function(question, original_first_rows) {
   # get original_first_rows from global scope if not passed directly
   if (missing(original_first_rows)) original_first_rows <- get("original_first_rows", envir=globalenv())

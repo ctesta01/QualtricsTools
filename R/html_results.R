@@ -534,24 +534,36 @@ tabelize_display_logic <- function(blocks) {
   return(unlist(lapply(tables, paste)))
 }
 
-#' `appendix_lettering` takes a number
-#' and returns the corresponding lettered index.
-#' examples:
-#' 1 -> A
-#' 2 -> B
-#' 27 -> AA
-#' 29 -> AC
-#' and so on.
-appendix_lettering <- function(number) {
-  if (number %in% 1:26) {
-    return(LETTERS[[number]])
-  } else if (number %in% 27:702) {
-    first_digit <- (floor((number - 1) / 26))
-    second_digit <- ((number - 1) %% 26) + 1
-    first_letter <- LETTERS[[first_digit]]
-    second_letter <- LETTERS[[second_digit]]
-    return(paste0(first_letter, second_letter))
-  }
+#' Convert a Number into an Alphabetic Index (i.e. 27->AA)
+#'
+#' This function works recursively, at each step calculating each
+#' place value of the given number in base 26. The suffix is used
+#' to save the letters from the previous steps, and the base is
+#' automatically assumed to be 26 for use with the English alphabet.
+#'
+#' @param number is a positive integer to be converted into
+#' an alphabetic index.
+#' @param base is a positive integer used to specify the size of the
+#' alphabet used for alphabetic indexing.
+#' @param suffix is appended to the output of the function, and is used
+#' in the functions recursive steps to include the letters already computed
+#' in previous steps.
+#'
+#' @examples
+#' appendix_lettering(1000)
+#' [1] "ALL"
+#' sapply(1:60, appendix_lettering)
+#' [1] "A"  "B"  "C"  "D"  "E"  "F"  "G"  "H"  "I"  "J"  "K"  "L"  "M"  "N"
+#' [15] "O"  "P"  "Q"  "R"  "S"  "T"  "U"  "V"  "W"  "X"  "Y"  "Z"  "AA" "AB"
+#' [29] "AC" "AD" "AE" "AF" "AG" "AH" "AI" "AJ" "AK" "AL" "AM" "AN" "AO" "AP"
+#' [43] "AQ" "AR" "AS" "AT" "AU" "AV" "AW" "AX" "AY" "AZ" "BA" "BB" "BC" "BD"
+#' [57] "BE" "BF" "BG" "BH"
+appendix_lettering <- function(number, base = 26, suffix = "") {
+  number1 <- number - 1
+  digit <- number1 %% base
+  number1 <- number1 %/% base
+  suffix <- paste0(LETTERS[digit + 1], suffix)
+  if (number1 > 0) Recall(number1, base, suffix) else suffix
 }
 
 
@@ -622,6 +634,10 @@ table_html_coded_comments <-
 
 
 #' Create a standard "No Respondents answered this question" text appendix
+#'
+#' This function returns a standardized html table intended to go into a
+#' document of text appendices indicating that there were no respondents
+#' who answered the given text entry question.
 #'
 #' @param question is the question for which the text appendix is being created.
 #' @param appendix_e is the number of the appendix in the text appendices report.
