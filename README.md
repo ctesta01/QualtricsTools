@@ -50,7 +50,7 @@ Check out the documentation for how to use each of these explicitly.
     make_results_tables(output_dir='/Example/Path/Here/')
     
     # Create a Report of Text Appendices, for each free response part of the survey
-    make_text_appendices()
+    make_text_appendices(output_dir='/Example/Path/Here/')
     
 
 ## Usage and Reference Guides
