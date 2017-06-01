@@ -47,7 +47,7 @@ Check out the documentation for how to use each of these explicitly.
     app()
     
     # Create a Report of Question Results Tables
-    make_results_tables()
+    make_results_tables(output_dir='/Example/Path/Here/')
     
     # Create a Report of Text Appendices, for each free response part of the survey
     make_text_appendices()
