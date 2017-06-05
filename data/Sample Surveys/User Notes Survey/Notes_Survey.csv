@@ -1,0 +1,8 @@
+ResponseID,ResponseSet,IPAddress,StartDate,EndDate,RecipientLastName,RecipientFirstName,RecipientEmail,ExternalDataReference,Finished,Status,Q1,Q2,Q3,LocationLatitude,LocationLongitude,LocationAccuracy
+ResponseID,ResponseSet,IPAddress,StartDate,EndDate,RecipientLastName,RecipientFirstName,RecipientEmail,ExternalDataReference,Finished,Status,Click to write the question text,Click to write the question text,Click to write the question text,LocationLatitude,LocationLongitude,LocationAccuracy
+{'ImportId': 'responseId'},{'ImportId': 'responseSetId'},{'ImportId': 'ipAddress'},{'ImportId': 'startDate'},{'ImportId': 'endDate'},{'ImportId': 'panel-RecipientLastName'},{'ImportId': 'panel-RecipientFirstName'},{'ImportId': 'panel-RecipientEmail'},{'ImportId': 'panel-ExternalDataReference'},{'ImportId': 'finished'},{'ImportId': 'status'},{'ImportId': 'QID1'},{'ImportId': 'QID2'},{'ImportId': 'QID3'},{'ImportId': 'Location-LocationLatitude'},{'ImportId': 'Location-LocationLongitude'},{'ImportId': 'Location-LocationAccuracy'}
+R_5gmKcYWZYLfS4LP,Default Response Set,,2017-02-10 10:54:41,2017-02-10 10:54:41,,,,,1,2,2,2,2,42.401901245117,-71.119300842285,-1
+R_d69Hn3x0hcwIjo9,Default Response Set,,2017-02-10 10:54:41,2017-02-10 10:54:41,,,,,1,2,2,2,1,42.401901245117,-71.119300842285,-1
+R_1Y6oxyO1DKCtpOd,Default Response Set,,2017-02-10 10:54:41,2017-02-10 10:54:41,,,,,1,2,1,3,1,42.401901245117,-71.119300842285,-1
+R_6SyS0dQ6dJLzDil,Default Response Set,,2017-02-10 10:54:41,2017-02-10 10:54:41,,,,,1,2,2,1,2,42.401901245117,-71.119300842285,-1
+R_ekONO1l72MyUjEF,Default Response Set,,2017-02-10 10:54:42,2017-02-10 10:54:42,,,,,1,2,2,2,1,42.401901245117,-71.119300842285,-1
