@@ -667,10 +667,10 @@ matrix_multiple_answer_results <- function(question, original_first_rows) {
                                   optional=TRUE))
     total_N <- lapply(responses_by_answers, '[[', 'total_N')
     colnames(na_choices) <- rename_choices(colnames(na_choices), question)
-    responses_tabled <- cbind(N, choices, total_N, na_choices)
+    responses_tabled <- cbind(N = as.integer(N), choices, total_N = as.integer(total_N), na_choices)
 
   } else {
-    responses_tabled <- cbind(N, choices)
+    responses_tabled <- cbind(N = as.integer(N), choices)
   }
 
   # if the rownames are labeled by the Choice Data Export Tags, use them to convert

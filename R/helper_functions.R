@@ -2,8 +2,16 @@
 # turn them into a data frame.
 list_of_rows_to_df <- function(data) {
   nCol <- max(vapply(data, length, 0))
-  data <- lapply(data, function(row) c(row, rep(NA, nCol-length(row))))
-  data <- matrix(unlist(data), nrow=length(data), ncol=nCol, byrow=TRUE)
+  data <-
+    lapply(data, function(row)
+      c(row, rep(NA, nCol - length(row))))
+  data <-
+    matrix(
+      unlist(data),
+      nrow = length(data),
+      ncol = nCol,
+      byrow = TRUE
+    )
   data.frame(data)
 }
 
@@ -23,7 +31,7 @@ question_from_response_column <- function(blocks, response_name) {
       for (j in 1:length(blocks[[i]][['BlockElements']])) {
         if ("Responses" %in% names(blocks[[i]][['BlockElements']][[j]])) {
           for (k in names(blocks[[i]][['BlockElements']][[j]][['Responses']])) {
-          responses_to_indexes[[k]] <- c(i, j)
+            responses_to_indexes[[k]] <- c(i, j)
           }
         }
       }
@@ -61,9 +69,12 @@ choice_text_from_question <- function(question, choice) {
     # of the recode values, try getting it directly from
     # the choices.
   } else if (is_mc_single_answer(question)) {
-    if ("RecodeValues" %in% names(question[['Payload']]) && choice %in% question[['Payload']][['RecodeValues']]) {
-      recoded_value <- which(question[['Payload']][['RecodeValues']] == choice)
-      recoded_value <- names(question[['Payload']][['RecodeValues']])[[as.integer(recoded_value)]]
+    if ("RecodeValues" %in% names(question[['Payload']]) &&
+        choice %in% question[['Payload']][['RecodeValues']]) {
+      recoded_value <-
+        which(question[['Payload']][['RecodeValues']] == choice)
+      recoded_value <-
+        names(question[['Payload']][['RecodeValues']])[[as.integer(recoded_value)]]
       if (length(recoded_value) != 0)
         choice <- recoded_value
       if (choice %in% names(question[['Payload']][['Choices']]))
@@ -80,10 +91,13 @@ choice_text_from_question <- function(question, choice) {
     # [['Payload']][['RecodeValues']] list to retrieve the recoded_value.
     # If that doesn't work, just use the original choice given.
   } else if (is_matrix_single_answer(question)) {
-    if ("RecodeValues" %in% names(question[['Payload']]) && length(question[['Payload']][['RecodeValues']]) > 0) {
-      recoded_value <- which(question[['Payload']][['RecodeValues']] == choice)
+    if ("RecodeValues" %in% names(question[['Payload']]) &&
+        length(question[['Payload']][['RecodeValues']]) > 0) {
+      recoded_value <-
+        which(question[['Payload']][['RecodeValues']] == choice)
       if (length(recoded_value) != 0) {
-        choice <- names(question[['Payload']][['RecodeValues']])[[recoded_value]]
+        choice <-
+          names(question[['Payload']][['RecodeValues']])[[recoded_value]]
       }
       if (choice %in% names(question[['Payload']][['Answers']]))
         choice <- question[['Payload']][['Answers']][[choice]][[1]]
@@ -93,8 +107,10 @@ choice_text_from_question <- function(question, choice) {
     }
   }
 
-  if (original %in% c(-99, "-99")) choice <- "Seen, but Unanswered"
-  if (is.na(choice) || identical(choice, original)) choice <- ""
+  if (original %in% c(-99, "-99"))
+    choice <- "Seen, but Unanswered"
+  if (is.na(choice) || identical(choice, original))
+    choice <- ""
   choice <- clean_html(choice)
   return(choice)
 }
@@ -196,14 +212,11 @@ app <- function() {
 #'
 #' survey, responses, questions, blocks, original_first_rows,
 #' and flow are now global variables.
-get_setup <- function(
-  headerrows,
-  already_loaded,
-  qsf_path,
-  csv_path,
-  return_data = FALSE
-  ) {
-
+get_setup <- function(headerrows,
+                      already_loaded,
+                      qsf_path,
+                      csv_path,
+                      return_data = FALSE) {
   # default to already_loaded = FALSE
   if (missing(already_loaded)) {
     already_loaded <- FALSE
@@ -213,11 +226,13 @@ get_setup <- function(
   if (already_loaded == FALSE) {
     # default to headerrows = 3
     if (missing(headerrows)) {
-      headerrows <- readline(prompt="Enter the number of response data header rows [Default: 3]: ")
-      if (!grepl("^[0-9]+$",headerrows)){
-        cat('Defaulting to headerrows=3\n')
+      headerrows <-
+        readline(prompt = "Enter the number of response data header rows [Default: 3]: ")
+      if (!grepl("^[0-9]+$", headerrows)) {
+        cat('Defaulting to headerrows = 3\n')
         headerrows = 3
-      } else headerrows <- as.integer(headerrows)
+      } else
+        headerrows <- as.integer(headerrows)
     }
     if (missing(qsf_path)) {
       survey <- ask_for_qsf()
@@ -225,9 +240,9 @@ get_setup <- function(
       survey <- ask_for_qsf(qsf_path)
     }
     if (missing(csv_path)) {
-      responses <- ask_for_csv(headerrows=headerrows)
+      responses <- ask_for_csv(headerrows = headerrows)
     } else {
-      responses <- ask_for_csv(csv_path, headerrows=headerrows)
+      responses <- ask_for_csv(csv_path, headerrows = headerrows)
     }
     original_first_rows <- as.data.frame(responses[[2]])
     responses <- as.data.frame(responses[[1]])
@@ -237,19 +252,21 @@ get_setup <- function(
     if (!exists("survey", where = -1)) {
       survey <- sample_survey
     } else {
-      survey <- get("survey", envir=-1)
+      survey <- get("survey", envir = -1)
     }
 
-    if (!exists("responses", where = -1) || !exists("original_first_rows", where = -1)) {
+    if (!exists("responses", where = -1) ||
+        !exists("original_first_rows", where = -1)) {
       responses <- sample_responses
       original_first_rows <<- sample_original_first_rows
     } else {
-      responses <- get("responses", envir=-1)
-      original_first_rows <- get("original_first_rows", envir=-1)
+      responses <- get("responses", envir = -1)
+      original_first_rows <- get("original_first_rows", envir = -1)
     }
   }
 
-  questions_and_blocks <- get_coded_questions_and_blocks(survey, responses, original_first_rows)
+  questions_and_blocks <-
+    get_coded_questions_and_blocks(survey, responses, original_first_rows)
   questions <- questions_and_blocks[[1]]
   blocks <- questions_and_blocks[[2]]
 
@@ -284,17 +301,18 @@ get_setup <- function(
     original_first_rows <<- original_first_rows
     flow <<- flow_from_survey(survey)
 
-    if ( exists("survey", 1) &&
-         exists("responses", 1) &&
-         exists("questions", 1) &&
-         exists("blocks", 1) &&
-         exists("original_first_rows")
-    ) {
-      cat("survey, responses, questions, blocks, original_first_rows,
-and flow are now global variables.\n")
+    if (exists("survey", 1) &&
+        exists("responses", 1) &&
+        exists("questions", 1) &&
+        exists("blocks", 1) &&
+        exists("original_first_rows")) {
+      cat(
+        "survey, responses, questions, blocks, original_first_rows,
+        and flow are now global variables.\n"
+      )
+    }
     }
   }
-}
 
 #' Find Question from DataExportTag
 #'
@@ -302,8 +320,11 @@ and flow are now global variables.\n")
 #' looks for the matching question. It will try to select
 #' the question uniquely.
 find_question <- function(questions, exporttag) {
-  if (missing(questions)) questions <- get('questions', envir=globalenv())
-  matched_question_index <- which(sapply(questions, function(x) x[['Payload']][['DataExportTag']] == exporttag))
+  if (missing(questions))
+    questions <- get('questions', envir = globalenv())
+  matched_question_index <-
+    which(sapply(questions, function(x)
+      x[['Payload']][['DataExportTag']] == exporttag))
   return(questions[[matched_question_index]])
 }
 
@@ -314,15 +335,21 @@ find_question <- function(questions, exporttag) {
 #' looks for the matching question. It returns the index(es) of
 #' the questions with that Question Data Export Tag.
 find_question_index <- function(questions, exporttag) {
-  if (missing(questions)) questions <- get('questions', envir=globalenv())
-  matched_question_index <- which(sapply(questions, function(x) x[['Payload']][['DataExportTag']] == exporttag))
+  if (missing(questions))
+    questions <- get('questions', envir = globalenv())
+  matched_question_index <-
+    which(sapply(questions, function(x)
+      x[['Payload']][['DataExportTag']] == exporttag))
   return(matched_question_index)
 }
 
 #' Find a Question by its QuestionID
 find_question_index_by_qid <- function(questions, qid) {
-  if (missing(questions)) questions <- get('questions', envir=globalenv())
-  matched_question_index <- which(sapply(questions, function(x) x[['Payload']][['QuestionID']] == qid))
+  if (missing(questions))
+    questions <- get('questions', envir = globalenv())
+  matched_question_index <-
+    which(sapply(questions, function(x)
+      x[['Payload']][['QuestionID']] == qid))
   return(matched_question_index)
 }
 
@@ -337,50 +364,60 @@ find_question_index_by_qid <- function(questions, qid) {
 #' the original_first_rows, you can use original_first_rows[1,].
 #' @param blocks A list of the survey blocks, with the questions included in them
 #' @return The choice text corresponding to a response column
-choice_text_from_response_column <- function(response_column, original_first_row, blocks) {
+choice_text_from_response_column <-
+  function(response_column,
+           original_first_row,
+           blocks) {
+    # get the question's place in the blocks from the response column,
+    # save the indices needed to refer to the question in the blocks list,
+    # save the raw question text,
+    # and clean it of HTML tags
+    question_indices <-
+      question_from_response_column(blocks, response_column)
+    if (is.null(question_indices))
+      return("")
+    i <- question_indices[[1]]
+    j <- question_indices[[2]]
+    question_text <-
+      blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionText']]
+    question_text <- clean_html(question_text)
 
-  # get the question's place in the blocks from the response column,
-  # save the indices needed to refer to the question in the blocks list,
-  # save the raw question text,
-  # and clean it of HTML tags
-  question_indices <- question_from_response_column(blocks, response_column)
-  if (is.null(question_indices)) return("")
-  i <- question_indices[[1]]
-  j <- question_indices[[2]]
-  question_text <- blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionText']]
-  question_text <- clean_html(question_text)
+    # get the first-row-entry from the responses for the given response column,
+    # count the number of dashes in the cleaned question text,
+    # and count the number of dashes in the first-row-entry.
+    # NOTE: counting the dashes in the question text is limited to the first 99
+    # characters, since the question is cut off in the first row after 99
+    # characters.
+    if (!response_column %in% colnames(original_first_row))
+      return("")
+    first_row_entry <-
+      enc2native(as.character(original_first_row[response_column][1, ]))
+    stem_dashes <- gregexpr("-", substr(question_text, 1, 99))[[1]]
+    stem_dash_n <- length(which(stem_dashes > 0))
+    first_row_dashes <- gregexpr("-", first_row_entry)[[1]]
+    first_row_dash_n <- length(which(first_row_dashes > 0))
 
-  # get the first-row-entry from the responses for the given response column,
-  # count the number of dashes in the cleaned question text,
-  # and count the number of dashes in the first-row-entry.
-  # NOTE: counting the dashes in the question text is limited to the first 99
-  # characters, since the question is cut off in the first row after 99
-  # characters.
-  if (!response_column %in% colnames(original_first_row)) return("")
-  first_row_entry <- enc2native(as.character(original_first_row[response_column][1,]))
-  stem_dashes <- gregexpr("-", substr(question_text, 1, 99))[[1]]
-  stem_dash_n <- length(which(stem_dashes > 0))
-  first_row_dashes <- gregexpr("-", first_row_entry)[[1]]
-  first_row_dash_n <- length(which(first_row_dashes > 0))
+    # if the number of dashes in the first-row-entry is the same as
+    # the number of dashes in the question stem, then the choice text
+    # for the response column can be set to blank.
+    # if the number of dashes in the first-row-entry is greater
+    # than the number of dashes in the question stem, then
+    # the choice text for that response column should be set to
+    # the text of the first-row-entry after the appropriate
+    # number of dashes
+    if (first_row_dash_n > stem_dash_n) {
+      choice_text <-
+        substr(first_row_entry,
+               first_row_dashes[[stem_dash_n + 1]] + 1,
+               nchar(first_row_entry))
+      choice_text <- clean_html(choice_text)
 
-  # if the number of dashes in the first-row-entry is the same as
-  # the number of dashes in the question stem, then the choice text
-  # for the response column can be set to blank.
-  # if the number of dashes in the first-row-entry is greater
-  # than the number of dashes in the question stem, then
-  # the choice text for that response column should be set to
-  # the text of the first-row-entry after the appropriate
-  # number of dashes
-  if (first_row_dash_n > stem_dash_n) {
-    choice_text <- substr(first_row_entry, first_row_dashes[[stem_dash_n + 1]] + 1, nchar(first_row_entry))
-    choice_text <- clean_html(choice_text)
+    } else {
+      choice_text <- ""
+    }
 
-  } else {
-    choice_text <- ""
+    return(choice_text)
   }
-
-  return(choice_text)
-}
 
 
 #' Block's Header to HTML
@@ -393,13 +430,13 @@ choice_text_from_response_column <- function(response_column, original_first_row
 #' @return an HTML header for the survey
 blocks_header_to_html <- function(blocks) {
   header <- c("<h4>",
-           paste(blocks[['header']][1:2], collapse="<br>"))
+              paste(blocks[['header']][1:2], collapse = "<br>"))
   if (length(blocks[['header']]) > 2) {
     header <- c(header,
                 "<br><br>",
-                paste(blocks[['header']][3:length(blocks[['header']])], collapse="<br>"),
-                "</h4><br>"
-    )
+                paste(blocks[['header']][3:length(blocks[['header']])], collapse =
+                        "<br>"),
+                "</h4><br>")
   }
   header <- c(header,
               "</h4></br>")
@@ -426,7 +463,7 @@ number_of_blocks <- function(blocks) {
   } else {
     as_ints <- sapply(names(blocks), function(x) {
       (!is.na(suppressWarnings(as.integer(x)))) || (x == "")
-      })
+    })
     block_length <- length(which(as_ints))
     return(block_length)
   }
@@ -461,13 +498,18 @@ questions_from_blocks <- function(blocks) {
 #' from this function is used by functions like text_appendices_table and
 #' tabelize_blocks to get the ordering of the survey in the preview correct.
 flow_from_survey <- function(survey) {
-  flow <- which(sapply(survey[['SurveyElements']], function(x) x[['Element']] == "FL"))
-  flow <- sapply(survey[['SurveyElements']][[flow]][['Payload']][['Flow']], function(x)
-    if ('ID' %in% names(x)) {
-      x[['ID']]
-    } else if ('Flow' %in% names(x)) {
-      sapply(x[['Flow']], function(y) if ('ID' %in% names(y)) y[['ID']])
-    })
+  flow <-
+    which(sapply(survey[['SurveyElements']], function(x)
+      x[['Element']] == "FL"))
+  flow <-
+    sapply(survey[['SurveyElements']][[flow]][['Payload']][['Flow']], function(x)
+      if ('ID' %in% names(x)) {
+        x[['ID']]
+      } else if ('Flow' %in% names(x)) {
+        sapply(x[['Flow']], function(y)
+          if ('ID' %in% names(y))
+            y[['ID']])
+      })
   flow <- unlist(flow)
   return(flow)
 }
@@ -490,26 +532,49 @@ flow_from_survey <- function(survey) {
 #' @param headerrows (optional) specifies the number of header rows in the CSV data.
 #' @param output_dir specifies the path of the directory to save the output file in.
 #' @param filename specifies the name of the output file.
-make_results_tables <- function(qsf_path, csv_path, headerrows, output_dir, filename = 'Results Tables.docx') {
-  if (!any(c(missing(qsf_path), missing(csv_path)))) {
-    qt_vals = get_setup(qsf_path = qsf_path,
-                        csv_path = csv_path,
-                        headerrows = headerrows,
-                        return_data=TRUE)
-    varnames = c('survey', 'responses', 'questions', 'blocks', 'original_first_rows', 'flow')
+make_results_tables <-
+  function(qsf_path,
+           csv_path,
+           headerrows,
+           output_dir,
+           filename = 'Results Tables.docx') {
+    # Either use the passed parameters or interactively get setup with the survey data.
+    if (!any(c(missing(qsf_path), missing(csv_path)))) {
+      qt_vals = get_setup(
+        qsf_path = qsf_path,
+        csv_path = csv_path,
+        headerrows = headerrows,
+        return_data = TRUE
+      )
+    } else {
+      if (exists('survey', 'responses', envir=globalenv()))
+        qt_vals = get_setup(already_loaded=TRUE, return_data=TRUE)
+      else qt_vals = get_setup(return_data=TRUE)
+    }
+    # We used return_data=TRUE, so the data came back as a single
+    # list which needs to be processed into individual variables.
+    varnames = c('survey',
+                 'responses',
+                 'questions',
+                 'blocks',
+                 'original_first_rows',
+                 'flow')
     for (i in 1:length(varnames)) {
       assign(varnames[[i]], qt_vals[[i]])
     }
     original_first_rows = as.data.frame(original_first_rows)
     responses = as.data.frame(responses)
-  }
 
-  html_2_pandoc(
-    html=c(blocks_header_to_html(blocks), tabelize_blocks(blocks, flow)),
-    file_name=filename,
-    output_dir=output_dir
-  )
-}
+    # Now we render the HTML into a report.
+    html_2_pandoc(
+      html = c(
+        blocks_header_to_html(blocks),
+        tabelize_blocks(blocks, flow)
+      ),
+      file_name = filename,
+      output_dir = output_dir
+    )
+  }
 
 
 #' Export a file containing the text appendices
@@ -528,25 +593,46 @@ make_results_tables <- function(qsf_path, csv_path, headerrows, output_dir, file
 #' @param headerrows (optional) specifies the number of header rows in the CSV data.
 #' @param output_dir specifies the path of the directory to save the output file in.
 #' @param filename specifies the name of the output file.
-make_text_appendices <- function(qsf_path, csv_path, headerrows, output_dir, filename = 'Text Appendices.docx') {
-  if (!any(c(missing(qsf_path), missing(csv_path)))) {
-    qt_vals = get_setup(qsf_path = qsf_path,
-                        csv_path = csv_path,
-                        headerrows = headerrows,
-                        return_data=TRUE)
-    varnames = c('survey', 'responses', 'questions', 'blocks', 'original_first_rows', 'flow')
+make_text_appendices <-
+  function(qsf_path,
+           csv_path,
+           headerrows,
+           output_dir,
+           filename = 'Text Appendices.docx') {
+    # Either use the passed parameters or interactively get setup with the survey data.
+    if (!any(c(missing(qsf_path), missing(csv_path)))) {
+      qt_vals = get_setup(
+        qsf_path = qsf_path,
+        csv_path = csv_path,
+        headerrows = headerrows,
+        return_data = TRUE
+      )
+    } else {
+      if (exists('survey', 'responses', envir=globalenv()))
+        qt_vals = get_setup(already_loaded=TRUE, return_data=TRUE)
+      else qt_vals = get_setup(return_data=TRUE)
+    }
+    # We used return_data=TRUE, so the data came back as a single
+    # list which needs to be processed into individual variables.
+    varnames = c('survey',
+                 'responses',
+                 'questions',
+                 'blocks',
+                 'original_first_rows',
+                 'flow')
     for (i in 1:length(varnames)) {
       assign(varnames[[i]], qt_vals[[i]])
     }
     original_first_rows = as.data.frame(original_first_rows)
     responses = as.data.frame(responses)
+
+    # Now we render the HTML into a report.
+    html_2_pandoc(
+      html = c(
+        blocks_header_to_html(blocks),
+        text_appendices_table(blocks, original_first_rows, flow)
+      ),
+      file_name = filename,
+      output_dir = output_dir
+    )
   }
-
-  html_2_pandoc(
-    html=c(blocks_header_to_html(blocks),
-           text_appendices_table(blocks, original_first_rows, flow)),
-    file_name=filename,
-    output_dir=output_dir
-  )
-}
-
