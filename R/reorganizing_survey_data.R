@@ -902,13 +902,30 @@ split_respondents <- function(response_column, responses, survey, blocks, questi
       questions <- clean_question_text(questions)
       questions <- human_readable_qtype(questions)
       blocks <- remove_trash_blocks(blocks)
+      notes <- notes_from_survey(survey)
+      questions <- insert_notes_into_questions(questions, notes)
     } else {
       blocks <- get(x="blocks", envir=globalenv())
       questions <- get(x="questions", envir=globalenv())
     }
   }
 
-  for (i in 1:length(questions)) questions[[i]]$qtNotes <- NULL
+  # For each question, check if its notes contain the "Denominator Used:"
+  # substring. If a note on a question does include this substring,
+  # remove it, because the "Denominators Used" will be recalculated when
+  # the split blocks' questions are processed.
+  for (i in 1:length(questions)) {
+    if ('qtNotes' %in% names(questions[[i]])) {
+      j = 1
+      while (j <= length(questions[[i]][['qtNotes']])) {
+        if (grepl('Denominator Used:', questions[[i]][['qtNotes']][[j]])) {
+          questions[[i]][['qtNotes']] <- questions[[i]][['qtNotes']][-j]
+          j <- j - 1
+        }
+        j <- j + 1
+      }
+    }
+  }
 
   # split the respondents by their responses to in the response_column
   split_responses <- split(responses, responses[response_column], drop=TRUE)
