@@ -1,9 +1,8 @@
 # QualtricsTools 
 
 QualtricsTools is an [R](https://www.r-project.org/) package that automatically processes Qualtrics survey data into 
-reports showing the breakdowns of responses to each question. The package can create 
-question response reports, appendices of free responses, question 
-dictionaries, and even reports split into response based categories of respondents. 
+reports showing the breakdowns of responses to each question. The package creates 
+reports that summarize responses to closed-ended questions, compiles appendices of text responses, and generates question dictionaries that describe the type and configuration of each survey question. It also can generate reports for subsets of respondents. 
 This package uses the R web-application framework [Shiny](https://shiny.rstudio.com/), 
 the universal document converter [Pandoc](http://pandoc.org/), 
 [Roxygen2](https://cran.r-project.org/web/packages/roxygen2/vignettes/roxygen2.html) documentation, 
@@ -14,7 +13,7 @@ Anyone is welcome to use it.
 
 ![A slideshow of the QualtricsTools web app](https://github.com/ctesta01/QualtricsTools/blob/master/pics/animation.gif?raw=true)
 
-## Installation
+## Installing and Running the Shiny App
 Before installing, you must install [R or Rstudio](https://www.rstudio.com/), 
 [devtools](https://github.com/hadley/devtools), 
 [Rtools](https://cran.r-project.org/bin/windows/Rtools/) (if you're on Windows), 
@@ -24,6 +23,8 @@ After installing each of the prerequisites, to install QualtricsTools run the fo
 
     devtools::install_github("ctesta01/QualtricsTools")
     
+The QualtricsTools package includes a suite of functions to help you analyze Qualtrics data in R. Most of the package can be used on the command line in R. However, the simplest way to create basic reports of your Qualtrics data is to use the QualtricsTools Shiny app. The app includes an interactive user-friendly interface that lets you select your survey and data file, and generate reports (frequencies for closed-ended questions and compiled text responses for open-ended questions) for the entire respondent group and/or subgroups. 
+
 To run the Shiny app, load the package and then call the app() function.
 
     library(QualtricsTools)
@@ -35,8 +36,8 @@ to the most recent version, run `devtools::install_github("ctesta01/QualtricsToo
 ## Most Useful Functions
 
 Here are some of the most high level functions in the application. Be sure to `library(QualtricsTools)` before 
-trying to run any of these. Running these
-commands without parameters like as follows results in interactive prompts for the survey data and other settings
+trying to run any of these. Each function takes a series of parameters (e.g. survey .qsf file, response .csv file, output directory). Running these
+commands without parameters as shown in the code below results in interactive prompts for the survey data and other settings
 in order to cut down on the need to repeatedly type or copy long file paths. 
 For more details about each of these functions and their arguments, check out their documentation: [`get_setup`](https://github.com/ctesta01/QualtricsTools/wiki/Explanations-of-Important-Functions#get_setup), [`make_results_tables`](https://github.com/ctesta01/QualtricsTools/wiki/Generating-Results-Tables), and [`make_text_appendices`](https://github.com/ctesta01/QualtricsTools/wiki/Generating-Text-Appendices).
 
@@ -47,10 +48,10 @@ For more details about each of these functions and their arguments, check out th
     app()
     
     # Create a Report of Question Results Tables
-    make_results_tables(output_dir='/Example/Path/Here/')
+    make_results_tables()
     
     # Create a Report of Text Appendices, for each free response part of the survey
-    make_text_appendices(output_dir='/Example/Path/Here/')
+    make_text_appendices()
     
 
 ## Usage and Reference Guides
