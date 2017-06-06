@@ -38,7 +38,7 @@ Here are some of the most high level functions in the application. Be sure to `l
 trying to run any of these. Running these
 commands without parameters like as follows results in interactive prompts for the survey data and other settings
 in order to cut down on the need to repeatedly type or copy long file paths. 
-Check out the documentation for how to use each of these explicitly. 
+For more details about each of these functions and their arguments, check out their documentation: [`get_setup`](https://github.com/ctesta01/QualtricsTools/wiki/Explanations-of-Important-Functions#get_setup), [`make_results_tables`](https://github.com/ctesta01/QualtricsTools/wiki/Generating-Results-Tables), and [`make_text_appendices`](https://github.com/ctesta01/QualtricsTools/wiki/Generating-Text-Appendices).
 
     # Load and Process Survey Data into R
     get_setup()
