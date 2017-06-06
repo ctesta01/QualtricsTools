@@ -2,7 +2,7 @@
 
 QualtricsTools is an [R](https://www.r-project.org/) package that automatically processes Qualtrics survey data into 
 reports showing the breakdowns of responses to each question. The package creates 
-reports that summarize responses to closed-ended questions, compile appendices of text responses, and generates question dictionaries that describe the type and configuration of each survey question. It also can generate reports for subsets of respondents. 
+reports that summarize responses to closed-ended questions, compiles appendices of text responses, and generates question dictionaries that describe the type and configuration of each survey question. It also can generate reports for subsets of respondents. 
 This package uses the R web-application framework [Shiny](https://shiny.rstudio.com/), 
 the universal document converter [Pandoc](http://pandoc.org/), 
 [Roxygen2](https://cran.r-project.org/web/packages/roxygen2/vignettes/roxygen2.html) documentation, 
