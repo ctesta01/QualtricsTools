@@ -28,7 +28,7 @@ The QualtricsTools package includes a suite of functions to help you analyze Qua
 To run the Shiny app, load the package and then call the app() function.
 
     library(QualtricsTools)
-    QualtricsTools::app()
+    app()
 
 The QualtricsTools Shiny app should now be running! Enjoy. To update your version of QualtricsTools
 to the most recent version, run `devtools::install_github("ctesta01/QualtricsTools")` again.
