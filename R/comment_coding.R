@@ -445,18 +445,23 @@ generate_split_coded_comments <-
         headerrows = headerrows,
         return_data = TRUE
       )
-      varnames = c('survey',
-                   'responses',
-                   'questions',
-                   'blocks',
-                   'original_first_rows',
-                   'flow')
-      for (i in 1:length(varnames)) {
-        assign(varnames[[i]], qt_vals[[i]])
-      }
-      original_first_rows = as.data.frame(original_first_rows)
-      responses = as.data.frame(responses)
+    } else {
+      if (exists('survey', 'responses', envir=globalenv()))
+        qt_vals = get_setup(already_loaded=TRUE, return_data=TRUE)
+      else qt_vals = get_setup(return_data=TRUE)
     }
+    varnames = c('survey',
+                 'responses',
+                 'questions',
+                 'blocks',
+                 'original_first_rows',
+                 'flow')
+    for (i in 1:length(varnames)) {
+      assign(varnames[[i]], qt_vals[[i]])
+    }
+    original_first_rows = as.data.frame(original_first_rows)
+    responses = as.data.frame(responses)
+
 
     # Merges the selected columns into one name
     # In this case School, DegType, and Porgram merged into school-degtype-program
