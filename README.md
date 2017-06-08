@@ -18,7 +18,7 @@ Before installing, you must install [R or Rstudio](https://www.rstudio.com/),
 [devtools](https://github.com/hadley/devtools), 
 [Rtools](https://cran.r-project.org/bin/windows/Rtools/) (if you're on Windows), 
 and [Pandoc](http://pandoc.org/). For Rtools with Windows, 
-[please make sure Rtools is added to the `Path` environment variable](http://stackoverflow.com/a/29480538/3161979). You need to `install.packages('devtools')` or have already installed it. After installing each of the prerequisites, to install QualtricsTools run the following in R:
+[please make sure Rtools is added to the `Path` environment variable](http://stackoverflow.com/a/29480538/3161979). You need to `install.packages('devtools')` or have already installed the devtools package in R. After installing each of the prerequisites, to install QualtricsTools run the following in R:
 
     devtools::install_github("ctesta01/QualtricsTools")
     
