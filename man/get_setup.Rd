@@ -13,7 +13,7 @@ headerrows in the response csv.}
 \item{already_loaded}{can be set to TRUE to indicate that get_setup should
 try to get the survey, responses, and original_first_rows from the global scope
 instead of asking the user for them. If they aren't there, then the function
-will use the sample data included in the package.}
+will uses sample data included in the package.}
 
 \item{qsf_path}{is the string location of the survey as a .QSF (Qualtrics Survey File)}
 

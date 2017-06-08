@@ -476,13 +476,19 @@ generate_split_coded_comments <-
 
     split_comment_tables <-
       format_and_split_comment_sheets(coded_sheets, responses, split_string)
+
     split_blocks <-
-      split_respondents(split_string,
-                        responses,
-                        survey,
-                        blocks,
-                        questions,
-                        headerrows)
+      split_respondents(
+        response_column = split_string,
+        responses = responses,
+        survey = survey,
+        blocks = blocks,
+        questions = questions,
+        headerrows = headerrows,
+        already_loaded = FALSE,
+        original_first_rows
+      )
+
     split_blocks <-
       insert_split_survey_comments(split_blocks,
                                    split_comment_tables,
@@ -499,8 +505,9 @@ generate_split_coded_comments <-
       paste0(x, '.docx'))
 
     #Outputs the data to word documents using html_2_pandoc
+    return_list <- c()
     for (i in 1:length(filenames)) {
-      html_2_pandoc(
+      outpath <- html_2_pandoc(
         html = c(
           blocks_header_to_html(split_blocks[[i]]),
           text_appendices_table(
@@ -513,6 +520,7 @@ generate_split_coded_comments <-
         file_name = filenames[[i]],
         output_dir = output_dir
       )
+      return_list <- c(return_list, outpath)
     }
-
+    return(return_list)
   }

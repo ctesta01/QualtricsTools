@@ -269,7 +269,6 @@ get_setup <- function(headerrows,
   questions <- questions_and_blocks[[1]]
   blocks <- questions_and_blocks[[2]]
 
-
   # insert a header into the blocks
   blocks[['header']] <- c(paste0("Survey Name: ",
                                  survey[['SurveyEntry']][['SurveyName']]),
@@ -637,23 +636,29 @@ make_text_appendices <-
   }
 
 
+#' Generate Results Tables Reports Split (or Grouped By) their entries in a Response Column
+#'
+#' The make_split_results_table function works by constructing and inserting an additional
+#' column into the responses data frame from which the responses are split. Once the responses
+#' are split, they are inserted into distinct lists of blocks (one list for each split group of
+#' responses) and then results tables reports are rendered from these split blocks. The function
+#' renders these reports by looping over the list of split blocks, naming each report according to
+#' its split respondent group, and saving each file to the specified output_dir. At the simplest
+#' level, this function is about running get_setup, create_merged_response_column,
+#' split_respondents, and html_2_pandoc in the right way to produce split reports.
+#'
+#' @param qsf_path (optional) is the string path location of the .qsf file to be processed.
+#' @param csv_path (optional) is the string path location of the .csv file to be processed.
+#' @param headerrows (optional) specifies the number of header rows in the CSV data.
+#' @param output_dir specifies the path of the directory to save the output file in.
+#' @param split_by is a list which specifies which columns should be used to split the respondents.
 make_split_results_tables <-
   function(qsf_path,
            csv_path,
            output_dir,
            split_by,
            headerrows = 3) {
-    # This turns the split_by list into a name for the column
-    # which will contain the concatenation of the entries of responses
-    # which are being split over. That is if split_by = c('column1', 'column2', 'column3'),
-    # then this constructs split_string = 'column1-column2-column3'
-    split_string <- c(split_by, "split")
-    split_string <- toString(paste(split_string, "-"))
-    split_string <- gsub(' ', '', split_string)
-    split_string <- gsub(',', '', split_string)
-    split_string <- substr(split_string, 1, nchar(split_string) - 1)
-
-    # Declares paths for the qsf and csv files
+    # Load the Survey Data
     if (!any(c(missing(qsf_path), missing(csv_path)))) {
       qt_vals = get_setup(
         qsf_path = qsf_path,
@@ -664,8 +669,9 @@ make_split_results_tables <-
     } else {
       if (exists('survey', 'responses', envir=globalenv()))
         qt_vals = get_setup(already_loaded=TRUE, return_data=TRUE)
-      else qt_vals = get_setup(return_data=TRUE)
+      else qt_vals = get_setup(already_loaded=FALSE, return_data=TRUE)
     }
+
     varnames = c('survey',
                  'responses',
                  'questions',
@@ -678,18 +684,32 @@ make_split_results_tables <-
     original_first_rows = as.data.frame(original_first_rows)
     responses = as.data.frame(responses)
 
+    # This turns the split_by list into a name for the column
+    # which will contain the concatenation of the entries of responses
+    # which are being split over. That is if split_by = c('column1', 'column2', 'column3'),
+    # then this constructs split_string = 'column1-column2-column3'
+    split_string <- c(split_by, "split")
+    split_string <- toString(paste(split_string, "-"))
+    split_string <- gsub(' ', '', split_string)
+    split_string <- gsub(',', '', split_string)
+    split_string <- substr(split_string, 1, nchar(split_string) - 1)
+
     # Merges the selected columns into one name
     # In this case School, DegType, and Porgram merged into school-degtype-program
     responses <-
       create_merged_response_column(split_by, split_string, blocks, responses)
 
     split_blocks <-
-      split_respondents(split_string,
-                        responses,
-                        survey,
-                        blocks,
-                        questions,
-                        headerrows)
+      split_respondents(
+        response_column = split_string,
+        responses = responses,
+        survey = survey,
+        blocks = blocks,
+        questions = questions,
+        headerrows = headerrows,
+        already_loaded = FALSE,
+        original_first_rows
+      )
 
     # Used with html_2_pandoc below to keeps the flow of the survey consistent with the output
     flow = flow_from_survey(survey)
@@ -701,8 +721,9 @@ make_split_results_tables <-
       paste0(x, '.docx'))
 
     # Outputs the data to word documents using html_2_pandoc
+    return_list <- c()
     for (i in 1:length(filenames)) {
-      html_2_pandoc(
+      outpath <- html_2_pandoc(
         html = c(
           blocks_header_to_html(split_blocks[[i]]),
           tabelize_blocks(
@@ -713,5 +734,7 @@ make_split_results_tables <-
         file_name = filenames[[i]],
         output_dir = output_dir
       )
+      return_list <- c(return_list, outpath)
     }
+    return(return_list)
   }
