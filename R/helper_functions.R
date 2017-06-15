@@ -1,14 +1,9 @@
 #' Repath Windows Paths with "\" to ones with "/"
 #' This function is originally from a StackOverflow comment here:
 #' https://stackoverflow.com/questions/1189759/expert-r-users-whats-in-your-rprofile/12703931#12703931
-#' @param path an optional parameter to provide the path as a string.
-#' If the argument is not provided, the user is automatically prompted
-#' to paste the path.
-repath <- function(path) {
-  if (missing(path)) {
+repath <- function() {
   cat('Paste windows file path and hit RETURN twice')
   path <- scan(what = "")
-  }
   fixed_path <- gsub('\\\\', '/', path)
   writeClipboard(paste(fixed_path, collapse=" "))
   cat('Here\'s your de-windowsified path. (It\'s also on the clipboard.)\n', fixed_path, '\n')

@@ -2,19 +2,14 @@
 % Please edit documentation in R/helper_functions.R
 \name{repath}
 \alias{repath}
-\title{Repath Windows Paths with "\" to ones with "/"
+\title{Repath Windows Paths with "\\" to ones with "/"
 This function is originally from a StackOverflow comment here:
 https://stackoverflow.com/questions/1189759/expert-r-users-whats-in-your-rprofile/12703931#12703931}
 \usage{
-repath(path)
-}
-\arguments{
-\item{path}{an optional parameter to provide the path as a string.
-If the argument is not provided, the user is automatically prompted
-to paste the path.}
+repath()
 }
 \description{
-Repath Windows Paths with "\" to ones with "/"
+Repath Windows Paths with "\\" to ones with "/"
 This function is originally from a StackOverflow comment here:
 https://stackoverflow.com/questions/1189759/expert-r-users-whats-in-your-rprofile/12703931#12703931
 }
