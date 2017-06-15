@@ -22,4 +22,3 @@ they do not have to be provided inline to the function, and that the
 function will ask the user to choose a file for the responsesfile if one is
 not provided inline, and it will default to using 3 headerrows.
 }
-

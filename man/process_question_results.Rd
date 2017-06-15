@@ -6,6 +6,18 @@
 \usage{
 process_question_results(question, original_first_rows)
 }
+\arguments{
+\item{question}{This is a list object representing an individual question
+from a Qualtrics Survey File. The question must have a paired
+response column placed into the question
+under [['Responses']]. The insertion of the responses into questions is
+handled by link_responses_to_questions.}
+
+\item{original_first_rows}{A dataframe contianing the header information
+for each column of response data. This dataframe includes a row for the DataExportTag based
+response column names, another for the Question Text stem and choice text (although
+truncated), and a row with QID based column names.}
+}
 \description{
 This function uses the contents of a question to
 determine which kind of question the given question is.
@@ -15,4 +27,3 @@ question type. After adding the results `Table` to the question,
 the question is returned including this table as an additional new
 list element.
 }
-

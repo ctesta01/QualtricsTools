@@ -24,4 +24,3 @@ columns are listed along with the data export tag of the question they correspon
 to, their question stem and question choice, the question types (1, 2, and 3 levels
 of question types!), and the response type.
 }
-

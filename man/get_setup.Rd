@@ -96,4 +96,3 @@ and flow are now global variables.
 survey, responses, questions, blocks, original_first_rows,
 and flow are now global variables.
 }
-

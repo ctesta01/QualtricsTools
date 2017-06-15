@@ -19,4 +19,3 @@ responses table, for questions which are not text-entry type questions.
 The description table contains a text appendix title, like "Appendix A"
 and the responses are tabled verbatim beneath it.
 }
-

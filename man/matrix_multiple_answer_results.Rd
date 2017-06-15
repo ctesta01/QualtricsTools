@@ -7,8 +7,16 @@
 matrix_multiple_answer_results(question, original_first_rows)
 }
 \arguments{
-\item{question}{The question must have a paired response column placed into the question
-under [['Responses']]}
+\item{question}{This is a list object representing an individual question
+from a Qualtrics Survey File. The question must have a paired
+response column placed into the question
+under [['Responses']]. The insertion of the responses into questions is
+handled by link_responses_to_questions.}
+
+\item{original_first_rows}{A dataframe contianing the header information
+for each column of response data. This dataframe includes a row for the DataExportTag based
+response column names, another for the Question Text stem and choice text (although
+truncated), and a row with QID based column names.}
 }
 \value{
 a table with the matrix-sub-questions listed in the first column,
@@ -18,4 +26,3 @@ the percentages for each choice for each sub-question.
 \description{
 Create the Results Table for a Matrix Multiple Answer Question
 }
-

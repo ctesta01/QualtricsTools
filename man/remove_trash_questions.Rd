@@ -20,4 +20,3 @@ block of the blocks list provided.
 This function removes any questions from a list of questions
 that are listed in the Trash block.
 }
-

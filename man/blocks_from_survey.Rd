@@ -7,8 +7,9 @@
 blocks_from_survey(survey)
 }
 \arguments{
-\item{survey}{This should be a Qualtrics survey in the form of a list
-imported from the JSON-formatted QSF file.}
+\item{survey}{A qualtrics survey list object,
+uploaded from a Qualtrics Survey File (QSF). Use
+ask_for_qsf() to create such a survey list object from a QSF file.}
 }
 \value{
 The blocks element returned is a list of blocks containing for
@@ -21,4 +22,3 @@ and turns them into their own list for later use.
 Additionally, the block element can be further reduced to include
 only the payload of the survey blocks.
 }
-

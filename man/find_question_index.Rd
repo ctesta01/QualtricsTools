@@ -11,4 +11,3 @@ This function takes a list of questions and an export tag and
 looks for the matching question. It returns the index(es) of
 the questions with that Question Data Export Tag.
 }
-

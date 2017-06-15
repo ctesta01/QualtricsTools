@@ -24,4 +24,3 @@ If the optional parameters, lean_responses and question_dict are provided, then
 the function will use them to include a "Raw Response" and a "Coded Response"
 column for any columns which are question response columns.
 }
-

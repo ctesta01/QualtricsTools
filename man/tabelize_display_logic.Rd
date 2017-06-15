@@ -20,4 +20,3 @@ The descriptive boxes aren't included.
 If it has display logic, it's inserted into the tables returned by
 this function.
 }
-

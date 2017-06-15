@@ -32,4 +32,3 @@ instead of the variable response values. The column is appended to
 the response set and the response set with the additional
 new column is returned to the user.
 }
-

@@ -22,4 +22,3 @@ The `table_text_entry` function creates a text appendix with as many
 columns as there are text entry components to the given question and fills
 them with the responses from each respondent across the rows.
 }
-

@@ -10,4 +10,3 @@ app()
 This function launches the Shiny interface for the Qualtrics
 package from the files in the install or 'inst' directory.
 }
-

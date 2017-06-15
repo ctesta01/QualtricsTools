@@ -23,4 +23,3 @@ of an HTML document. The HTML is prepended and appended with
 to a tempfile, and then pandoc converts it to a .docx file. Finally,
 the path to the .docx file is returned.
 }
-

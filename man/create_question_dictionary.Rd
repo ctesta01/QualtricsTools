@@ -17,4 +17,3 @@ A data frame with a row for each question describing the question's details.
 \description{
 Create a Question Dictionary
 }
-

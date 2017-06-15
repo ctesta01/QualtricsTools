@@ -16,4 +16,3 @@ This function returns a standardized html table intended to go into a
 document of text appendices indicating that there were no respondents
 who answered the given text entry question.
 }
-

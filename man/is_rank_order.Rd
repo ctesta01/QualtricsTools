@@ -9,4 +9,3 @@ is_rank_order(x)
 \description{
 Determine if a question is a rank order question
 }
-

@@ -22,4 +22,3 @@ looking at the names of the blocks list, the integer values or the values which
 have no name are the question blocks, and the values which have names are the
 information added by the QualtricsTools functions. This function counts up the former.
 }
-

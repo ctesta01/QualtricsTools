@@ -10,4 +10,3 @@ choice_text_from_question(question, choice)
 Input a question and a choice, and this function will
 return the choice text.
 }
-

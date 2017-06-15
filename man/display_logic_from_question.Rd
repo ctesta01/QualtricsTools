@@ -21,4 +21,3 @@ has any of these display logic components, insert before
 adding any display logic a line detailing what part of the
 question the following display logic corresponds to.
 }
-

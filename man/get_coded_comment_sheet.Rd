@@ -10,4 +10,3 @@ get_coded_comment_sheet(codedfile)
 This retrieves the raw content of a 'Coded' sheet in the
 coded comments of an excel or CSV file.
 }
-

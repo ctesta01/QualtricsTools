@@ -9,4 +9,3 @@ is_single_answer(x)
 \description{
 Determine if a question is a single answer question
 }
-

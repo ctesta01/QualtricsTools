@@ -19,4 +19,3 @@ into multiple questions
 This function updates both the list of questions and list of blocks from a survey
 to reflect a side-by-side question as multiple individual questions.
 }
-

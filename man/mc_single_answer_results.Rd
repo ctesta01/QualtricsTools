@@ -7,15 +7,24 @@
 mc_single_answer_results(question, original_first_rows)
 }
 \arguments{
-\item{question}{The question must have a paired response column placed into the question
-under [['Responses']]}
+\item{question}{This is a list object representing an individual question
+from a Qualtrics Survey File. The question must have a paired
+response column placed into the question
+under [['Responses']]. The insertion of the responses into questions is
+handled by link_responses_to_questions.}
+
+\item{original_first_rows}{A dataframe contianing the header information
+for each column of response data. This dataframe includes a row for the DataExportTag based
+response column names, another for the Question Text stem and choice text (although
+truncated), and a row with QID based column names.}
 }
 \value{
-a table with an N, Percent, and choice column, detailing the number of responses for each
+A table with an N, Percent, and an unlabeled column
+containing the question's chocies. In the N and Percent columns
+the frequency statistics are computed for the question
 choice.
 }
 \description{
 The mc_single_answer_results function uses the definition of the choices in the QSF file
 and their potentially recoded values to determine how to table the results paired to that question.
 }
-

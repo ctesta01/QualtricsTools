@@ -1,4 +1,6 @@
-#' Get Questions (with Responses) and Blocks (with Questions)
+#' Get Restructured Questions (with inserted Responses)
+#' and Blocks (with inserted Questions) from data
+#' provided by Qualtrics.
 #'
 #' This function returns a list with two elements, where
 #' the first element is questions with their responses
@@ -6,12 +8,26 @@
 #' the blocks of the survey, with questions listed in
 #' each block as BlockElements.
 #'
-#' @param survey A qualtrics survey, uploaded from a qsf/json file
-#' @param responses Qualtrics responses to a survey, uploaded from csv as a data frame
-#' @param original_first_rows The original header rows to the CSV response set
-#'
-#' @return a list with two elements, the first being the survey questions,
-#' and the second being the survey blocks
+#' @param survey A qualtrics survey list object,
+#' uploaded from a Qualtrics Survey File (QSF). Use
+#' ask_for_qsf() to create such a survey list object from a QSF file.
+#' @param responses A dataframe of Qualtrics responses to a survey.
+#' Use ask_for_csv() to create such a dataframe from a CSV file.
+#' @param original_first_rows A dataframe contianing the header information
+#' for each column of response data. This dataframe includes a row for the DataExportTag based
+#' response column names, another for the Question Text stem and choice text (although
+#' truncated), and a row with QID based column names.
+#' @return A list with two elements: the questions,
+#' and the survey blocks. All questions in the trash are
+#' excluded, HTML and CSS are removed from question text,
+#' responses, notes, and a more easily human readable question
+#' type are inserted into each question. The blocks then have
+#' their BlockElements replaced by corresponding questions
+#' where applicable. The BlockElements of the list of Blocks
+#' from a survey originally only refer to questions
+#' by their DataExportTag. However, this is inconvenient
+#' because it adds an additional lookup step, and so they are
+#' replaced by the real objects here.
 get_coded_questions_and_blocks <-
   function(survey, responses, original_first_rows) {
     # select the block elements from the survey
@@ -76,8 +92,7 @@ get_coded_questions_and_blocks <-
 #' Additionally, the block element can be further reduced to include
 #' only the payload of the survey blocks.
 #'
-#' @param survey This should be a Qualtrics survey in the form of a list
-#' imported from the JSON-formatted QSF file.
+#' @inheritParams get_coded_questions_and_blocks
 #'
 #' @return The blocks element returned is a list of blocks containing for
 #' each a type, description, ID, and BlockElements (which contains the
@@ -92,8 +107,7 @@ blocks_from_survey <- function(survey) {
 
 #' Generate a List of Notes Blocks
 #'
-#' @param survey This should be a Qualtrics survey in the form of a list
-#' imported from the JSON-formatted QSF file.
+#' @inheritParam get_coded_questions_and_blocks
 #'
 #' @return This returns a list of blocks
 notes_from_survey <- function(survey) {

@@ -22,4 +22,3 @@ the respondents' id, the response column's name,
 the variable response, and the coded
 response.
 }
-

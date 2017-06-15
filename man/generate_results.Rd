@@ -7,9 +7,13 @@
 generate_results(questions, original_first_rows)
 }
 \arguments{
-\item{questions}{A list of questions with the relevant response columns
-stored as a data frame under the questions[[i]][['Responses']] element. Create
-such a list of questions by using link_responses_to_questions.}
+\item{questions}{A list of questions from a Qualtrics Survey File containing
+response columns (inserted by link_responses_to_questions).}
+
+\item{original_first_rows}{A dataframe contianing the header information
+for each column of response data. This dataframe includes a row for the DataExportTag based
+response column names, another for the Question Text stem and choice text (although
+truncated), and a row with QID based column names.}
 }
 \value{
 A list of questions with their results tables paired to them
@@ -22,4 +26,3 @@ uses the results generation functions to create their results table,
 and saves the table to the question's [['Table']] element. The function
 returns the list of questions with their paired results tables.
 }
-

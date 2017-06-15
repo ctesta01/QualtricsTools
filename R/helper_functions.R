@@ -1,20 +1,18 @@
-# take a list of rows, all with the same length, and
-# turn them into a data frame.
-list_of_rows_to_df <- function(data) {
-  nCol <- max(vapply(data, length, 0))
-  data <-
-    lapply(data, function(row)
-      c(row, rep(NA, nCol - length(row))))
-  data <-
-    matrix(
-      unlist(data),
-      nrow = length(data),
-      ncol = nCol,
-      byrow = TRUE
-    )
-  data.frame(data)
+#' Repath Windows Paths with "\" to ones with "/"
+#' This function is originally from a StackOverflow comment here:
+#' https://stackoverflow.com/questions/1189759/expert-r-users-whats-in-your-rprofile/12703931#12703931
+#' @param path an optional parameter to provide the path as a string.
+#' If the argument is not provided, the user is automatically prompted
+#' to paste the path.
+repath <- function(path) {
+  if (missing(path)) {
+  cat('Paste windows file path and hit RETURN twice')
+  path <- scan(what = "")
+  }
+  fixed_path <- gsub('\\\\', '/', path)
+  writeClipboard(paste(fixed_path, collapse=" "))
+  cat('Here\'s your de-windowsified path. (It\'s also on the clipboard.)\n', fixed_path, '\n')
 }
-
 
 #' Get the Index of the Question Corresponding to a Response Column
 #'
@@ -586,11 +584,7 @@ make_results_tables <-
 #' The function then uses the blocks, original_first_rows, and flow with html_2_pandoc
 #' to produce the desired output file.
 #'
-#' @param qsf_path (optional) is the string path location of the .qsf file to be processed.
-#' @param csv_path (optional) is the string path location of the .csv file to be processed.
-#' @param headerrows (optional) specifies the number of header rows in the CSV data.
-#' @param output_dir specifies the path of the directory to save the output file in.
-#' @param filename specifies the name of the output file.
+#' @inheritParams make_results_tables
 make_text_appendices <-
   function(qsf_path,
            csv_path,
@@ -636,6 +630,82 @@ make_text_appendices <-
   }
 
 
+#' Create Text Appendices including Coded Comments
+#'
+#' Using `get_setup`, `directory_get_coded_comment_sheets`, `format_coded_comment_sheets`,
+#' `insert_coded_comments`, and `html_2_pandoc`, this function renders
+#' text appendices with coded comments included from CSV or XLSX files
+#' from the specified `sheets_dir` parameter.
+#'
+#' @inheritParams make_results_tables
+#' @param sheets_dir is the string path location of the directory which contains Excel documents
+#' with a "Coded" sheet formatted as specified on the wiki:
+#' https://github.com/ctesta01/QualtricsTools/wiki/Comment-Coding
+#' @param n_threshold is the number of verbatim comments which will appear before being truncated.
+make_coded_comments <-
+  function(qsf_path,
+           csv_path,
+           headerrows,
+           sheets_dir,
+           output_dir,
+           filename = 'text appendices.docx',
+           n_threshold = 15
+  ) {
+    # Declares paths for the qsf and csv files
+    if (!any(c(missing(qsf_path), missing(csv_path)))) {
+      qt_vals = get_setup(
+        qsf_path = qsf_path,
+        csv_path = csv_path,
+        headerrows = headerrows,
+        return_data = TRUE
+      )
+      varnames = c('survey',
+                   'responses',
+                   'questions',
+                   'blocks',
+                   'original_first_rows',
+                   'flow')
+      for (i in 1:length(varnames)) {
+        assign(varnames[[i]], qt_vals[[i]])
+      }
+      original_first_rows = as.data.frame(original_first_rows)
+      responses = as.data.frame(responses)
+    }
+
+    coded_sheets <- directory_get_coded_comment_sheets(sheets_dir)
+
+    if (is.null(coded_sheets)) {
+      stop("Please fix errors before attempting again")
+    }
+
+    comment_tables <-
+      format_coded_comment_sheets(coded_comment_sheets = coded_sheets)
+    blocks <-
+      insert_coded_comments(
+        blocks = blocks,
+        original_first_rows = original_first_rows,
+        coded_comments = comment_tables
+      )
+
+    # Used with html_2_pandoc below to keeps the flow of the survey consistent with the output
+    flow = flow_from_survey(survey)
+
+    html_2_pandoc(
+      html = c(
+        blocks_header_to_html(blocks),
+        text_appendices_table(
+          blocks = blocks,
+          original_first_row = original_first_rows,
+          flow = flow,
+          n_threshold = n_threshold
+        )
+      ),
+      file_name = filename,
+      output_dir = output_dir
+    )
+  }
+
+
 #' Generate Results Tables Reports Split (or Grouped By) their entries in a Response Column
 #'
 #' The make_split_results_table function works by constructing and inserting an additional
@@ -647,10 +717,7 @@ make_text_appendices <-
 #' level, this function is about running get_setup, create_merged_response_column,
 #' split_respondents, and html_2_pandoc in the right way to produce split reports.
 #'
-#' @param qsf_path (optional) is the string path location of the .qsf file to be processed.
-#' @param csv_path (optional) is the string path location of the .csv file to be processed.
-#' @param headerrows (optional) specifies the number of header rows in the CSV data.
-#' @param output_dir specifies the path of the directory to save the output file in.
+#' @inheritParams make_results_tables
 #' @param split_by is a list which specifies which columns should be used to split the respondents.
 make_split_results_tables <-
   function(qsf_path,
@@ -749,13 +816,7 @@ make_split_results_tables <-
 #' its split respondent group, and saving each file to the specified output_dir. At the simplest
 #' level, this function is about running get_setup, create_merged_response_column,
 #' split_respondents, and html_2_pandoc in the right way to produce split reports.
-#'
-#' @param qsf_path (optional) is the string path location of the .qsf file to be processed.
-#' @param csv_path (optional) is the string path location of the .csv file to be processed.
-#' @param output_dir specifies the path of the directory to save the output file in.
-#' @param split_by is a list which specifies which columns should be used to split the respondents.
-#' @param n_threshold is the number of verbatim comments which will appear before being truncated.
-#' @param headerrows (optional) specifies the number of header rows in the CSV data.
+#' @inheritParams make_split_results_tables
 make_split_text_appendices <-
   function(qsf_path,
            csv_path,
@@ -833,7 +894,128 @@ make_split_text_appendices <-
           blocks_header_to_html(split_blocks[[i]]),
           text_appendices_table(
             blocks = split_blocks[[i]],
-            original_first_row = original_first_rows
+            original_first_row = original_first_rows,
+            flow = flow,
+            n_threshold = n_threshold
+          )
+        ),
+        file_name = filenames[[i]],
+        output_dir = output_dir
+      )
+      return_list <- c(return_list, outpath)
+    }
+    return(return_list)
+  }
+
+
+
+#' Split a Survey's Split Coded Comment Appendices
+#'
+#' This question automates the entire process of splitting a
+#' survey's text appendices by specific response columns. The QSF
+#' and CSV file are passed as string arguments,
+#' the sheets_dir specifies where the coded comments excel or csv
+#' data is stored, and the output_dir specifies where the split
+#' coded comment appendices should be saved. The n_threshold
+#' specifies how many coded comments there must be before the coded
+#' comment appendices are included, and headerrows is an argument
+#' necessary to process the survey results correctly.
+#' @inheritParams make_coded_comments
+#' @inheritParams make_split_results_tables
+make_split_coded_comments <-
+  function(qsf_path,
+           csv_path,
+           sheets_dir,
+           output_dir,
+           split_by,
+           n_threshold = 15,
+           headerrows) {
+    # This turns the split_by list into a name for the column
+    # which will contain the concatenation of the entries of responses
+    # which are being split over. That is if split_by = c('column1', 'column2', 'column3'),
+    # then this constructs split_string = 'column1-column2-column3'
+    split_string <- c(split_by, "split")
+    split_string <- toString(paste(split_string, "-"))
+    split_string <- gsub(' ', '', split_string)
+    split_string <- gsub(',', '', split_string)
+    split_string <- substr(split_string, 1, nchar(split_string) - 1)
+
+    # Declares paths for the qsf and csv files
+    if (!any(c(missing(qsf_path), missing(csv_path)))) {
+      qt_vals = get_setup(
+        qsf_path = qsf_path,
+        csv_path = csv_path,
+        headerrows = headerrows,
+        return_data = TRUE
+      )
+    } else {
+      if (exists('survey', 'responses', envir=globalenv()))
+        qt_vals = get_setup(already_loaded=TRUE, return_data=TRUE)
+      else qt_vals = get_setup(return_data=TRUE)
+    }
+    varnames = c('survey',
+                 'responses',
+                 'questions',
+                 'blocks',
+                 'original_first_rows',
+                 'flow')
+    for (i in 1:length(varnames)) {
+      assign(varnames[[i]], qt_vals[[i]])
+    }
+    original_first_rows = as.data.frame(original_first_rows)
+    responses = as.data.frame(responses)
+
+
+    # Merges the selected columns into one name
+    # In this case School, DegType, and Porgram merged into school-degtype-program
+    responses <-
+      create_merged_response_column(split_by, split_string, blocks, responses)
+
+    coded_sheets <- directory_get_coded_comment_sheets(sheets_dir)
+
+    if (is.null(coded_sheets)) {
+      stop("Please fix errors before attempting again")
+    }
+
+    split_comment_tables <-
+      format_and_split_comment_sheets(coded_sheets, responses, split_string)
+
+    split_blocks <-
+      split_respondents(
+        response_column = split_string,
+        responses = responses,
+        survey = survey,
+        blocks = blocks,
+        questions = questions,
+        headerrows = headerrows,
+        already_loaded = FALSE,
+        original_first_rows
+      )
+
+    split_blocks <-
+      insert_split_survey_comments(split_blocks,
+                                   split_comment_tables,
+                                   split_string,
+                                   original_first_rows)
+
+    #Used with html_2_pandoc below to keeps the flow of the survey consistent with the output
+    flow = flow_from_survey(survey)
+
+    #Appends .docx to the file names collected by splitting the data to output them as Word Documents
+    filenames <- sapply(split_blocks, function(x)
+      x$split_group)
+    filenames <- sapply(filenames, function(x)
+      paste0(x, '.docx'))
+
+    #Outputs the data to word documents using html_2_pandoc
+    return_list <- c()
+    for (i in 1:length(filenames)) {
+      outpath <- html_2_pandoc(
+        html = c(
+          blocks_header_to_html(split_blocks[[i]]),
+          text_appendices_table(
+            blocks = split_blocks[[i]],
+            original_first_row = original_first_rows,
             flow = flow,
             n_threshold = n_threshold
           )

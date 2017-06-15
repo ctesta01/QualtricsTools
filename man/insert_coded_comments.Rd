@@ -13,4 +13,3 @@ of blocks and then inserts the coded comments table into the question.
 The returned list is a list of blocks where the questions have had their
 coded comments inserted.
 }
-

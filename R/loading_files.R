@@ -21,10 +21,12 @@ load_csv_data <- function(file2, file1, headerrows) {
 
 #' Set Survey to Sample Survey or User Survey
 #'
-#' load_qsf_data returns the sample survey or the user's survey depending
+#' load_qsf_data returns the sample survey
+#' or the user's survey depending
 #' on whether or not the user has uploaded data.
 #'
-#' @param file2 This should be a QSF file received from a file upload made in the Shiny UI,
+#' @param file2 This should be a QSF file received
+#' from a file upload made in the Shiny UI,
 #' which includes a file1[['datapath']] where the data can be located.
 #'
 #' @return The return value is the survey list object
@@ -40,10 +42,12 @@ load_qsf_data <- function(file1) {
 
 #' Ask the user for the Qualtrics Survey file
 #'
-#' This function can be provided the path to a Qualtrics survey as its parameter, or
-#' the function will prompt the user to specify the path to the file.
+#' This function can be provided the path to a
+#' Qualtrics survey as its parameter, or
+#' the function will prompt the user to specify
+#' the path to the file.
 #'
-#' @param The file path to a Qualtrics survey file
+#' @param surveyfile The file path to a Qualtrics survey file
 #'
 #' @return The survey file the user uploads, as a list
 ask_for_qsf <- function(surveyfile) {

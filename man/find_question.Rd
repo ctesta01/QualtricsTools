@@ -11,4 +11,3 @@ This function takes a list of questions and an export tag and
 looks for the matching question. It will try to select
 the question uniquely.
 }
-

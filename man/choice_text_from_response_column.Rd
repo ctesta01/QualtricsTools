@@ -21,4 +21,3 @@ The choice text corresponding to a response column
 This function uses the first row of the response data from Qualtrics
 to determine the choice text a response column corresponds to.
 }
-

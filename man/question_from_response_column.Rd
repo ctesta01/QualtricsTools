@@ -12,4 +12,3 @@ in the blocks list. Give it a response column name, and it will
 try to find the question it corresponds to. Otherwise, it will
 respond NULL.
 }
-

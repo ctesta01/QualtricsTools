@@ -33,4 +33,3 @@ sapply(1:60, appendix_lettering)
 [43] "AQ" "AR" "AS" "AT" "AU" "AV" "AW" "AX" "AY" "AZ" "BA" "BB" "BC" "BD"
 [57] "BE" "BF" "BG" "BH"
 }
-

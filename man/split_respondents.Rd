@@ -27,4 +27,3 @@ the results processed and inserted into each BlockElement.
  split_blocks[[2]][[1]][['BlockElements']][[1]]. These refer to the first and second respondent
  groups, the first block, and the first block element.
 }
-

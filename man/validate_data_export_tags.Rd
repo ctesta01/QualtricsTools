@@ -16,4 +16,3 @@ returns a boolean statement representing whether or not the DataExportTags valid
 validate_export_tags returns TRUE if the DataExportTags are not duplicated, and are valid,
 and FALSE if the DataExportTags did not validate, and are duplicated.
 }
-

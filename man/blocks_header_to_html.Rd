@@ -17,4 +17,3 @@ Get an HTML Header for a list of survey blocks. The header
 is created by either get_coded_questions_and_blocks or
 by split_respondents.
 }
-

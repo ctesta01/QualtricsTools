@@ -28,4 +28,3 @@ scope. If they are not passed, they will be retrieved as needed from the global 
 The function then uses the blocks, original_first_rows, and flow with html_2_pandoc
 to produce the desired output file.
 }
-

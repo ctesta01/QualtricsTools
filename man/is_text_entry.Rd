@@ -9,4 +9,3 @@ is_text_entry(x)
 \description{
 Determine if a question is a text entry question
 }
-

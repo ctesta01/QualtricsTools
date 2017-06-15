@@ -12,4 +12,3 @@ This function splits the survey's response data and the
 coded comments, then inserts the split coded comments into the split
 surveys.
 }
-

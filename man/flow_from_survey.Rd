@@ -12,4 +12,3 @@ in the survey as it is taken by a respondent. The flow list that is returned
 from this function is used by functions like text_appendices_table and
 tabelize_blocks to get the ordering of the survey in the preview correct.
 }
-

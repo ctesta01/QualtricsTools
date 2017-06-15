@@ -13,6 +13,12 @@ by the question with its paired responses.}
 \item{original_first_row}{This is the original first row of the
 response set. If you have the original_first_rows, you can
 pass original_first_rows[1,] to}
+
+\item{flow}{is a list of blockIDs which is used to order the questions
+in the output report.}
+
+\item{n_threshold}{is the number of comments which must be present in order
+for a coded comments table to appear.}
 }
 \value{
 an html string containing a title,
@@ -31,4 +37,3 @@ question, if the question is a Text Entry question or
 any of the response columns contain "TEXT" then a table
 is created for those responses.
 }
-

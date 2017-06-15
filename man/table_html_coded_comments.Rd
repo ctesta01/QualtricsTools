@@ -25,4 +25,3 @@ breakdown of the responses into the coded comments' categories. The description 
 "Coded Comments." The coded comments table has two columns: the "Responses" and "N", in which
 the categories and their frequencies are listed.
 }
-
