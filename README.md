@@ -1,8 +1,8 @@
 # QualtricsTools 
 
 QualtricsTools is an [R](https://www.r-project.org/) package that automatically processes Qualtrics survey data into 
-reports showing the breakdowns of responses to each question. The package creates 
-reports that summarize responses to closed-ended questions, compiles appendices of text responses, and generates question dictionaries that describe the type and configuration of each survey question. It also can generate reports for subsets of respondents. 
+reports breaking down the responses to each question. The package creates 
+reports that summarize the results of closed-ended questions, compiles appendices of open-ended text responses, and generates question dictionaries that describe the details of each survey question. It also can generate reports for subsets of respondents based on their response data. 
 This package uses the R web-application framework [Shiny](https://shiny.rstudio.com/), 
 the universal document converter [Pandoc](http://pandoc.org/), 
 [Roxygen2](https://cran.r-project.org/web/packages/roxygen2/vignettes/roxygen2.html) documentation, 
@@ -18,8 +18,7 @@ Before installing, you must install [R or Rstudio](https://www.rstudio.com/),
 [devtools](https://github.com/hadley/devtools), 
 [Rtools](https://cran.r-project.org/bin/windows/Rtools/) (if you're on Windows), 
 and [Pandoc](http://pandoc.org/). For Rtools with Windows, 
-[please make sure Rtools is added to the `Path` environment variable](http://stackoverflow.com/a/29480538/3161979). 
-After installing each of the prerequisites, to install QualtricsTools run the following in R:
+[please make sure Rtools is added to the `Path` environment variable](http://stackoverflow.com/a/29480538/3161979). You need to `install.packages('devtools')` or have already installed the devtools package in R. After installing each of the prerequisites, to install QualtricsTools run the following in R:
 
     devtools::install_github("ctesta01/QualtricsTools")
     
