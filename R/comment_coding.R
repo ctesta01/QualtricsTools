@@ -346,7 +346,7 @@ insert_split_survey_comments <-
 #' @param filename
 #' @param n_threshold
 #' @param headerrows
-generate_coded_comments <-
+make_text_appendices_with_coded_comments <-
   function(qsf_path,
            csv_path,
            sheets_dir,
@@ -419,7 +419,14 @@ generate_coded_comments <-
 #' specifies how many coded comments there must be before the coded
 #' comment appendices are included, and headerrows is an argument
 #' necessary to process the survey results correctly.
-generate_split_coded_comments <-
+#' @param qsf_path
+#' @param csv_path
+#' @param sheets_dir
+#' @param output_dir
+#' @param split_by
+#' @param n_threshold
+#' @param headerrows
+make_split_coded_comments <-
   function(qsf_path,
            csv_path,
            sheets_dir,

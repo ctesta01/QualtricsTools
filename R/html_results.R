@@ -221,7 +221,10 @@ question_description <- function(question) {
 #' @param original_first_row This is the original first row of the
 #' response set. If you have the original_first_rows, you can
 #' pass original_first_rows[1,] to
-#'
+#' @param flow is a list of blockIDs which is used to order the questions
+#' in the output report.
+#' @param n_threshold is the number of comments which must be present in order
+#' for a coded comments table to appear.
 #' @return an html string containing a title,
 #' question text, and the text responses for each
 #' text appendix.
