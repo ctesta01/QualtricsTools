@@ -11,10 +11,16 @@ repath <- function() {
 
 #' Get the Index of the Question Corresponding to a Response Column
 #'
-#' Use this function to get the indexes identifying a question
+#' Use this function to get the location of a question
 #' in the blocks list. Give it a response column name, and it will
 #' try to find the question it corresponds to. Otherwise, it will
-#' respond NULL.
+#' respond NULL. The blocks have two layers of indexing, one for the individual
+#' blocks, and then another for the BlockElements. This function will return a
+#' pair of indices, (i, j) where blocks[[i]][['BlockElements']][[j]] specifies the
+#' location of the question which has the response_name column among its linked responses.
+#' @param blocks A list of the survey blocks, with the questions included in them.
+#' @param response_name The string name of a column from a Qualtrics response dataset.
+#' @return A pair, (i, j) which specifies a question as blocks[[i]][['BlockElements']][[j]].
 question_from_response_column <- function(blocks, response_name) {
   # construct a list, with keys as the response column names, and
   # values as pairs of block and blockelement indexes.
@@ -36,8 +42,19 @@ question_from_response_column <- function(blocks, response_name) {
 
 #' Get the Choice Text based on the Choice from a Question
 #'
-#' Input a question and a choice, and this function will
-#' return the choice text.
+#' Input a question and a variable corresponding to a choice,
+#' and this function returns the choice text. The function
+#' works by determining the question type and some question properties
+#' and then using a combination of the question's list of choices
+#' and related values. The text is then cleaned of any HTML before
+#' returned.
+#' @param question This is a list object representing an individual question
+#' from a Qualtrics Survey File. The question must have a paired
+#' response column placed into the question
+#' under [['Responses']]. The insertion of the responses into questions is
+#' handled by link_responses_to_questions.
+#' @param choice A numeric value representing the choice made in a response
+#' to the question provided.
 choice_text_from_question <- function(question, choice) {
   original <- choice
   choice <- as.character(choice)
@@ -208,7 +225,8 @@ get_setup <- function(headerrows,
                       already_loaded,
                       qsf_path,
                       csv_path,
-                      return_data = FALSE) {
+                      return_data = FALSE,
+                      sample_data = FALSE) {
   # default to already_loaded = FALSE
   if (missing(already_loaded)) {
     already_loaded <- FALSE
@@ -310,6 +328,11 @@ get_setup <- function(headerrows,
 #' This function takes a list of questions and an export tag and
 #' looks for the matching question. It will try to select
 #' the question uniquely.
+#' @param questions A list of questions from a Qualtrics survey.
+#' @param exporttag A string data export tag to identify the
+#' desired question.
+#' @return The question list object, such that
+#' find_question(...)[['Payload']][['DataExportTag']] == exporttag
 find_question <- function(questions, exporttag) {
   if (missing(questions))
     questions <- get('questions', envir = globalenv())
@@ -322,9 +345,16 @@ find_question <- function(questions, exporttag) {
 
 #' Find Question Index from DataExportTag
 #'
-#' This function takes a list of questions and an export tag and
-#' looks for the matching question. It returns the index(es) of
-#' the questions with that Question Data Export Tag.
+#' Similar to find_question and find_question, this function
+#' takes a list of questions and an export tag and
+#' looks for the matching question. Differently from find_question,
+#' this function returns the index of
+#' the questions with that Question Data Export Tag rather than
+#' the question itself.
+#' @inheritParams find_question
+#' @return A numeric list with entries such that
+#' questions[[i]][['Payload']][['DataExportTag]] == exporttag
+#' for any i in the returned list.
 find_question_index <- function(questions, exporttag) {
   if (missing(questions))
     questions <- get('questions', envir = globalenv())
@@ -335,6 +365,14 @@ find_question_index <- function(questions, exporttag) {
 }
 
 #' Find a Question by its QuestionID
+#'
+#' This function takes a list of questions and a Question ID and
+#' looks for the question with a matching Question ID. The function
+#' returns the index of the matching question.
+#' @inheritParams find_question_index
+#' @param qid A string QuestionID to match
+#' @return A numeric list with entries such that
+#' questions[[i]][['Payload']][['DataExportTag']] == qid
 find_question_index_by_qid <- function(questions, qid) {
   if (missing(questions))
     questions <- get('questions', envir = globalenv())
@@ -350,10 +388,12 @@ find_question_index_by_qid <- function(questions, qid) {
 #' This function uses the first row of the response data from Qualtrics
 #' to determine the choice text a response column corresponds to.
 #'
-#' @param response_column The name of a response column from the response set
-#' @param original_first_row The first row of the original response set. If you have
-#' the original_first_rows, you can use original_first_rows[1,].
-#' @param blocks A list of the survey blocks, with the questions included in them
+#' @param response_column The string name of a response column from the response set.
+#' @param original_first_row A dataframe contianing the header information
+#' for each column of response data. This dataframe should include a row for the DataExportTag based
+#' response column names, another for the Question Text stem and choice text (although
+#' truncated), and a row with QID based column names.
+#' @param blocks A list of the survey's blocks, with the questions included in them
 #' @return The choice text corresponding to a response column
 choice_text_from_response_column <-
   function(response_column,
@@ -417,8 +457,9 @@ choice_text_from_response_column <-
 #' is created by either get_coded_questions_and_blocks or
 #' by split_respondents.
 #'
-#' @param blocks A list of blocks with a 'header' inserted.
-#' @return an HTML header for the survey
+#' @param blocks A list of blocks with a 'header' inserted by either the
+#' get_coded_questions_and_blocks or split_respondents functions.
+#' @return An HTML string that can be added as a section header in survey reports.
 blocks_header_to_html <- function(blocks) {
   header <- c("<h4>",
               paste(blocks[['header']][1:2], collapse = "<br>"))
@@ -465,6 +506,7 @@ number_of_blocks <- function(blocks) {
 #' This function iterates through the blocks and anything that has a DataExportTag
 #' is added to a list of questions, and it returns that list of questions from
 #' the blocks.
+#' @inheritParams question_from_response_column
 questions_from_blocks <- function(blocks) {
   questions <- list()
   e <- 1
@@ -488,6 +530,11 @@ questions_from_blocks <- function(blocks) {
 #' in the survey as it is taken by a respondent. The flow list that is returned
 #' from this function is used by functions like text_appendices_table and
 #' tabelize_blocks to get the ordering of the survey in the preview correct.
+#' @param survey A qualtrics survey list object,
+#' uploaded from a Qualtrics Survey File (QSF). Use
+#' ask_for_qsf() to create such a survey list object from a QSF file.
+#' @return A list of strings identifying the blocks in the order that they appear
+#' within the survey.
 flow_from_survey <- function(survey) {
   flow <-
     which(sapply(survey[['SurveyElements']], function(x)

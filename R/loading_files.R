@@ -47,7 +47,8 @@ load_qsf_data <- function(file1) {
 #' the function will prompt the user to specify
 #' the path to the file.
 #'
-#' @param surveyfile The file path to a Qualtrics survey file
+#'
+@param surveyfile The file path to a Qualtrics survey file
 #'
 #' @return The survey file the user uploads, as a list
 ask_for_qsf <- function(surveyfile) {
