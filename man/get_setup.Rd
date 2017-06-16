@@ -4,25 +4,28 @@
 \alias{get_setup}
 \title{Setup the Global Environment for a Survey}
 \usage{
-get_setup(headerrows, already_loaded, qsf_path, csv_path, return_data = FALSE)
+get_setup(qsf_path, csv_path, headerrows, already_loaded, return_data = FALSE,
+  sample_data = FALSE)
 }
 \arguments{
-\item{headerrows}{An optional parameter for specifying the number of
-headerrows in the response csv.}
-
-\item{already_loaded}{can be set to TRUE to indicate that get_setup should
-try to get the survey, responses, and original_first_rows from the global scope
-instead of asking the user for them. If they aren't there, then the function
-will uses sample data included in the package.}
-
 \item{qsf_path}{is the string location of the survey as a .QSF (Qualtrics Survey File)}
 
 \item{csv_path}{is the string location of the survey's responses, downloaded from Qualtrics}
 
-\item{return_data}{is an optional boolean parameter which dictates whether the processed
+\item{headerrows}{An optional parameter for specifying the number of
+headerrows in the response csv.}
+
+\item{already_loaded}{already_loaded=TRUE indicates that get_setup should
+get the survey, responses, and original_first_rows from the global scope
+instead of asking the user for them. This parameter is optional and defaults to FALSE.}
+
+\item{return_data}{An optional boolean parameter which dictates whether the processed
 survey data should be returned to the global scope if return_data=FALSE or is missing,
 or if the processed should be returned as a list in the order
 c(survey, responses, questions, blocks, original_first_rows, flow) if return_data=TRUE.}
+
+\item{sample_data}{An optional boolean parameter which when true makes get_setup load the
+survey data included with the QualtricsTools package.}
 }
 \description{
 This function sets the user up with the survey, responses, questions,
@@ -90,8 +93,7 @@ and flow are now global variables.
 
 # Loading a Sample Survey
 
-> rm(list=ls()) # Make sure your environment is empty first
-> get_setup(already_loaded=TRUE)
+> get_setup(sample_data=TRUE)
 
 survey, responses, questions, blocks, original_first_rows,
 and flow are now global variables.

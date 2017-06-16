@@ -107,7 +107,7 @@ blocks_from_survey <- function(survey) {
 
 #' Generate a List of Notes Blocks
 #'
-#' @inheritParam get_coded_questions_and_blocks
+#' @inheritParams get_coded_questions_and_blocks
 #'
 #' @return This returns a list of blocks
 notes_from_survey <- function(survey) {

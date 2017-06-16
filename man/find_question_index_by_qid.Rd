@@ -6,6 +6,17 @@
 \usage{
 find_question_index_by_qid(questions, qid)
 }
+\arguments{
+\item{questions}{A list of questions from a Qualtrics survey.}
+
+\item{qid}{A string QuestionID to match}
+}
+\value{
+A numeric list with entries such that
+questions[[i]][['Payload']][['DataExportTag']] == qid
+}
 \description{
-Find a Question by its QuestionID
+This function takes a list of questions and a Question ID and
+looks for the question with a matching Question ID. The function
+returns the index of the matching question.
 }

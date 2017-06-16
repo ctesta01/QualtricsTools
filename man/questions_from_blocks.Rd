@@ -6,6 +6,9 @@
 \usage{
 questions_from_blocks(blocks)
 }
+\arguments{
+\item{blocks}{A list of the survey blocks, with the questions included in them.}
+}
 \description{
 This function iterates through the blocks and anything that has a DataExportTag
 is added to a list of questions, and it returns that list of questions from

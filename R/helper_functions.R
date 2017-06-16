@@ -160,18 +160,19 @@ app <- function() {
 #' dataframe from the global environment. If none are found, but
 #' already_loaded=TRUE was passed, then a sample survey is loaded.
 #'
-#' @param headerrows An optional parameter for specifying the number of
-#' headerrows in the response csv.
-#' @param already_loaded can be set to TRUE to indicate that get_setup should
-#' try to get the survey, responses, and original_first_rows from the global scope
-#' instead of asking the user for them. If they aren't there, then the function
-#' will uses sample data included in the package.
 #' @param qsf_path is the string location of the survey as a .QSF (Qualtrics Survey File)
 #' @param csv_path is the string location of the survey's responses, downloaded from Qualtrics
-#' @param return_data is an optional boolean parameter which dictates whether the processed
+#' @param headerrows An optional parameter for specifying the number of
+#' headerrows in the response csv.
+#' @param already_loaded already_loaded=TRUE indicates that get_setup should
+#' get the survey, responses, and original_first_rows from the global scope
+#' instead of asking the user for them. This parameter is optional and defaults to FALSE.
+#' @param return_data An optional boolean parameter which dictates whether the processed
 #' survey data should be returned to the global scope if return_data=FALSE or is missing,
 #' or if the processed should be returned as a list in the order
 #' c(survey, responses, questions, blocks, original_first_rows, flow) if return_data=TRUE.
+#' @param sample_data An optional boolean parameter which when true makes get_setup load the
+#' survey data included with the QualtricsTools package.
 #'
 #' @examples
 #' # An Interactive Example
@@ -216,15 +217,14 @@ app <- function() {
 #'
 #' # Loading a Sample Survey
 #'
-#' > rm(list=ls()) # Make sure your environment is empty first
-#' > get_setup(already_loaded=TRUE)
+#' > get_setup(sample_data=TRUE)
 #'
 #' survey, responses, questions, blocks, original_first_rows,
 #' and flow are now global variables.
-get_setup <- function(headerrows,
-                      already_loaded,
-                      qsf_path,
+get_setup <- function(qsf_path,
                       csv_path,
+                      headerrows,
+                      already_loaded,
                       return_data = FALSE,
                       sample_data = FALSE) {
   # default to already_loaded = FALSE
@@ -233,7 +233,7 @@ get_setup <- function(headerrows,
   }
 
   # ask the user for the CSV and the QSF if the
-  if (already_loaded == FALSE) {
+  if (already_loaded == FALSE && sample_data == FALSE) {
     # default to headerrows = 3
     if (missing(headerrows)) {
       headerrows <-
@@ -258,21 +258,31 @@ get_setup <- function(headerrows,
     responses <- as.data.frame(responses[[1]])
   }
 
-  if (already_loaded == TRUE) {
-    if (!exists("survey", where = -1)) {
-      survey <- sample_survey
-    } else {
-      survey <- get("survey", envir = -1)
-    }
+  if (already_loaded == TRUE && sample_data == FALSE) {
+    if (exists('survey', where = globalenv()) &&
+        exists('responses', where = globalenv()) &&
+        exists('original_first_rows', where = globalenv())) {
+      survey <- get("survey", envir = globalenv())
+      responses <- get("responses", envir = globalenv())
+      original_first_rows <-
+        get("original_first_rows", envir = globalenv())
+    } else
+      stop("
+The necessary objects do not exist in the global scope. Each of survey,
+responses, and original_first_rows should be in the global scope when
+using the global scope when using the already_loaded=TRUE parameter.
+Use ask_for_qsf() and ask_for_csv() to get a survey object list from a
+Qualtrics Survey File and a pair of dataframes (responses,
+original_first_rows) from a survey's CSV response data. Alternatively,
+pass the parameters for qsf_path, csv_path, and headerrows, or use the
+sample_survey=TRUE parameter."
+      )
+  }
 
-    if (!exists("responses", where = -1) ||
-        !exists("original_first_rows", where = -1)) {
-      responses <- sample_responses
-      original_first_rows <<- sample_original_first_rows
-    } else {
-      responses <- get("responses", envir = -1)
-      original_first_rows <- get("original_first_rows", envir = -1)
-    }
+  if (sample_data == TRUE) {
+    survey <- sample_survey
+    responses <- sample_responses
+    original_first_rows <- sample_original_first_rows
   }
 
   questions_and_blocks <-
@@ -317,7 +327,7 @@ get_setup <- function(headerrows,
         exists("original_first_rows")) {
       cat(
         "survey, responses, questions, blocks, original_first_rows,
-        and flow are now global variables.\n"
+        and flow have now been made global objects.\n"
       )
     }
     }

@@ -6,6 +6,11 @@
 \usage{
 notes_from_survey(survey)
 }
+\arguments{
+\item{survey}{A qualtrics survey list object,
+uploaded from a Qualtrics Survey File (QSF). Use
+ask_for_qsf() to create such a survey list object from a QSF file.}
+}
 \value{
 This returns a list of blocks
 }
