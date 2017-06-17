@@ -541,7 +541,7 @@ create_question_dictionary <- function(blocks) {
   }
 
   if (length(entries) > 0) {
-    question_dictionary <- list_of_rows_to_df(entries)
+    question_dictionary <- rbind(entries)
     colnames(question_dictionary) <-
       c(
         "Question Export Tag",
