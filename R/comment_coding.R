@@ -83,8 +83,14 @@ directory_get_coded_comment_sheets <- function(directory) {
 
 #' Turn a Single Coded File into a Data Frame
 #'
-#' This retrieves the raw content of a 'Coded' sheet in the
-#' coded comments of an excel or CSV file.
+#' This retrieves comment coding data as a dataframe
+#' from a Excel or CSV file. If the file is an Excel document,
+#' the coded comments are retrieved from the sheet named "Coded"
+#' (case does not matter), and if the file is a CSV it is directly
+#' read as a dataframe.
+#' @param codedfile The string path to a Excel or CSV file.
+#' @return A dataframe version of the contents of the coded comments
+#' in the codedfile.
 get_coded_comment_sheet <- function(codedfile) {
   # Ask for the Coded File if there isn't one provided
   if (missing(codedfile))
