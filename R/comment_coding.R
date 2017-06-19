@@ -184,10 +184,19 @@ format_coded_comments <- function(coded_comment_sheet) {
 
 }
 
-#' Turn a List of Unprocessed Coded Comment Sheets
-#' into a List of Coded Comments Tables
+#' Format Comment Coding Data into Frequency Tables
+#'
+#' This function takes as an argument a list of dataframes
+#' which categorize the text responses to a free-response
+#' component of a survey and formats them into a standardized
+#' frequency table by applying format_coded_comments to each
+#' coded_comment_sheet.
+#'
 #' @param coded_comment_sheets A list of dataframes for
 #' each sheet of coded comments.
+#' @return A list of pairs (varname, coded_table) where varname corresponds
+#' to the response column name of the comments coded and coded_table
+#' summarizes the frequencies of the provided coded comments.
 format_coded_comment_sheets <- function(coded_comment_sheets) {
   coded_comments <- list()
   cc_length <- length(coded_comment_sheets)
@@ -205,8 +214,11 @@ format_coded_comment_sheets <- function(coded_comment_sheets) {
 #' Then pass the column name of the column created by
 #' create_merged_response_column() as split_column
 #' @inheritParams format_coded_comments
-#' @responses
-#' @param split_column is the name of the column to merge in for splitting
+#' @param responses A dataframe of Qualtrics responses to a survey.
+#' Use ask_for_csv() to create such a dataframe from a CSV file.
+#' @param split_column The string name of the column to merge in for splitting
+#' @return A dataframe similar to the input coded_comment_sheet, but with
+#' the additional column specified by split_column merged in.
 merge_split_column_into_comment_sheet <-
   function(coded_comment_sheet,
            responses,
@@ -236,6 +248,10 @@ merge_split_column_into_comment_sheet <-
 #' the coded comments are split by this function and then returned as a list of lists.
 #' The first list is a list for each split group, and each list within those is a
 #' list of pairs of question IDs and their coded comments tables.
+#'
+#' @inheritParams format_coded_comments
+#' @param split_column The string name of the column across which the coded comments
+#' should be split.
 format_and_split_comment_sheets <-
   function(coded_comment_sheets,
            responses,
