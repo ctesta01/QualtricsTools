@@ -39,7 +39,8 @@ test_that(
     q2_favorite_results_table <- as.data.frame(q2_favorite_results_table)
 
     # Check that the previously computed results and new results match.
-    expect_identical(q2_favorite[['Table']], q2_favorite_results_table)
+    expect_true(all(q2_favorite[['Table']] == q2_favorite_results_table))
+
   }
 )
 
@@ -81,7 +82,7 @@ test_that(
     Q2_results_table <- as.data.frame(Q2_results_table)
 
     # Check that the previously computed results and new results match.
-    expect_identical(Q2[['Table']], Q2_results_table)
+    expect_true(all(Q2[['Table']] == Q2_results_table))
   }
 )
 
@@ -114,7 +115,8 @@ test_that(
     Q10_results_table <- as.data.frame(Q10_results_table)
 
     # Check that the previously computed results and new results match.
-    expect_identical(Q10[['Table']], Q10_results_table)
+    expect_true(all(Q10[['Table']] == Q10_results_table))
+
   }
 )
 
@@ -146,16 +148,6 @@ test_that(
       )
 
     # Check that the previously computed results and new results match.
-    # I find this next part very weird! Whenever I load what values are used in this
-    # test into an empty R environment, it shows me that the two elements are
-    # identical, equivalent, and all.equal, but still expect_identical, expect_equivalent,
-    # and expect_equal all fail because of what I think is an issue with factors
-    # in writing or reading RDS files. However, a temporary (and seemingly just fine) workaround
-    # is to use expect_true(all(...)).
-    # identical(Q11[['Table']], Q11_results_table)
-    # expect_true(all.equal(Q11[['Table']], Q11_results_table))
-    # expect_identical(Q11[['Table']], Q11_results_table)
-    # expect_equivalent(Q11[['Table']], Q11_results_table)
     expect_true(all(Q11[['Table']] == Q11_results_table))
   }
 )
@@ -186,23 +178,7 @@ test_that("Test that mc_single_answer_results is correct for Q3 in the Long Exha
     )
   Q3_results_table <- as.data.frame(Q3_results_table)
 
-  # print.data.frame(Q3_results_table)
-  # print.data.frame(Q3[['Table']])
-  # print(str(Q3_results_table))
-  # print(str(as.data.frame(Q3[['Table']], stringsAsFactors=FALSE)))
-  # print(options()[['stringsAsFactors']])
-
   # Check that the previously computed results and new results match.
-  # I find this next part very weird! Whenever I load what values are used in this
-  # test into an empty R environment, it shows me that the two elements are
-  # identical, equivalent, and all.equal, but still expect_identical, expect_equivalent,
-  # and expect_equal all fail because of what I think is an issue with factors
-  # in writing or reading RDS files. However, a temporary (and seemingly just fine) workaround
-  # is to use expect_true(all(...)).
-  # identical(Q3[['Table']], Q3_results_table)
-  # expect_true(all.equal(Q3[['Table']], Q3_results_table))
-  # expect_identical(Q3[['Table']], Q3_results_table)
-  # expect_equivalent(Q3[['Table']], Q3_results_table)
   expect_true(all(Q3[['Table']] == Q3_results_table))
 })
 
