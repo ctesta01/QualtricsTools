@@ -245,14 +245,20 @@ get_setup <- function(qsf_path,
         headerrows <- as.integer(headerrows)
     }
     if (missing(qsf_path)) {
+      cat("Use the dialogue box to specify the QSF file.\n")
       survey <- ask_for_qsf()
     } else {
       survey <- ask_for_qsf(qsf_path)
     }
     if (missing(csv_path)) {
+      cat("Use the dialogue box to specify the CSV file.\n")
+      capture.output(
       responses <- ask_for_csv(headerrows = headerrows)
+      )
     } else {
+      capture.output(
       responses <- ask_for_csv(csv_path, headerrows = headerrows)
+      )
     }
     original_first_rows <- as.data.frame(responses[[2]])
     responses <- as.data.frame(responses[[1]])
@@ -700,7 +706,7 @@ make_coded_comments <-
            headerrows,
            sheets_dir,
            output_dir,
-           filename = 'text appendices.docx',
+           filename = 'Text Appendices with Coded Comments.docx',
            n_threshold = 15
   ) {
     # Declares paths for the qsf and csv files

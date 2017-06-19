@@ -53,7 +53,7 @@ load_qsf_data <- function(file1) {
 #' @return The survey file the user uploads, as a list
 ask_for_qsf <- function(surveyfile) {
     if (missing(surveyfile)) {
-        print("Select Qualtrics Survey File:")
+        cat("Select Qualtrics Survey File:")
         surveyfile = file.choose()
     }
     survey = fromJSON(file=surveyfile)
@@ -75,7 +75,7 @@ ask_for_qsf <- function(surveyfile) {
 #' @return a list of two elements: the responses data frame, and the original_first_rows data frame
 ask_for_csv <- function(responsesfile, headerrows) {
     if (missing(responsesfile)) {
-        print("Select CSV Response File:")
+        cat("Select CSV Response File:")
         responsesfile = file.choose()
     }
     if (missing(headerrows)) {
