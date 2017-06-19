@@ -425,7 +425,9 @@ text_appendices_table <-
                     tables <- c(tables,
                                 table_non_text_entry(blocks[[i]][['BlockElements']][[j]],
                                                      responses,
-                                                     e))
+                                                     e,
+                                                     blocks,
+                                                     original_first_row))
                     e <- e + 1
                   }
                 }
@@ -749,27 +751,37 @@ table_text_entry <-
 #' @param question is the question for which the text appendix is being created.
 #' @param responses is a data frame of text responses to the question given.
 #' @param appendix_e is the number of the appendix in the text appendices report.
-table_non_text_entry <- function(question, responses, appendix_e) {
+table_non_text_entry <- function(question,
+                                 responses,
+                                 appendix_e,
+                                 blocks,
+                                 original_first_row) {
   response_n <- paste0("Responses: (", nrow(responses), ")")
 
   # generate the header for the text appendix
+  text_appendix_header <- list()
+  for (l in 1:ncol(responses)) {
+    choice_text <-
+      choice_text_from_response_column(colnames(responses)[[l]], original_first_row, blocks)
+    if (choice_text != "") {
+      question_text <-
+        paste0(question[['Payload']][['QuestionTextClean']],
+               "-",
+               choice_text)
+    } else {
+      question_text <- question[['Payload']][['QuestionTextClean']]
+    }
+    text_appendix_header[[l]] <-
+      c(
+        paste0("Appendix ", appendix_lettering(appendix_e)),
+        question_text,
+        "Verbatim responses -- these have not been edited in any way.",
+        "",
+        response_n
+      )
+  }
   text_appendix_header <-
-    c(
-      paste0("Appendix ", appendix_lettering(appendix_e)),
-      question[['Payload']][['QuestionTextClean']],
-      "Verbatim responses -- these have not been edited in any way.",
-      "",
-      response_n
-    )
-
-  text_appendix_header <- as.data.frame(text_appendix_header)
-
-  # repeat the header for each response column, and
-  # use the responses' column names
-  if (ncol(responses) > 1)
-    for (l in 1:(ncol(responses) - 1))
-      text_appendix_header <-
-    cbind(text_appendix_header, text_appendix_header[, 1])
+    do.call(cbind.data.frame, text_appendix_header)
 
   # bind the header and responses together to make the text appendix
   colnames(text_appendix_header) <- colnames(responses)
