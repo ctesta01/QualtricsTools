@@ -47,10 +47,6 @@ get_coded_questions_and_blocks <-
     questions <- questions_and_blocks[[1]]
     blocks <- questions_and_blocks[[2]]
 
-    # insert notes into their corresponding questions
-    notes <- notes_from_survey(survey)
-    questions <- insert_notes_into_questions(questions, notes)
-
     # clean the question text of HTML and CSS tags
     questions <- clean_question_text(questions)
 
@@ -67,6 +63,10 @@ get_coded_questions_and_blocks <-
     # generate each question's results table and insert it
     # in question[['Table']]
     questions <- generate_results(questions, original_first_rows)
+
+    # insert notes into their corresponding questions
+    notes <- notes_from_survey(survey)
+    questions <- insert_notes_into_questions(questions, notes)
 
     # insert the questions into the blocks
     blocks <- questions_into_blocks(questions, blocks)
