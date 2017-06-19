@@ -186,22 +186,35 @@ shinyServer(function(input, output) {
   # the question_dictionary block uses the survey from the survey_and_responses output
   # to create a data frame detailing each survey question.
   question_dictionary <- reactive({
+    if (input[['uncodeable-only']] == TRUE) {
+      return(invalid_question_dictionary())
+    } else {
+      return(valid_question_dictionary())
+    }
+  })
+
+  valid_question_dictionary <- reactive({
     validate(need(length(survey_and_responses()) >= 3, ""))
     if (length(survey_and_responses()) >= 3) {
       original_first_row <- survey_and_responses()[[3]][1,]
       blocks <- processed_questions_and_blocks()[[2]]
-      if (input[['uncodeable-only']] == TRUE) {
-        uncode_qdict <- uncodeable_question_dictionary(blocks)
-        if (is.null(uncode_qdict)) {
-          success_message <-
-            data.frame("All questions were successfully processed!")
-          colnames(success_message)[1] <- " "
-          return(success_message)
-        } else {
-          return(uncode_qdict)
-        }
+      return(create_response_column_dictionary(blocks, original_first_row))
+    }
+  })
+
+  invalid_question_dictionary <- reactive({
+    validate(need(length(survey_and_responses()) >= 3, ""))
+    if (length(survey_and_responses()) >= 3) {
+      original_first_row <- survey_and_responses()[[3]][1,]
+      blocks <- processed_questions_and_blocks()[[2]]
+      uncode_qdict <- uncodeable_question_dictionary(blocks)
+      if (is.null(uncode_qdict)) {
+        success_message <-
+          data.frame("All questions were successfully processed!")
+        colnames(success_message)[1] <- " "
+        return(success_message)
       } else {
-        return(create_response_column_dictionary(blocks, original_first_row))
+        return(uncode_qdict)
       }
     }
   })

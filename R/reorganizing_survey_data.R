@@ -540,8 +540,27 @@ create_question_dictionary <- function(blocks) {
     }
   }
 
+  # This function takes a list of rows, all with the same length, and
+  # turns them into a data frame. This is almost exactly the same as
+  # rbind, except for the fact that this works effectively on a single
+  # row whereas rbind does not.
+  list_of_rows_to_df <- function(data) {
+    nCol <- max(vapply(data, length, 0))
+    data <-
+      lapply(data, function(row)
+        c(row, rep(NA, nCol - length(row))))
+    data <-
+      matrix(
+        unlist(data),
+        nrow = length(data),
+        ncol = nCol,
+        byrow = TRUE
+      )
+    data.frame(data)
+  }
+
   if (length(entries) > 0) {
-    question_dictionary <- rbind(entries)
+    question_dictionary <- list_of_rows_to_df(entries)
     colnames(question_dictionary) <-
       c(
         "Question Export Tag",
