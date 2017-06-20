@@ -1,3 +1,5 @@
+requireNamespace('gdata')
+
 #' Get Restructured Questions (with inserted Responses)
 #' and Blocks (with inserted Questions) from data
 #' provided by Qualtrics.
