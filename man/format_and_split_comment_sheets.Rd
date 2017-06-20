@@ -6,6 +6,14 @@
 \usage{
 format_and_split_comment_sheets(coded_comment_sheets, responses, split_column)
 }
+\arguments{
+\item{split_column}{The string name of the column across which the coded comments
+should be split.}
+}
+\value{
+A list of lists, for each split group, and for the pairs of question IDs with
+coded comment tables in each split group.
+}
 \description{
 When splitting the respondents of a survey to create split reports,
 the coded comments are split by this function and then returned as a list of lists.

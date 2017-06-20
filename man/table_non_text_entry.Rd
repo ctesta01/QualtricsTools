@@ -4,7 +4,8 @@
 \alias{table_non_text_entry}
 \title{Create Text Appendices for Non-Text Entry Type Questions}
 \usage{
-table_non_text_entry(question, responses, appendix_e)
+table_non_text_entry(question, responses, appendix_e, blocks,
+  original_first_row)
 }
 \arguments{
 \item{question}{is the question for which the text appendix is being created.}

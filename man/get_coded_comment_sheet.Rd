@@ -6,7 +6,17 @@
 \usage{
 get_coded_comment_sheet(codedfile)
 }
+\arguments{
+\item{codedfile}{The string path to a Excel or CSV file.}
+}
+\value{
+A dataframe version of the contents of the coded comments
+in the codedfile.
+}
 \description{
-This retrieves the raw content of a 'Coded' sheet in the
-coded comments of an excel or CSV file.
+This retrieves comment coding data as a dataframe
+from a Excel or CSV file. If the file is an Excel document,
+the coded comments are retrieved from the sheet named "Coded"
+(case does not matter), and if the file is a CSV it is directly
+read as a dataframe.
 }

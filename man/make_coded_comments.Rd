@@ -5,7 +5,7 @@
 \title{Create Text Appendices including Coded Comments}
 \usage{
 make_coded_comments(qsf_path, csv_path, headerrows, sheets_dir, output_dir,
-  filename = "text appendices.docx", n_threshold = 15)
+  filename = "Text Appendices with Coded Comments.docx", n_threshold = 15)
 }
 \arguments{
 \item{qsf_path}{(optional) is the string path location of the .qsf file to be processed.}

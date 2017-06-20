@@ -1,3 +1,5 @@
+requireNamespace("rjson")
+
 #' Set Response Data to Sample Data or User Data
 #'
 #' load_csv_data returns the sample response set or the user's response set depending
@@ -56,7 +58,7 @@ ask_for_qsf <- function(surveyfile) {
         cat("Select Qualtrics Survey File:")
         surveyfile = file.choose()
     }
-    survey = fromJSON(file=surveyfile)
+    survey = rjson::fromJSON(file=surveyfile)
 
     return(survey)
 }
