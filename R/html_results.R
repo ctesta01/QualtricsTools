@@ -1,25 +1,24 @@
 #' Create a List of HTML Versions of the Results Tables
 #'
-#' @param questions A list of questions with the relevant results tables
-#' stored as data frames under the questions[[i]][['Table']] element. Create
-#' such a list of questions by using generate_results function
+#' @param blocks A list of the survey blocks, with the questions included in them.
+#' @param flow A list of strings identifying the blocks in the order that they appear
+#' within the survey.
+#' @param include_block_headers A boolean (default: TRUE) parameter to indicate
+#' whether or not there should be <h5> html headers inserted before each block with the
+#' block's description.
 #'
 #' @return A list of HTML results tables for each question
-tabelize_blocks <- function(blocks, flow, include_block_headers) {
-  # include_block_headers lets you choose whether or not each block
-  # will get its own header in the output
-  if (missing(include_block_headers))
-    include_block_headers <- TRUE
+tabelize_blocks <- function(blocks, flow, include_block_headers = TRUE) {
 
-  # all the html tables will be saved into the tables list.
+  # All the html tables will be saved into the tables list.
   tables <- list()
   tables[[1]] <- "<br>"
   options(stringsAsFactors = FALSE)
 
-  # determine the order of the block indices that we will use to
+  # Determine the order of the block indices that we will use to
   # go through the blocks
   if (!missing(flow)) {
-    # if the survey flow was provided, then use it to figure out
+    # If the survey flow was provided, then use it to figure out
     # the block_ordering
     block_ordering <- list()
     for (h in flow) {
@@ -34,24 +33,36 @@ tabelize_blocks <- function(blocks, flow, include_block_headers) {
       }
     }
   } else {
-    # if no flow was provided, then just go in order through all the blocks
+    # If no flow was provided, then just go in order through all the blocks
     block_ordering <- 1:length(blocks)
   }
-
+  # Iterate over all non-empty blocks, insert headers if include_block_headers
+  # == TRUE is specified, and for each question which is neither a Descriptive
+  # Box nor marked with the qtSkip flag insert the question description rendered
+  # by the question_description function.
   for (i in block_ordering) {
+    # Check that the block isn't empty
     if ('BlockElements' %in% names(blocks[[i]])) {
+      # Insert header
       if (include_block_headers)
         tables <-
           c(tables, paste0("<h5>", blocks[[i]][['Description']], "</h5><br>"))
+      # Check that the BlockElement isn't empty
       if (length(blocks[[i]][['BlockElements']]) != 0) {
         for (j in 1:length(blocks[[i]][['BlockElements']])) {
-          # don't get any questions that are supposed to be skipped
-          if (!'qtSkip' %in% names(blocks[[i]][['BlockElements']][[j]]) ||
-              blocks[[i]][['BlockElements']][[j]][['qtSkip']] != TRUE) {
-            #if a question isn't a descriptive block, insert the question description for it
-            if (blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionType']] != "DB") {
-              tables <-
-                c(tables, question_description(blocks[[i]][['BlockElements']][[j]]))
+          question <- blocks[[i]][['BlockElements']][[j]]
+          # Check that the BlockElement is actually a question
+          # containing a payload and question type.
+          if ('Payload' %in% names(question) &&
+              'QuestionType' %in% names(question[['Payload']])) {
+            # Skip questions with question[['qtSkip']] == TRUE
+            if (!'qtSkip' %in% names(question) ||
+                question[['qtSkip']] != TRUE) {
+              # If a question isn't a descriptive block, insert the question description for it
+              if (question[['Payload']][['QuestionType']] != "DB") {
+                tables <-
+                  c(tables, question_description(question))
+              }
             }
           }
         }
@@ -818,7 +829,8 @@ table_non_text_entry <- function(question,
   return(tables)
 }
 
-
+#' Create a message stating MCSA questions with Multiple Text Entry components
+#' can't be automatically processed for text appendices.
 table_mcsa_multitext <- function(question) {
   question_message <-
     c(
