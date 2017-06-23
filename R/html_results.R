@@ -514,11 +514,35 @@ uncodeable_questions_message <- function(questions) {
 #'
 #' @return a list of html tables detailing the display logic for each question
 #' containing display logic.
-tabelize_display_logic <- function(blocks) {
+tabelize_display_logic <- function(blocks, flow) {
+  # Determine the ordering of the block indices that we will use to
+  # iterate through the blocks.
+  if (!missing(flow)) {
+    # If flow was specified, use it to order the blocks and store the
+    # blocks' ordering in the block_ordering list of indices.
+    block_ordering <- list()
+    for (h in flow) {
+      # For each flow element, try and match it to a block.
+      matched_block <- sapply(blocks, function(x) {
+        if ('ID' %in% names(x)) {
+          return(x[['ID']] == h)
+        } else
+          return(FALSE)
+      })
+      if (table(matched_block)['TRUE'] == 1) {
+        block_ordering <- c(block_ordering, which(matched_block))
+      }
+    }
+  } else {
+    # If no flow is provided, go in order through the blocks.
+    block_ordering <- 1:length(blocks)
+  }
+
+
   # all the html tables will be saved into the tables list.
   tables <- list()
   options(stringsAsFactors = FALSE)
-  for (i in 1:number_of_blocks(blocks)) {
+  for (i in block_ordering) {
     if ('BlockElements' %in% names(blocks[[i]])) {
       for (j in 1:length(blocks[[i]][['BlockElements']])) {
         # if the display logic isn't trivial, include it.

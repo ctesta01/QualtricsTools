@@ -196,9 +196,10 @@ shinyServer(function(input, output) {
   valid_question_dictionary <- reactive({
     validate(need(length(survey_and_responses()) >= 3, ""))
     if (length(survey_and_responses()) >= 3) {
+      flow <- flow_from_survey(survey_and_responses()[[1]])
       original_first_row <- survey_and_responses()[[3]][1,]
       blocks <- processed_questions_and_blocks()[[2]]
-      return(create_response_column_dictionary(blocks, original_first_row))
+      return(create_response_column_dictionary(blocks, flow, original_first_row))
     }
   })
 
@@ -250,13 +251,14 @@ shinyServer(function(input, output) {
     validate(need(length(survey_and_responses()) >= 1, "Please upload a survey"))
     if (length(survey_and_responses()) >= 1) {
       survey <- survey_and_responses()[[1]]
+      flow <- flow_from_survey(survey)
       blocks <- blocks_from_survey(survey)
       questions <- questions_from_survey(survey)
       questions <- remove_trash_questions(questions, blocks)
       questions <- clean_question_text(questions)
       blocks <- remove_trash_blocks(blocks)
       blocks <- questions_into_blocks(questions, blocks)
-      tabelize_display_logic(blocks)
+      tabelize_display_logic(blocks, flow)
     }
   })
 
