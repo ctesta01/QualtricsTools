@@ -1,6 +1,9 @@
 options(shiny.maxRequestSize = 30 * 1024 ^ 2)
 
 shinyServer(function(input, output) {
+
+  values <- reactiveValues(unselected_questions = c())
+
   # the survey_and_responses reactive block reads the input files
   # and loads them as the survey and responses. It validates that there
   # are no duplicate data export tags in the survey, and it returns a
@@ -8,14 +11,14 @@ shinyServer(function(input, output) {
   # and the original_first_rows from the response set.
   survey_and_responses <- reactive({
     survey <- try(load_qsf_data(input[['file1']]))
-    if (!is.null(input[['unselected_questions']])) {
+    if (!is.null(values[['unselected_questions']])) {
       remove_these_survey_elements <- function(x) {
         "DataExportTag" %in% names(x[['Payload']]) &&
-          x[['Payload']][['DataExportTag']] %in% input[['unselected_questions']]
+          x[['Payload']][['DataExportTag']] %in% values[['unselected_questions']]
       }
       for (i in 1:length(survey[['SurveyElements']])) {
         if ('DataExportTag' %in% names(survey[['SurveyElements']][[i]][['Payload']]) &&
-            survey[['SurveyElements']][[i]][['Payload']][['DataExportTag']] %in% input[['unselected_questions']]) {
+            survey[['SurveyElements']][[i]][['Payload']][['DataExportTag']] %in% values[['unselected_questions']]) {
           survey[['SurveyElements']][[i]][['qtSkip']] <- TRUE
         }
       }
@@ -270,7 +273,7 @@ shinyServer(function(input, output) {
     qdict <- unique(question_dictionary()[c(1, 3, 5, 6, 7)])
     check_list <-
       lapply(qdict[[1]], function(x)
-        ifelse(x %in% input[['unselected_questions']], "", " checked "))
+        ifelse(x %in% values[['unselected_questions']], "", " checked "))
     addCheckboxButtons <-
       paste0(
         '<input type="checkbox" name="unselected_questions_',
@@ -284,6 +287,20 @@ shinyServer(function(input, output) {
       )
     #Display table with checkbox buttons
     cbind(Include = addCheckboxButtons, qdict)
+  })
+
+  observeEvent(input$submit, {
+    for (q in input[['unselected_questions']]) {
+      if (! q %in% values[['unselected_questions']]) {
+        values[['unselected_questions']] <- c(values[['unselected_questions']], q)
+      }
+    }
+    for (q in input[['selected_questions']]) {
+      if (q %in% values[['unselected_questions']]) {
+        index <- which(values[['unselected_questions']] == q)
+        values[['unselected_questions']] <- values[['unselected_questions']][-index]
+      }
+    }
   })
 
   # output each tabpanels' contents

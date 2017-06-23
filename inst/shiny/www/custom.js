@@ -36,10 +36,18 @@ $("document").ready(function() {
 // send a list of the unselected questions to Shiny when the #submit button is clicked
 $('document').ready(function() {
   $('#submit').click(function(e) {
+    var unselected_output = [];
     var unselected = $('td input:checkbox:not(:checked)').parent().siblings(':nth-child(2)').map(function() {
       return($(this).text());
     });
-    Shiny.onInputChange('unselected_questions', unselected);
+    for (var i=0; i<unselected.length; i++) unselected_output.push(unselected[i]);
+    var selected_output = [];
+    var selected = $('td input:checkbox:checked').parent().siblings(':nth-child(2)').map(function() {
+      return($(this).text());
+    });
+    for (i=0; i<selected.length; i++) selected_output.push(selected[i]);
+    Shiny.onInputChange('unselected_questions', unselected_output);
+    Shiny.onInputChange('selected_questions', selected_output);
   });
 });
 
