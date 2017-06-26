@@ -17,4 +17,3 @@ A list of HTML results tables for each question
 \description{
 Create a List of HTML Versions of the Results Tables
 }
-

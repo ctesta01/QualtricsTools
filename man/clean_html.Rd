@@ -23,4 +23,3 @@ reduces them to a single space character.
 The last regex used is "^\\s+|\\s+$". It matches whitespace at the beginning
 or end of the text and removes it.
 }
-

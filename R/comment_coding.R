@@ -1,13 +1,28 @@
 #' Turn a Directory into a list of Coded Comment Data Frames (unprocessed)
+#'
+#' This function takes as an argument a string representative of a
+#' directory, loads the CSVs and Excel data from that directory,
+#' looks for 'Coded' sheets, extracts the coded sheets,
+#' and saves the coded comment table and the question ID
+#' as a pair in the output coded_appendix_tables list. If there
+#' are sheets which contain non-numeric data, warnings are raised.
+#' @param directory A string path to the directory containing the coded comments
+#' sheets, which are formatted as described in the Wiki.
+#' https://github.com/ctesta01/QualtricsTools/wiki/Comment-Coding
+#' @return A list of dataframes for each sheet of coded comments.
 directory_get_coded_comment_sheets <- function(directory) {
-
   # ask for directory if not provided
-  if (missing(directory)) directory <- choose.dir()
+  if (missing(directory))
+    directory <- choose.dir()
 
   # we only want to look at Excel or CSV files in the given directory
-  files_list <- list.files(path=directory, full.names=TRUE)
-  files_list <- files_list[lapply(files_list, function(x) grepl("*.xlsx$|*.xls$|*.csv$", x)) == TRUE]
-  files_list <- files_list[lapply(files_list, function(x) grepl("^~", basename(x))) == FALSE]
+  files_list <- list.files(path = directory, full.names = TRUE)
+  files_list <-
+    files_list[lapply(files_list, function(x)
+      grepl("*.xlsx$|*.xls$|*.csv$", x)) == TRUE]
+  files_list <-
+    files_list[lapply(files_list, function(x)
+      grepl("^~", basename(x))) == FALSE]
 
 
   # If there are warnings in reading in the Excel sheets,
@@ -19,20 +34,23 @@ directory_get_coded_comment_sheets <- function(directory) {
   coded_appendix_tables <- list()
 
   for (i in 1:length(files_list)) {
-
     # For each file in the files_list, try to get its coded comment sheet.
     # If it warns, save the error and filename to warnings_list and warning_files_list.
-    tryCatch(coded_appendix_tables[[i]] <- get_coded_comment_sheet(files_list[[i]]),
-             warning = function(w) {
-               warning_files_list[[i]] <- files_list[[i]]
-               warnings_list[[i]] <- w
-             })
+    tryCatch(
+      coded_appendix_tables[[length(coded_appendix_tables) + 1]] <-
+        get_coded_comment_sheet(files_list[[i]]),
+      warning = function(w) {
+        warning_files_list[[i]] <- files_list[[i]]
+        warnings_list[[i]] <- w
+      }
+    )
 
   }
 
   # Subset the warnings_list and warning_files_list's to only include non-empty entries
   warnings_list <- warnings_list[lapply(warnings_list, length) != 0]
-  warning_files_list <- warning_files_list[lapply(warning_files_list, length) != 0]
+  warning_files_list <-
+    warning_files_list[lapply(warning_files_list, length) != 0]
 
   # Print the first warning for each sheet
   if (length(warning_files_list) > 0) {
@@ -64,29 +82,43 @@ directory_get_coded_comment_sheets <- function(directory) {
 }
 
 #' Turn a Single Coded File into a Data Frame
-get_coded_comment_sheet <- function(codedfile){
-
+#'
+#' This retrieves comment coding data as a dataframe
+#' from a Excel or CSV file. If the file is an Excel document,
+#' the coded comments are retrieved from the sheet named "Coded"
+#' (case does not matter), and if the file is a CSV it is directly
+#' read as a dataframe.
+#' @param codedfile The string path to a Excel or CSV file.
+#' @return A dataframe version of the contents of the coded comments
+#' in the codedfile.
+get_coded_comment_sheet <- function(codedfile) {
   # Ask for the Coded File if there isn't one provided
-  if (missing(codedfile)) codedfile <- file.choose()
+  if (missing(codedfile))
+    codedfile <- file.choose()
 
   # Pick out the sheet called "Coded"
   # Error if there isn't one
-  sheetindex <- which(tolower(readxl::excel_sheets(codedfile))=="coded")
+  sheetindex <-
+    which(tolower(readxl::excel_sheets(codedfile)) == "coded")
   if (length(sheetindex) == 0) {
     cat(paste0(codedfile, " did not have a Coded tab\n"))
     return(NA)
   }
 
   # Load the Coded Comments as a Data Frame
-  coded_orig <- readxl::read_excel(codedfile, sheet=sheetindex)
+  coded_orig <- readxl::read_excel(codedfile, sheet = sheetindex)
 
   # Strip out the Blank Rows
-  blank_rows <- which(is.na(coded_orig[1]) | nchar(coded_orig[1])<5)
-  if (length(blank_rows) == 0) {coded_use <- coded_orig}
-  else if (length(blank_rows)>0) {coded_use <- coded_orig[-blank_rows,]}
+  blank_rows <- which(is.na(coded_orig[1]) | nchar(coded_orig[1]) < 5)
+  if (length(blank_rows) == 0) {
+    coded_use <- coded_orig
+  }
+  else if (length(blank_rows) > 0) {
+    coded_use <- coded_orig[-blank_rows, ]
+  }
 
   # Make sure the Coded Comments have a Varname column
-  index_qname <- which(tolower(names(coded_use))=="varname")
+  index_qname <- which(tolower(names(coded_use)) == "varname")
   if (length(index_qname) == 0) {
     cat(paste0(codedfile, " did not have a varname column\n"))
     return(NA)
@@ -96,36 +128,55 @@ get_coded_comment_sheet <- function(codedfile){
   return(coded_use)
 }
 
-#' Turn the original coded comments sheet into a pair: (Question, Data Frame)
+#' Process a Dataframe of Coded Comments
+#'
+#' This turns the original dataframe of coded comments
+#' into a pair (varname, coded_table), where the varname
+#' is the column name in the response CSV data from Qualtrics
+#' that the coded comments correspond to and coded_table
+#' summarizes the responses to the coded comments with
+#' frequencies for each coded category.
+#' @param coded_comment_sheet A single dataframe, imported from a
+#' file in the format as specified by the wiki.
+#' https://github.com/ctesta01/QualtricsTools/wiki/Comment-Coding
+#' @return A pair (varname, coded_table) where varname corresponds
+#' to the corresponding original response column name and coded_table
+#' summarizes the frequencies of the provided coded comments.
 format_coded_comments <- function(coded_comment_sheet) {
   # determine which column to start with
-  index_qname <- which(tolower(names(coded_comment_sheet))=="varname")
+  index_qname <-
+    which(tolower(names(coded_comment_sheet)) == "varname")
 
   # get the varname from the sheet
-  varname = as.character(coded_comment_sheet[1,index_qname])
+  varname = as.character(coded_comment_sheet[1, index_qname])
 
   # get coded comments, and the number of comments for each
-  codeList <- names(coded_comment_sheet)[(index_qname+2):ncol(coded_comment_sheet)]
-  numComments <- lapply (codeList, function(x) length(which(coded_comment_sheet[x]==1)))
+  codeList <-
+    names(coded_comment_sheet)[(index_qname + 2):ncol(coded_comment_sheet)]
+  numComments <-
+    lapply (codeList, function(x)
+      length(which(coded_comment_sheet[x] == 1)))
 
   # construct the table
-  coded_table <- as.data.frame(cbind(codeList,numComments,deparse.level=0))
+  coded_table <-
+    as.data.frame(cbind(codeList, numComments, deparse.level = 0))
   names(coded_table) <- c("Response", "N")
 
   # remove zeroes
-  coded_table <- coded_table[coded_table['N'] != 0, ]
+  coded_table <- coded_table[coded_table['N'] != 0,]
 
   # sort by reverse numerically twice
   # sorting the first time gives reverse numerically reverse alphabetically
   # sorting the second time reverses the reverse alphabetic to forward alphabetic,
   # while keeping the descending numerical sort
-  coded_table <- coded_table[rev(order(unlist(coded_table[,'N']))),]
-  coded_table <- coded_table[rev(order(unlist(coded_table[,'N']))),]
+  coded_table <- coded_table[rev(order(unlist(coded_table[, 'N']))), ]
+  coded_table <- coded_table[rev(order(unlist(coded_table[, 'N']))), ]
 
 
   # add "Total" and the total N to the list of coded comments and Ns
-  n_comments <- length(unique(coded_comment_sheet[, 1]))
-  coded_table <- rbind(coded_table,c("Total", n_comments))
+  n_comments <-
+    length(unique(as.data.frame(coded_comment_sheet)[, 1]))
+  coded_table <- rbind(coded_table, c("Total", n_comments))
 
 
   # we return a pair, the varname and the coded table.
@@ -133,169 +184,178 @@ format_coded_comments <- function(coded_comment_sheet) {
 
 }
 
-#' Turn a List of Unprocessed Coded Comment Sheets into a List of Coded Comments Tables
+#' Turn a List of Unprocessed Coded Comment Sheets
+#' into a List of Coded Comments Tables
+#' @param coded_comment_sheets A list of dataframes for
+#' each sheet of coded comments.
 format_coded_comment_sheets <- function(coded_comment_sheets) {
   coded_comments <- list()
   cc_length <- length(coded_comment_sheets)
   for (i in 1:cc_length) {
-    coded_comments[[i]] <- format_coded_comments(coded_comment_sheets[[i]])
+    coded_comments[[i]] <-
+      format_coded_comments(coded_comment_sheets[[i]])
   }
   return(coded_comments)
 }
 
 #' Merge a Splitting Column into an Unprocessed Coded Comment Sheet
 #'
-#' Run create_merged_response_column() before this to create the splitting column in the responses.
-#' Then pass the column name of the column created by create_merged_response_column() as split_column
+#' Run create_merged_response_column() before this to
+#' create the splitting column in the responses.
+#' Then pass the column name of the column created by
+#' create_merged_response_column() as split_column
+#' @inheritParams format_coded_comments
+#' @responses
 #' @param split_column is the name of the column to merge in for splitting
-merge_split_column_into_comment_sheet <- function(coded_comment_sheet, responses, split_column) {
-  # Which column is the split_column
-  split_index <- which(colnames(responses) == split_column)
-  if (split_index==0) {
-    # Error if the split_column isn't present
-    stop("No column in responses with name ", split_column)
+merge_split_column_into_comment_sheet <-
+  function(coded_comment_sheet,
+           responses,
+           split_column) {
+    # Which column is the split_column
+    split_index <- which(colnames(responses) == split_column)
+    if (split_index == 0) {
+      # Error if the split_column isn't present
+      stop("No column in responses with name ", split_column)
+    }
+    # Get the response IDs and the split_column into a 2-column data frame
+    relevant_columns <- responses[, c(1, split_index)]
+    colnames(relevant_columns)[[1]] <- colnames(responses)[[1]]
+
+    coded_comment_sheet <-
+      merge(x = coded_comment_sheet, y = relevant_columns, by = 1)
+    split_index <-
+      which(colnames(coded_comment_sheet) == split_column)
+    re_ordering <- c(1, split_index, 2:(split_index - 1))
+    coded_comment_sheet <- coded_comment_sheet[, re_ordering]
+    return(coded_comment_sheet)
   }
-  # Get the response IDs and the split_column into a 2-column data frame
-  relevant_columns <- responses[, c(1, split_index)]
-  colnames(relevant_columns)[[1]] <- colnames(responses)[[1]]
 
-  coded_comment_sheet <- merge(x = coded_comment_sheet, y = relevant_columns, by = 1)
-  split_index <- which(colnames(coded_comment_sheet) == split_column)
-  re_ordering <- c(1, split_index, 2:(split_index-1))
-  coded_comment_sheet <- coded_comment_sheet[,re_ordering]
-  return(coded_comment_sheet)
-}
+#' Format and Split a list of Unprocessed Coded Comment Sheets
+#'
+#' When splitting the respondents of a survey to create split reports,
+#' the coded comments are split by this function and then returned as a list of lists.
+#' The first list is a list for each split group, and each list within those is a
+#' list of pairs of question IDs and their coded comments tables.
+format_and_split_comment_sheets <-
+  function(coded_comment_sheets,
+           responses,
+           split_column) {
+    # split_coded_comment_sheets will be a list of coded comment sheets for each respondent group
+    levels <- levels(factor(responses[, split_column]))
+    split_coded_comment_sheets <- sapply(levels, function(x)
+      NULL)
 
-# Format and Split a list of Unprocessed Coded Comment Sheets
-format_and_split_comment_sheets <- function(coded_comment_sheets, responses, split_column) {
+    # merge split_column in and split each sheet
+    for (i in 1:length(coded_comment_sheets)) {
+      coded_comment_sheets[[i]] <-
+        merge_split_column_into_comment_sheet(coded_comment_sheets[[i]], responses, split_column)
+      coded_comment_sheets[[i]] <-
+        split(coded_comment_sheets[[i]], coded_comment_sheets[[i]][, split_column], drop =
+                TRUE)
 
-  # split_coded_comment_sheets will be a list of coded comment sheets for each respondent group
-  levels <- levels(factor(responses[, split_column]))
-  split_coded_comment_sheets <- sapply(levels, function(x) NULL)
-
-  # merge split_column in and split each sheet
-  for(i in 1:length(coded_comment_sheets)) {
-    coded_comment_sheets[[i]] <- merge_split_column_into_comment_sheet(coded_comment_sheets[[i]], responses, split_column)
-    coded_comment_sheets[[i]] <- split(coded_comment_sheets[[i]], coded_comment_sheets[[i]][, split_column], drop=TRUE)
-
-    # sort each sheet into the appropriate level and insert into split_coded_comment_sheets
-    for (j in 1:length(levels)) {
-      sheet_contains_level <- sapply(coded_comment_sheets[[i]], function(x) isTRUE(levels[[j]] %in% x[, split_column]) )
-      if (length(sheet_contains_level) != 0) {
-        matching_split_sheet <- which(sheet_contains_level)
-        if (length(matching_split_sheet) != 0) {
-          split_coded_comment_sheets[[j]][[length(split_coded_comment_sheets[[j]]) + 1]] <- as.data.frame(coded_comment_sheets[[i]][[matching_split_sheet]])
+      # sort each sheet into the appropriate level and insert into split_coded_comment_sheets
+      for (j in 1:length(levels)) {
+        sheet_contains_level <-
+          sapply(coded_comment_sheets[[i]], function(x)
+            isTRUE(levels[[j]] %in% x[, split_column]))
+        if (length(sheet_contains_level) != 0) {
+          matching_split_sheet <- which(sheet_contains_level)
+          if (length(matching_split_sheet) != 0) {
+            split_coded_comment_sheets[[j]][[length(split_coded_comment_sheets[[j]]) + 1]] <-
+              as.data.frame(coded_comment_sheets[[i]][[matching_split_sheet]])
+          }
         }
       }
     }
-  }
 
-  # Format each coded comment sheet
-  for (i in 1:length(split_coded_comment_sheets)) {
-    if (!is.null(split_coded_comment_sheets[[i]])) split_coded_comment_sheets[[i]] <- format_coded_comment_sheets(split_coded_comment_sheets[[i]])
-  }
+    # Format each coded comment sheet
+    for (i in 1:length(split_coded_comment_sheets)) {
+      if (!is.null(split_coded_comment_sheets[[i]]))
+        split_coded_comment_sheets[[i]] <-
+          format_coded_comment_sheets(split_coded_comment_sheets[[i]])
+    }
 
-  return(split_coded_comment_sheets)
-}
+    return(split_coded_comment_sheets)
+  }
 
 #' Insert Coded Comments into Blocks
-insert_coded_comments <- function(blocks, original_first_rows, coded_comments) {
+#'
+#' This takes a list of pairs of question IDs and coded comments tables
+#' and finds their corresponding question based on the question ID in a list
+#' of blocks and then inserts the coded comments table into the question.
+#' The returned list is a list of blocks where the questions have had their
+#' coded comments inserted.
+insert_coded_comments <-
+  function(blocks,
+           original_first_rows,
+           coded_comments) {
+    r_col_dictionary <-
+      create_response_column_dictionary(blocks, original_first_rows[1, ])
+    questions <- questions_from_blocks(blocks)
 
-  r_col_dictionary <- create_response_column_dictionary(blocks, original_first_rows[1,])
-  questions <- questions_from_blocks(blocks)
+    for (i in 1:length(coded_comments)) {
+      if (!is.null(coded_comments[[i]])) {
+        varname <- coded_comments[[i]][[1]]
+        matched_based_on_r_col <-
+          which(r_col_dictionary[, 2] == varname)
+        if (length(matched_based_on_r_col) == 1) {
+          varname <- r_col_dictionary[matched_based_on_r_col, 1]
+        }
+        question_index <- find_question_index(questions, varname)
 
-  for (i in 1:length(coded_comments)) {
-    if (!is.null(coded_comments[[i]])) {
-      varname <- coded_comments[[i]][[1]]
-      matched_based_on_r_col <- which(r_col_dictionary[,2] == varname)
-      if (length(matched_based_on_r_col) == 1) {
-        varname <- r_col_dictionary[matched_based_on_r_col, 1]
+        if (length(question_index) == 0) {
+          cat(
+            paste0(
+              "The appendices indicated for ",
+              varname,
+              " could not be matched to a question\n"
+            )
+          )
+          next
+
+        }
+        cc_index <-
+          length(questions[[question_index]][['CodedComments']]) + 1
+        questions[[question_index]][['CodedComments']][[cc_index]] <-
+          coded_comments[[i]]
       }
-      question_index <- find_question_index(questions, varname)
-
-      if (length(question_index) == 0) {
-        cat(paste0("The appendices indicated for ", varname, " could not be matched to a question\n"))
-        next;
-      }
-      cc_index <- length(questions[[question_index]][['CodedComments']]) + 1
-      questions[[question_index]][['CodedComments']][[cc_index]] <- coded_comments[[i]]
     }
-  }
 
-  blocks <- questions_into_blocks(questions, blocks)
-  return(blocks)
-}
+    blocks <- questions_into_blocks(questions, blocks)
+    return(blocks)
+  }
 
 #' Split Survey and Insert Split Coded Comments
 #'
-#' The responses should already include the split column
-insert_split_survey_comments <- function(split_blocks, split_coded_comment_sheets, split_column, original_first_rows) {
-  # grab the original first rows if not included
-  if (missing(original_first_rows)) original_first_rows <- get(x="original_first_rows", envir=globalenv())
+#' This function splits the survey's response data and the
+#' coded comments, then inserts the split coded comments into the split
+#' surveys.
+#' @param split_blocks
+#' @param split_coded_comment_sheets
+#' @param split_column
+#' @param original_first_rows
+insert_split_survey_comments <-
+  function(split_blocks,
+           split_coded_comment_sheets,
+           split_column,
+           original_first_rows) {
+    # grab the original first rows if not included
+    if (missing(original_first_rows))
+      original_first_rows <-
+        get(x = "original_first_rows", envir = globalenv())
 
-  # match split blocks and split coded comments
-  for (i in 1:length(split_coded_comment_sheets)) {
-    if (!is.null(split_coded_comment_sheets[[i]])) {
-      matching_block <- which(sapply(split_blocks, function(x) x[['split_group']] == names(split_coded_comment_sheets)[[i]]))
-      split_blocks[[matching_block]] <- insert_coded_comments( split_blocks[[matching_block]], original_first_rows, split_coded_comment_sheets[[i]])
+    # match split blocks and split coded comments
+    for (i in 1:length(split_coded_comment_sheets)) {
+      if (!is.null(split_coded_comment_sheets[[i]])) {
+        matching_block <-
+          which(sapply(split_blocks, function(x)
+            x[['split_group']] == names(split_coded_comment_sheets)[[i]]))
+        split_blocks[[matching_block]] <-
+          insert_coded_comments(split_blocks[[matching_block]],
+                                original_first_rows,
+                                split_coded_comment_sheets[[i]])
+      }
     }
-  }
-  return(split_blocks)
-}
-
-
-# Includes the comment coding pre-defined functions
-
-generate_split_coded_comments <- function(qsf_file, csv_file, sheets_dir, output_dir, split_by, n_threshold=15, headerrows=3) {
-
-  # This turns the split_by list into a name for the column
-  # which will contain the concatenation of the entries of responses
-  # which are being split over. That is if split_by = c('column1', 'column2', 'column3'),
-  # then this constructs split_string = 'column1-column2-column3'
-  split_string <- c(split_by, "split")
-  split_string <- toString(paste(split_string, "-"))
-  split_string <- gsub(' ', '', split_string)
-  split_string <- gsub(',', '', split_string)
-  split_string <- substr(split_string, 1, nchar(split_string)-1)
-
-  # Declares paths for the qsf and csv files
-  get_setup(
-    qsf_path = qsf_file,
-    csv_path = csv_file,
-    headerrows = headerrows)
-
-  # Merges the selected columns into one name
-  # In this case School, DegType, and Porgram merged into school-degtype-program
-  responses <- create_merged_response_column(split_by, split_string, blocks, responses)
-
-  coded_sheets <- directory_get_coded_comment_sheets(sheets_dir)
-
-  if (is.null(coded_sheets)) {
-    stop("Please fix errors before attempting again")
+    return(split_blocks)
   }
 
-  split_comment_tables <- format_and_split_comment_sheets(coded_sheets, responses, split_string)
-  split_blocks <- split_respondents(split_string, responses, survey, blocks, questions, headerrows=3)
-  split_blocks <- insert_split_survey_comments(split_blocks, split_comment_tables, split_string, original_first_rows)
-
-  #Used with html_2_pandoc below to keeps the flow of the survey consistent with the output
-  flow = flow_from_survey(survey)
-
-  #Appends .docx to the file names collected by splitting the data to output them as Word Documents
-  filenames <- sapply(split_blocks, function(x) x$split_group)
-  filenames <- sapply(filenames, function(x) paste0(x, '.docx'))
-
-  #Outputs the data to word documents using html_2_pandoc
-  for (i in 1:length(filenames)) {
-    html_2_pandoc(
-      html = c(blocks_header_to_html(split_blocks[[i]]),
-               text_appendices_table(blocks = split_blocks[[i]],
-                                     original_first_row = original_first_rows,
-                                     flow = flow,
-                                     n_threshold = n_threshold)),
-      file_name = filenames[[i]],
-      output_dir = output_dir
-    )
-  }
-
-}

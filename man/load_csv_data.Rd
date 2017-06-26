@@ -17,4 +17,3 @@ The return value is the responses data frame
 load_csv_data returns the sample response set or the user's response set depending
 on whether or not the user has uploaded data.
 }
-

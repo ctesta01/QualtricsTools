@@ -8,10 +8,15 @@ merge_split_column_into_comment_sheet(coded_comment_sheet, responses,
   split_column)
 }
 \arguments{
+\item{coded_comment_sheet}{A single dataframe, imported from a
+file in the format as specified by the wiki.
+https://github.com/ctesta01/QualtricsTools/wiki/Comment-Coding}
+
 \item{split_column}{is the name of the column to merge in for splitting}
 }
 \description{
-Run create_merged_response_column() before this to create the splitting column in the responses.
-Then pass the column name of the column created by create_merged_response_column() as split_column
+Run create_merged_response_column() before this to
+create the splitting column in the responses.
+Then pass the column name of the column created by
+create_merged_response_column() as split_column
 }
-

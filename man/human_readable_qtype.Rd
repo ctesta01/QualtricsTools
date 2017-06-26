@@ -21,4 +21,3 @@ This has a nested function (create_qtype) that determines a question's human que
 and then it loops through the questions and saves to each the QuestionTypeHuman
 field with the output of create_qtype.
 }
-

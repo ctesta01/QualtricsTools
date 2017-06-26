@@ -6,8 +6,21 @@
 \usage{
 choice_text_from_question(question, choice)
 }
-\description{
-Input a question and a choice, and this function will
-do its best to give you back the choice text.
-}
+\arguments{
+\item{question}{This is a list object representing an individual question
+from a Qualtrics Survey File. The question must have a paired
+response column placed into the question
+under [['Responses']]. The insertion of the responses into questions is
+handled by link_responses_to_questions.}
 
+\item{choice}{A numeric value representing the choice made in a response
+to the question provided.}
+}
+\description{
+Input a question and a variable corresponding to a choice,
+and this function returns the choice text. The function
+works by determining the question type and some question properties
+and then using a combination of the question's list of choices
+and related values. The text is then cleaned of any HTML before
+returned.
+}

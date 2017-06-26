@@ -6,10 +6,20 @@
 \usage{
 question_from_response_column(blocks, response_name)
 }
+\arguments{
+\item{blocks}{A list of the survey blocks, with the questions included in them.}
+
+\item{response_name}{The string name of a column from a Qualtrics response dataset.}
+}
+\value{
+A pair, (i, j) which specifies a question as blocks[[i]][['BlockElements']][[j]].
+}
 \description{
-Use this function to get the indexes identifying a question
+Use this function to get the location of a question
 in the blocks list. Give it a response column name, and it will
 try to find the question it corresponds to. Otherwise, it will
-respond NULL.
+respond NULL. The blocks have two layers of indexing, one for the individual
+blocks, and then another for the BlockElements. This function will return a
+pair of indices, (i, j) where blocks[[i]][['BlockElements']][[j]] specifies the
+location of the question which has the response_name column among its linked responses.
 }
-

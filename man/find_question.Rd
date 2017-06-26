@@ -6,9 +6,18 @@
 \usage{
 find_question(questions, exporttag)
 }
+\arguments{
+\item{questions}{A list of questions from a Qualtrics survey.}
+
+\item{exporttag}{A string data export tag to identify the
+desired question.}
+}
+\value{
+The question list object, such that
+find_question(...)[['Payload']][['DataExportTag']] == exporttag
+}
 \description{
 This function takes a list of questions and an export tag and
 looks for the matching question. It will try to select
 the question uniquely.
 }
-

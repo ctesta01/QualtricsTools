@@ -6,10 +6,18 @@
 \usage{
 flow_from_survey(survey)
 }
+\arguments{
+\item{survey}{A qualtrics survey list object,
+uploaded from a Qualtrics Survey File (QSF). Use
+ask_for_qsf() to create such a survey list object from a QSF file.}
+}
+\value{
+A list of strings identifying the blocks in the order that they appear
+within the survey.
+}
 \description{
 The 'Flow' is a list of Block IDs in the order that they are presented
 in the survey as it is taken by a respondent. The flow list that is returned
 from this function is used by functions like text_appendices_table and
 tabelize_blocks to get the ordering of the survey in the preview correct.
 }
-

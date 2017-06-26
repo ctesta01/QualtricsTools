@@ -2,11 +2,16 @@
 % Please edit documentation in R/comment_coding.R
 \name{format_coded_comment_sheets}
 \alias{format_coded_comment_sheets}
-\title{Turn a List of Unprocessed Coded Comment Sheets into a List of Coded Comments Tables}
+\title{Turn a List of Unprocessed Coded Comment Sheets
+into a List of Coded Comments Tables}
 \usage{
 format_coded_comment_sheets(coded_comment_sheets)
 }
-\description{
-Turn a List of Unprocessed Coded Comment Sheets into a List of Coded Comments Tables
+\arguments{
+\item{coded_comment_sheets}{A list of dataframes for
+each sheet of coded comments.}
 }
-
+\description{
+Turn a List of Unprocessed Coded Comment Sheets
+into a List of Coded Comments Tables
+}

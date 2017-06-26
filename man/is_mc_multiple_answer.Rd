@@ -25,4 +25,3 @@ following:
 "Multiple Choice Select Box",
 "Multiple Answer Column",
 }
-

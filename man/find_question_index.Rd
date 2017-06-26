@@ -6,9 +6,22 @@
 \usage{
 find_question_index(questions, exporttag)
 }
-\description{
-This function takes a list of questions and an export tag and
-looks for the matching question. It returns the index(es) of
-the questions with that Question Data Export Tag.
-}
+\arguments{
+\item{questions}{A list of questions from a Qualtrics survey.}
 
+\item{exporttag}{A string data export tag to identify the
+desired question.}
+}
+\value{
+A numeric list with entries such that
+questions[[i]][['Payload']][['DataExportTag]] == exporttag
+for any i in the returned list.
+}
+\description{
+Similar to find_question and find_question, this function
+takes a list of questions and an export tag and
+looks for the matching question. Differently from find_question,
+this function returns the index of
+the questions with that Question Data Export Tag rather than
+the question itself.
+}

@@ -2,18 +2,24 @@
 % Please edit documentation in R/results_generation.R
 \name{percent0}
 \alias{percent0}
-\title{Format Percents}
+\title{Format a Numeric as a String Percentage
+This function formats a decimal number into a string percentage with
+a specific number of decimal places and with a "%" character.
+The function uses formatC from the R base package and
+defaults to formatting the number with 1 digit and with the "f" format
+in the formatC argument.
+This function is originally from the StackOverflow post:
+http://stackoverflow.com/questions/12688717/round-up-from-5-in-r}
 \usage{
 percent0(x, digits = 1, format = "f", ...)
 }
 \description{
-percent0 is a function for formatting a decimal number into a string representing a percentage with
-a specific number of decimal places and with a "%" appended.
+Format a Numeric as a String Percentage
+This function formats a decimal number into a string percentage with
+a specific number of decimal places and with a "%" character.
 The function uses formatC from the R base package and
 defaults to formatting the number with 1 digit and with the "f" format
 in the formatC argument.
+This function is originally from the StackOverflow post:
+http://stackoverflow.com/questions/12688717/round-up-from-5-in-r
 }
-\details{
-This function is mostly a function for aiding in formatting results tables.
-}
-

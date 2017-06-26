@@ -2,20 +2,37 @@
 % Please edit documentation in R/reorganizing_survey_data.R
 \name{get_coded_questions_and_blocks}
 \alias{get_coded_questions_and_blocks}
-\title{Get Questions (with Responses) and Blocks (with Questions)}
+\title{Get Restructured Questions (with inserted Responses)
+and Blocks (with inserted Questions) from data
+provided by Qualtrics.}
 \usage{
 get_coded_questions_and_blocks(survey, responses, original_first_rows)
 }
 \arguments{
-\item{survey}{A qualtrics survey, uploaded from a qsf/json file}
+\item{survey}{A qualtrics survey list object,
+uploaded from a Qualtrics Survey File (QSF). Use
+ask_for_qsf() to create such a survey list object from a QSF file.}
 
-\item{responses}{Qualtrics responses to a survey, uploaded from csv as a data frame}
+\item{responses}{A dataframe of Qualtrics responses to a survey.
+Use ask_for_csv() to create such a dataframe from a CSV file.}
 
-\item{original_first_rows}{The original header rows to the CSV response set}
+\item{original_first_rows}{A dataframe contianing the header information
+for each column of response data. This dataframe includes a row for the DataExportTag based
+response column names, another for the Question Text stem and choice text (although
+truncated), and a row with QID based column names.}
 }
 \value{
-a list with two elements, the first being the survey questions,
-and the second being the survey blocks
+A list with two elements: the questions,
+and the survey blocks. All questions in the trash are
+excluded, HTML and CSS are removed from question text,
+responses, notes, and a more easily human readable question
+type are inserted into each question. The blocks then have
+their BlockElements replaced by corresponding questions
+where applicable. The BlockElements of the list of Blocks
+from a survey originally only refer to questions
+by their DataExportTag. However, this is inconvenient
+because it adds an additional lookup step, and so they are
+replaced by the real objects here.
 }
 \description{
 This function returns a list with two elements, where
@@ -24,4 +41,3 @@ and results-tables listed in them, and secondly
 the blocks of the survey, with questions listed in
 each block as BlockElements.
 }
-

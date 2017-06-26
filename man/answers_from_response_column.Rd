@@ -28,4 +28,3 @@ or the responses data frame. If it selects the response data from the lean_respo
 data frame, the returned data frame includes a "Raw Response" and a "Coded Response"
 column. If not, it includes exactly the response column as it appears in the responses.
 }
-

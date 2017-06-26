@@ -7,13 +7,14 @@
 ask_for_qsf(surveyfile)
 }
 \arguments{
-\item{The}{file path to a Qualtrics survey file}
+\item{surveyfile}{The file path to a Qualtrics survey file}
 }
 \value{
 The survey file the user uploads, as a list
 }
 \description{
-This function can be provided the path to a Qualtrics survey as its parameter, or
-the function will prompt the user to specify the path to the file.
+This function can be provided the path to a
+Qualtrics survey as its parameter, or
+the function will prompt the user to specify
+the path to the file.
 }
-

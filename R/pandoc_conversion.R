@@ -18,7 +18,13 @@ html_2_pandoc <- function(html, file_name, format, output_dir) {
   options("encoding" = "UTF-8")
 
   # set default format to docx
-  if (missing(format)) format <- "docx"
+  if (missing(format)) {
+    if (missing(file_name)) {
+      format <- "docx"
+    } else {
+      format <- tools::file_ext(file_name)
+    }
+  }
 
   # save the original working directory so we can return to it at the end.
   # move to the temporary files directory, use tempfile() to create

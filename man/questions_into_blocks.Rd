@@ -21,4 +21,3 @@ then remove_trash_blocks), inserts the questions from a survey
 appropriately into the blocks element, and then returns the
 blocks list including the questions as elements in the blocks[[i]][['BlockElements']].
 }
-

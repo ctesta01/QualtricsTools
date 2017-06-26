@@ -12,4 +12,3 @@ sample_responses
 This is some sample response data, to the matching sample survey provided
 }
 \keyword{datasets}
-

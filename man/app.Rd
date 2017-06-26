@@ -4,10 +4,9 @@
 \alias{app}
 \title{A Shiny app to format Qualtrics survey data and generate reports}
 \usage{
-qualtrics::app()
+app()
 }
 \description{
 This function launches the Shiny interface for the Qualtrics
 package from the files in the install or 'inst' directory.
 }
-

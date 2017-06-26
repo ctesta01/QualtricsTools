@@ -7,8 +7,9 @@
 questions_from_survey(survey)
 }
 \arguments{
-\item{survey}{This should be a Qualtrics survey in the form of a list
-imported from the JSON-formatted QSF file.}
+\item{survey}{A qualtrics survey list object,
+uploaded from a Qualtrics Survey File (QSF). Use
+ask_for_qsf() to create such a survey list object from a QSF file.}
 }
 \value{
 A list of questions from the uploaded QSF file
@@ -22,4 +23,3 @@ include things like "SurveyID", "Element", "PrimaryAttribute",
 "SecondaryAttribute", and a "Payload" which contains
 most of the information about the question.
 }
-

@@ -1,7 +1,6 @@
-options(shiny.maxRequestSize=30*1024^2)
+options(shiny.maxRequestSize = 30 * 1024 ^ 2)
 
-shinyServer(
-  function(input, output) {
+shinyServer(function(input, output) {
   # the survey_and_responses reactive block reads the input files
   # and loads them as the survey and responses. It validates that there
   # are no duplicate data export tags in the survey, and it returns a
@@ -11,8 +10,9 @@ shinyServer(
     survey <- try(load_qsf_data(input[['file1']]))
     if (!is.null(input[['unselected_questions']])) {
       remove_these_survey_elements <- function(x) {
-            "DataExportTag" %in% names(x[['Payload']]) && x[['Payload']][['DataExportTag']] %in% input[['unselected_questions']]
-        }
+        "DataExportTag" %in% names(x[['Payload']]) &&
+          x[['Payload']][['DataExportTag']] %in% input[['unselected_questions']]
+      }
       for (i in 1:length(survey[['SurveyElements']])) {
         if ('DataExportTag' %in% names(survey[['SurveyElements']][[i]][['Payload']]) &&
             survey[['SurveyElements']][[i]][['Payload']][['DataExportTag']] %in% input[['unselected_questions']]) {
@@ -23,16 +23,24 @@ shinyServer(
     questions <- try(questions_from_survey(survey))
     blocks <- try(blocks_from_survey(survey))
     questions <- remove_trash_questions(questions, blocks)
-    duplicates <- questions[which(duplicated(sapply(questions, function(x) x$Payload$DataExportTag)))]
-    duplicate_tags <- sapply(duplicates, function(x) x$Payload$DataExportTag)
-    validate(
-      need(validate_data_export_tags(questions),
-           paste0("Please submit a survey with no duplicate question IDs.
-           The following questions were duplicated: ",
-                  paste(duplicate_tags, collapse=", ")))
+    duplicates <-
+      questions[which(duplicated(sapply(questions, function(x)
+        x$Payload$DataExportTag)))]
+    duplicate_tags <-
+      sapply(duplicates, function(x)
+        x$Payload$DataExportTag)
+    validate(need(
+      validate_data_export_tags(questions),
+      paste0(
+        "Please submit a survey with no duplicate question IDs.
+        The following questions were duplicated: ",
+        paste(duplicate_tags, collapse = ", ")
       )
-    if (input[['insights_or_not']] == TRUE) headerrows <- 3
-    if (input[['insights_or_not']] == FALSE) headerrows <- 2
+    ))
+    if (input[['insights_or_not']] == TRUE)
+      headerrows <- 3
+    if (input[['insights_or_not']] == FALSE)
+      headerrows <- 2
     responses <- load_csv_data(input$file2, input$file1, headerrows)
     original_first_rows <- responses[[2]]
     responses <- responses[[1]]
@@ -50,13 +58,17 @@ shinyServer(
       survey <- survey_and_responses()[[1]]
       responses <- survey_and_responses()[[2]]
       original_first_rows <- survey_and_responses()[[3]]
-      questions_and_blocks <- get_coded_questions_and_blocks(survey, responses, original_first_rows)
+      questions_and_blocks <-
+        get_coded_questions_and_blocks(survey, responses, original_first_rows)
     }
   })
 
   # create the responses with a merged response column for splitting respondents
   split_col_responses <- reactive({
-    validate(need(length(survey_and_responses()) >= 3, "Please upload the survey and responses"))
+    validate(need(
+      length(survey_and_responses()) >= 3,
+      "Please upload the survey and responses"
+    ))
     if (length(survey_and_responses()) >= 3) {
       if ('split_response_columns' %in% names(input) &&
           !is.null(input[['split_response_columns']])) {
@@ -65,15 +77,20 @@ shinyServer(
         split_cols <- input[['split_response_columns']]
         responses <- create_merged_response_column(
           response_columns = split_cols,
-          col_name = paste0(c("split", split_cols), collapse=" "),
+          col_name = paste0(c("split", split_cols), collapse = " "),
           survey_responses = responses,
-          question_blocks = blocks)
-      } else return(survey_and_responses()[[2]])
+          question_blocks = blocks
+        )
+      } else
+        return(survey_and_responses()[[2]])
     }
   })
 
   split_blocks <- reactive({
-    validate(need(length(survey_and_responses()) >= 3, "Please upload the survey and responses"))
+    validate(need(
+      length(survey_and_responses()) >= 3,
+      "Please upload the survey and responses"
+    ))
     if ('split_response_columns' %in% names(input) &&
         !is.null(input[['split_response_columns']])) {
       survey <- survey_and_responses()[[1]]
@@ -82,44 +99,59 @@ shinyServer(
       blocks <- processed_questions_and_blocks()[[2]]
       responses <- split_col_responses()
       split_cols <- input[['split_response_columns']]
-      if (input[['insights_or_not']] == TRUE) headerrows <- 3
-      if (input[['insights_or_not']] == FALSE) headerrows <- 2
-      split_respondents(response_column = paste0(c("split", split_cols), collapse=" "),
-                        survey = survey,
-                        responses = responses,
-                        blocks = blocks,
-                        questions = questions,
-                        headerrows = headerrows,
-                        original_first_rows = original_first_rows
-                        )
-    } else return(NULL)
+      if (input[['insights_or_not']] == TRUE)
+        headerrows <- 3
+      if (input[['insights_or_not']] == FALSE)
+        headerrows <- 2
+      split_respondents(
+        response_column = paste0(c("split", split_cols), collapse = " "),
+        survey = survey,
+        responses = responses,
+        blocks = blocks,
+        questions = questions,
+        headerrows = headerrows,
+        original_first_rows = original_first_rows
+      )
+    } else
+      return(NULL)
   })
 
   choose_split_block <- reactive({
-    validate(need(length(survey_and_responses()) >= 3, "Please upload the survey and responses"))
+    validate(need(
+      length(survey_and_responses()) >= 3,
+      "Please upload the survey and responses"
+    ))
     if ('split_respondents_group' %in% names(input) &&
         input[['split_respondents_group']] != "" &&
         !is.null(split_blocks())) {
       block_respondent_groups <- sapply(split_blocks(), function(x) {
         header <- x[['header']][[3]]
-        header <- gsub("^Respondents with\\s", "", header, perl=TRUE)
+        header <-
+          gsub("^Respondents with\\s", "", header, perl = TRUE)
         split_cols <- input[['split_response_columns']]
-        header_second_half <- paste0("\\sin the ", paste0(c("split", split_cols), collapse=" "), " column")
-        header <- gsub(header_second_half, "", header, perl=TRUE)
+        header_second_half <-
+          paste0("\\sin the ", paste0(c("split", split_cols), collapse = " "), " column")
+        header <- gsub(header_second_half, "", header, perl = TRUE)
       })
 
-      matching_blocks <- which(block_respondent_groups == input[['split_respondents_group']])
+      matching_blocks <-
+        which(block_respondent_groups == input[['split_respondents_group']])
       if (length(matching_blocks) == 1) {
         return(split_blocks()[[matching_blocks[[1]]]])
-      } else return(NULL)
-    } else return(NULL)
+      } else
+        return(NULL)
+    } else
+      return(NULL)
   })
 
 
   # the uncodeable_message reactive block reacts to the survey_and_responses() block
   # with a message indicating which, if any, questions were not properly processed.
   uncodeable_message <- reactive({
-    validate(need(length(survey_and_responses()) >= 3, "Please upload the survey and responses"))
+    validate(need(
+      length(survey_and_responses()) >= 3,
+      "Please upload the survey and responses"
+    ))
     if (length(survey_and_responses()) >= 3) {
       questions <- processed_questions_and_blocks()[[1]]
       uncodeable_questions_message(questions)
@@ -135,13 +167,18 @@ shinyServer(
       survey <- survey_and_responses()[[1]]
       flow <- flow_from_survey(survey)
       blocks <- processed_questions_and_blocks()[[2]]
-      if (!is.null(choose_split_block())) blocks <- choose_split_block()
+      if (!is.null(choose_split_block()))
+        blocks <- choose_split_block()
       if (input[['ignoreflow']] == FALSE) {
-        return(c(blocks_header_to_html(blocks),
-                 tabelize_blocks(blocks, flow)))
+        return(c(
+          blocks_header_to_html(blocks),
+          tabelize_blocks(blocks, flow)
+        ))
       } else {
-        return(c(blocks_header_to_html(blocks),
-                 tabelize_blocks(blocks)))
+        return(c(
+          blocks_header_to_html(blocks),
+          tabelize_blocks(blocks)
+        ))
       }
     }
   })
@@ -149,40 +186,62 @@ shinyServer(
   # the question_dictionary block uses the survey from the survey_and_responses output
   # to create a data frame detailing each survey question.
   question_dictionary <- reactive({
+    if (input[['uncodeable-only']] == TRUE) {
+      return(invalid_question_dictionary())
+    } else {
+      return(valid_question_dictionary())
+    }
+  })
+
+  valid_question_dictionary <- reactive({
     validate(need(length(survey_and_responses()) >= 3, ""))
     if (length(survey_and_responses()) >= 3) {
-      original_first_row <- survey_and_responses()[[3]][1, ]
+      original_first_row <- survey_and_responses()[[3]][1,]
       blocks <- processed_questions_and_blocks()[[2]]
-      if (input[['uncodeable-only']] == TRUE) {
-        uncode_qdict <- uncodeable_question_dictionary(blocks)
-        if (is.null(uncode_qdict)) {
-          success_message <- data.frame("All questions were successfully processed!")
-          colnames(success_message)[1] <- " "
-          return(success_message)
-        } else {
-          return(uncode_qdict)
-        }
+      return(create_response_column_dictionary(blocks, original_first_row))
+    }
+  })
+
+  invalid_question_dictionary <- reactive({
+    validate(need(length(survey_and_responses()) >= 3, ""))
+    if (length(survey_and_responses()) >= 3) {
+      original_first_row <- survey_and_responses()[[3]][1,]
+      blocks <- processed_questions_and_blocks()[[2]]
+      uncode_qdict <- uncodeable_question_dictionary(blocks)
+      if (is.null(uncode_qdict)) {
+        success_message <-
+          data.frame("All questions were successfully processed!")
+        colnames(success_message)[1] <- " "
+        return(success_message)
       } else {
-        return(create_response_column_dictionary(blocks, original_first_row))
+        return(uncode_qdict)
       }
     }
   })
 
   text_appendices <- reactive({
-    validate(need(length(survey_and_responses()) >= 3, "Please upload the survey and responses"))
+    validate(need(
+      length(survey_and_responses()) >= 3,
+      "Please upload the survey and responses"
+    ))
     if (length(survey_and_responses()) >= 3) {
       original_first_rows <- survey_and_responses()[[3]]
       blocks <- processed_questions_and_blocks()[[2]]
-      original_first_row <- original_first_rows[1,]
+      original_first_row <- original_first_rows[1, ]
       survey <- survey_and_responses()[[1]]
       flow <- flow_from_survey(survey)
-      if (!is.null(choose_split_block())) blocks <- choose_split_block()
+      if (!is.null(choose_split_block()))
+        blocks <- choose_split_block()
       if (input[['ignoreflow']] == FALSE) {
-        return(c(blocks_header_to_html(blocks),
-          text_appendices_table(blocks, original_first_row, flow)))
+        return(c(
+          blocks_header_to_html(blocks),
+          text_appendices_table(blocks, original_first_row, flow)
+        ))
       } else {
-        return(c(blocks_header_to_html(blocks),
-          text_appendices_table(blocks, original_first_row)))
+        return(c(
+          blocks_header_to_html(blocks),
+          text_appendices_table(blocks, original_first_row)
+        ))
       }
     }
   })
@@ -202,111 +261,166 @@ shinyServer(
   })
 
   include_exclude_dict <- reactive({
-    validate(need(length(survey_and_responses()) >= 3, "Please upload the survey and responses"))
-    qdict <- unique(question_dictionary()[c(1,3,5,6,7)])
-    check_list <- lapply(qdict[[1]], function(x) ifelse(x %in% input[['unselected_questions']], "", " checked "))
-    addCheckboxButtons <- paste0('<input type="checkbox" name="unselected_questions_', qdict[[1]], '" value="', qdict[[1]], '"', check_list, '>',"")
+    validate(need(
+      length(survey_and_responses()) >= 3,
+      "Please upload the survey and responses"
+    ))
+    qdict <- unique(question_dictionary()[c(1, 3, 5, 6, 7)])
+    check_list <-
+      lapply(qdict[[1]], function(x)
+        ifelse(x %in% input[['unselected_questions']], "", " checked "))
+    addCheckboxButtons <-
+      paste0(
+        '<input type="checkbox" name="unselected_questions_',
+        qdict[[1]],
+        '" value="',
+        qdict[[1]],
+        '"',
+        check_list,
+        '>',
+        ""
+      )
     #Display table with checkbox buttons
-    cbind(Include=addCheckboxButtons, qdict)
+    cbind(Include = addCheckboxButtons, qdict)
   })
 
   # output each tabpanels' contents
-  output[['uncodeable_message']] <- renderUI(HTML(uncodeable_message()))
-  output[['results_tables']] <- renderUI(div(HTML(results_tables()), class="shiny-html-output"))
-  output[['question_dictionary']] <- renderDataTable(question_dictionary(),
-                                                options = list(scrollX = TRUE,
-                                                               pageLength = 10,
-                                                               autoWidth = TRUE
-                                                ))
-  output[['text_appendices']] <- renderUI(div(HTML(text_appendices()), class="shiny-html-output"))
-  output[['display_logic']] <- renderUI(div(HTML(display_logic()), class="shiny-html-output"))
+  output[['uncodeable_message']] <-
+    renderUI(HTML(uncodeable_message()))
+  output[['results_tables']] <-
+    renderUI(div(HTML(results_tables()), class = "shiny-html-output"))
+  output[['question_dictionary']] <-
+    renderDataTable(question_dictionary(),
+                    options = list(
+                      scrollX = TRUE,
+                      pageLength = 10,
+                      autoWidth = TRUE
+                    ))
+  output[['text_appendices']] <-
+    renderUI(div(HTML(text_appendices()), class = "shiny-html-output"))
+  output[['display_logic']] <-
+    renderUI(div(HTML(display_logic()), class = "shiny-html-output"))
 
 
   # Include/Exclude Questions
   output[['select_qdict']] = renderDataTable({
     include_exclude_dict()
-    }, options = list(orderClasses = TRUE,
-                    lengthMenu = c(5, 25, 50),
-                    pageLength = 25)
+  }, options = list(
+    orderClasses = TRUE,
+    lengthMenu = c(5, 25, 50),
+    pageLength = 25
+  )
   , escape = FALSE)
 
 
   # selectize response columns for splitting respondents
   output[['select_response_columns']] <- renderUI({
-    selectInput('split_response_columns', 'Response Columns', colnames(survey_and_responses()[[2]]), multiple=TRUE, selectize=TRUE)
+    selectInput(
+      'split_response_columns',
+      'Response Columns',
+      colnames(survey_and_responses()[[2]]),
+      multiple = TRUE,
+      selectize = TRUE
+    )
   })
 
   # select respondent group to view
   output[['select_respondent_group']] <- renderUI({
     split_cols <- input[['split_response_columns']]
-    qt_split_col <- paste0(c("split", split_cols), collapse=" ")
+    qt_split_col <- paste0(c("split", split_cols), collapse = " ")
     if (qt_split_col %in% colnames(split_col_responses())) {
       choices <- unique(split_col_responses()[[qt_split_col]])
-    } else choices <- c('')
-    selectInput('split_respondents_group', 'Split Respondents Group', c("", choices))
+    } else
+      choices <- c('')
+    selectInput('split_respondents_group',
+                'Split Respondents Group',
+                c("", choices))
   })
 
   # output the breakdown of the respondent groups
   output[['table_respondent_groups']] <- renderTable({
     split_cols <- input[['split_response_columns']]
-    qt_split_col <- paste0(c("split", split_cols), collapse=" ")
-    factor_table <- table(factor(split_col_responses()[[qt_split_col]]))
+    qt_split_col <- paste0(c("split", split_cols), collapse = " ")
+    if (qt_split_col %in% colnames(split_col_responses())) {
+      factor_table <- table(factor(split_col_responses()[[qt_split_col]]))
       factor_table <- as.data.frame(factor_table)
       if (ncol(factor_table) >= 2) {
         colnames(factor_table) <- c("Respondent Group", "N")
         factor_table
       }
-  }, include.rownames=FALSE)
+    }
+  }, include.rownames = FALSE)
 
 
   ########## Download Buttons
   download_names <- reactive({
     dnames <- list()
 
-    dnames['results_tables'] <- paste0("results_tables.", input[['rt_format']])
-    dnames['qdict'] <- paste0('question_dictionary.', input[['qd_format']])
-    dnames['text_appendices'] <- paste0('text_appendices.', input[['ta_format']])
-    dnames['display_logic'] <- paste0('display_logic.', input[['dl_format']])
+    dnames['results_tables'] <-
+      paste0("results_tables.", input[['rt_format']])
+    dnames['qdict'] <-
+      paste0('question_dictionary.', input[['qd_format']])
+    dnames['text_appendices'] <-
+      paste0('text_appendices.', input[['ta_format']])
+    dnames['display_logic'] <-
+      paste0('display_logic.', input[['dl_format']])
     return(dnames)
   })
 
   # download results tables
   output[['downloadResultsTables']] <- downloadHandler(
-    filename = function() { download_names()[['results_tables']] },
+    filename = function() {
+      download_names()[['results_tables']]
+    },
     content = function(file) {
-      pandoc_output = html_2_pandoc(html = results_tables(),
-                                    file_name = as.character(download_names()['results_tables']),
-                                    format = gsub(".*\\.", "", download_names()['results_tables'], perl=TRUE))
+      pandoc_output = html_2_pandoc(
+        html = results_tables(),
+        file_name = as.character(download_names()['results_tables']),
+        format = gsub(".*\\.", "", download_names()['results_tables'], perl =
+                        TRUE)
+      )
       file.copy(pandoc_output, file)
     }
   )
 
   # download question dictionary
   output[['downloadQuestionDictionary']] <- downloadHandler(
-    filename = function() { download_names()[['qdict']] },
+    filename = function() {
+      download_names()[['qdict']]
+    },
     content = function(file) {
-      write.csv(question_dictionary(), file, row.names=FALSE)
+      write.csv(question_dictionary(), file, row.names = FALSE)
     }
   )
 
   # download text appendices
   output[['downloadTextAppendices']] <- downloadHandler(
-    filename = function() { download_names()[['text_appendices']] },
+    filename = function() {
+      download_names()[['text_appendices']]
+    },
     content = function(file) {
-      pandoc_output = html_2_pandoc(html = text_appendices(),
-                                    file_name = as.character(download_names()['text_appendices']),
-                                    format = gsub(".*\\.", "", download_names()['text_appendices'], perl=TRUE))
+      pandoc_output = html_2_pandoc(
+        html = text_appendices(),
+        file_name = as.character(download_names()['text_appendices']),
+        format = gsub(".*\\.", "", download_names()['text_appendices'], perl =
+                        TRUE)
+      )
       file.copy(pandoc_output, file)
     }
   )
 
   # download display logic
   output[['downloadDisplayLogic']] <- downloadHandler(
-    filename = function() { download_names()[['display_logic']] },
+    filename = function() {
+      download_names()[['display_logic']]
+    },
     content = function(file) {
-      pandoc_output = html_2_pandoc(html = display_logic(),
-                                    file_name = as.character(download_names()['display_logic']),
-                                    format = gsub(".*\\.", "", download_names()['display_logic'], perl=TRUE))
+      pandoc_output = html_2_pandoc(
+        html = display_logic(),
+        file_name = as.character(download_names()['display_logic']),
+        format = gsub(".*\\.", "", download_names()['display_logic'], perl =
+                        TRUE)
+      )
       file.copy(pandoc_output, file)
     }
   )
@@ -314,34 +428,49 @@ shinyServer(
   # Download Zip Button
   output[['downloadZip']] <- downloadHandler(
     filename = function() {
-      paste("QT Survey Output", "zip", sep=".")
+      paste("QT Survey Output", "zip", sep = ".")
     },
     content = function(fname) {
       fs <- c()
       tmpdir <- tempdir()
-      rt_docx <- html_2_pandoc(html = results_tables(),
-                               file_name = as.character(download_names()['results_tables']),
-                               format = gsub(".*\\.", "", download_names()['results_tables'], perl=TRUE))
-      write.csv(question_dictionary(), row.names=FALSE, file=file.path(tmpdir, "question_dictionary.csv"))
+      rt_docx <- html_2_pandoc(
+        html = results_tables(),
+        file_name = as.character(download_names()['results_tables']),
+        format = gsub(".*\\.", "", download_names()['results_tables'], perl =
+                        TRUE)
+      )
+      write.csv(
+        question_dictionary(),
+        row.names = FALSE,
+        file = file.path(tmpdir, "question_dictionary.csv")
+      )
       qd_csv <- file.path(tmpdir, "question_dictionary.csv")
-      dl_docx <- html_2_pandoc(html=display_logic(),
-                               file_name = as.character(download_names()['display_logic']),
-                               format = gsub(".*\\.", "", download_names()['display_logic'], perl=TRUE))
-      ta_docx <- html_2_pandoc(html=text_appendices(),
-                               file_name = as.character(download_names()['text_appendices']),
-                               format = gsub(".*\\.", "", download_names()['text_appendices'], perl=TRUE))
+      dl_docx <- html_2_pandoc(
+        html = display_logic(),
+        file_name = as.character(download_names()['display_logic']),
+        format = gsub(".*\\.", "", download_names()['display_logic'], perl =
+                        TRUE)
+      )
+      ta_docx <- html_2_pandoc(
+        html = text_appendices(),
+        file_name = as.character(download_names()['text_appendices']),
+        format = gsub(".*\\.", "", download_names()['text_appendices'], perl =
+                        TRUE)
+      )
 
       # repath the CSV in case it needs it for a Windows path
       # https://www.r-bloggers.com/stop-fiddling-around-with-copied-paths-in-windows-r/
       qd_csv <- gsub('\\\\', '/', qd_csv)
 
-      fs <- c(fs, file=rt_docx)
-      fs <- c(fs, file=qd_csv)
-      fs <- c(fs, file=dl_docx)
-      fs <- c(fs, file=ta_docx)
+      fs <- c(fs, file = rt_docx)
+      fs <- c(fs, file = qd_csv)
+      fs <- c(fs, file = dl_docx)
+      fs <- c(fs, file = ta_docx)
       if (file.exists(paste0(fname, ".zip")))
         file.rename(paste0(fname, ".zip"), fname)
-      zip(zipfile=fname, files=fs, flags="-j")
+      zip(zipfile = fname,
+          files = fs,
+          flags = "-j")
     },
     contentType = "application/zip"
   )
@@ -349,7 +478,7 @@ shinyServer(
   # Download Split Reports and Text Appendices
   output[['downloadSplit']] <- downloadHandler(
     filename = function() {
-      paste("QT Split Reports and Appendices", "zip", sep=".")
+      paste("QT Split Reports and Appendices", "zip", sep = ".")
     },
     content = function(fname) {
       fs <- c()
@@ -357,18 +486,46 @@ shinyServer(
       survey <- survey_and_responses()[[1]]
       flow <- flow_from_survey(survey)
       original_first_rows <- survey_and_responses()[[3]]
-      original_first_row <- original_first_rows[1,]
+      original_first_row <- original_first_rows[1, ]
       for (i in 1:length(split_blocks)) {
-        fs <- c(fs, html_2_pandoc(html=c(blocks_header_to_html(split_blocks[[i]]), tabelize_blocks(split_blocks[[i]], flow)),
-                                  file_name = paste0("results_tables_", i, ".", gsub(".*\\.", "", download_names()['results_tables'], perl=TRUE)),
-                                  format = gsub(".*\\.", "", download_names()['results_tables'], perl=TRUE)))
+        fs <-
+          c(fs,
+            html_2_pandoc(
+              html = c(
+                blocks_header_to_html(split_blocks[[i]]),
+                tabelize_blocks(split_blocks[[i]], flow)
+              ),
+              file_name = paste0(
+                "results_tables_",
+                i,
+                ".",
+                gsub(".*\\.", "", download_names()['results_tables'], perl = TRUE)
+              ),
+              format = gsub(".*\\.", "", download_names()['results_tables'], perl =
+                              TRUE)
+            ))
 
 
-        fs <- c(fs, html_2_pandoc(html=c(blocks_header_to_html(split_blocks[[i]]), text_appendices_table(split_blocks[[i]], original_first_row, flow)),
-                                  file_name=paste0("text_appendices_", i, ".", gsub(".*\\.", "", download_names()['text_appendices'], perl=TRUE)),
-                                  format = gsub(".*\\.", "", download_names()['text_appendices'], perl=TRUE)))
+        fs <-
+          c(fs,
+            html_2_pandoc(
+              html = c(
+                blocks_header_to_html(split_blocks[[i]]),
+                text_appendices_table(split_blocks[[i]], original_first_row, flow)
+              ),
+              file_name = paste0(
+                "text_appendices_",
+                i,
+                ".",
+                gsub(".*\\.", "", download_names()['text_appendices'], perl = TRUE)
+              ),
+              format = gsub(".*\\.", "", download_names()['text_appendices'], perl =
+                              TRUE)
+            ))
       }
-      zip(zipfile=fname, files=fs, flags="-j")
+      zip(zipfile = fname,
+          files = fs,
+          flags = "-j")
     },
     contentType = "application/zip"
   )
@@ -378,8 +535,9 @@ shinyServer(
   observe({
     # If input$quit is unset (NULL) do nothing; if it's anything else, quit
     # and return input$n
-    if (input$quit == 0) return()
-    else stopApp("Have a great day!")
+    if (input$quit == 0)
+      return()
+    else
+      stopApp("Have a great day!")
   })
-  }
-)
+})

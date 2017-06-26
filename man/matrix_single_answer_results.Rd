@@ -7,18 +7,31 @@
 matrix_single_answer_results(question, original_first_rows)
 }
 \arguments{
-\item{question}{The question must have a paired response column placed into the question
-under [['Responses']]}
+\item{question}{This is a list object representing an individual question
+from a Qualtrics Survey File. The question must have a paired
+response column placed into the question
+under [['Responses']]. The insertion of the responses into questions is
+handled by link_responses_to_questions.}
+
+\item{original_first_rows}{A dataframe contianing the header information
+for each column of response data. This dataframe includes a row for the DataExportTag based
+response column names, another for the Question Text stem and choice text (although
+truncated), and a row with QID based column names.}
 }
 \value{
-a table with the matrix-sub-questions listed in the first column, the percentages for each
-choice for each sub-question listed in a table, and then another column with the total respondents
+a table with the matrix-sub-questions listed
+in the first column, the percentages for each
+choice for each sub-question listed in a table, and
+then another column with the total respondents
 for each subquestion.
 }
 \description{
-The matrix_single_answer_results function uses the definition of the choices and answers in the
-QSF file and their potentially recoded values to determine how to table the results paired
-to that question. If you look at the source code, keep in mind that a matrix question's sub-questions
-are called "Choices" and that the choices for each sub-question are called "Answers"
+The matrix_single_answer_results function uses the
+definition of the choices and answers in the
+QSF file and their potentially recoded values to
+determine how to table the results paired
+to that question. If you look at the source code,
+keep in mind that a matrix question's sub-questions
+are called "Choices" and that the choices for each
+sub-question are called "Answers"
 }
-

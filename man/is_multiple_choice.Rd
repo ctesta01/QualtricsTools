@@ -9,4 +9,3 @@ is_multiple_choice(x)
 \description{
 Determine if a question is a multiple choice question
 }
-

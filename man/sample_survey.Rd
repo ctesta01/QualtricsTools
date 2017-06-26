@@ -12,4 +12,3 @@ sample_survey
 This is a sample survey, with a couple questions of different types.
 }
 \keyword{datasets}
-

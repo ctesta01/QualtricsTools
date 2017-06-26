@@ -22,5 +22,5 @@ Imports:
     tidyr,
     xtable
 Remotes: talgalili/installr
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
 Suggests: testthat

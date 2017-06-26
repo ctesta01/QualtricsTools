@@ -18,4 +18,3 @@ element, a copy of the QuestionText but cleaned of any HTML tags and HTML entiti
 This function loops through every question and applies the clean_html function to
 the QuestionText and then saves the cleaned output to QuestionTextClean.
 }
-

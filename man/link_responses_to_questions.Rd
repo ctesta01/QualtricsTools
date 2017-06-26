@@ -44,4 +44,3 @@ caveat is that if the column name starts with an integer, then R
 will prepend it with an "X", so there is a helper function included here to include
 those columns with prepended "X"s as well.
 }
-

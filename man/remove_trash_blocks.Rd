@@ -22,4 +22,3 @@ higher up questions move downward as questions are deleted, but
 the total length of the list will be changing as it gets closer to the
 end of the list.
 }
-

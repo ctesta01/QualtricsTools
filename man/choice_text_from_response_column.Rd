@@ -7,12 +7,14 @@
 choice_text_from_response_column(response_column, original_first_row, blocks)
 }
 \arguments{
-\item{response_column}{The name of a response column from the response set}
+\item{response_column}{The string name of a response column from the response set.}
 
-\item{original_first_row}{The first row of the original response set. If you have
-the original_first_rows, you can use original_first_rows[1,].}
+\item{original_first_row}{A dataframe contianing the header information
+for each column of response data. This dataframe should include a row for the DataExportTag based
+response column names, another for the Question Text stem and choice text (although
+truncated), and a row with QID based column names.}
 
-\item{blocks}{A list of the survey blocks, with the questions included in them}
+\item{blocks}{A list of the survey's blocks, with the questions included in them}
 }
 \value{
 The choice text corresponding to a response column
@@ -21,4 +23,3 @@ The choice text corresponding to a response column
 This function uses the first row of the response data from Qualtrics
 to determine the choice text a response column corresponds to.
 }
-

@@ -20,4 +20,3 @@ This is function is used in the Shiny app to tell users which questions weren't
 automatically coded. This may be changed later to be more informative, or
 to include this information elsewhere.
 }
-

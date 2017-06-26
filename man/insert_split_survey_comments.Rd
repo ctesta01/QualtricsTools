@@ -8,6 +8,7 @@ insert_split_survey_comments(split_blocks, split_coded_comment_sheets,
   split_column, original_first_rows)
 }
 \description{
-The responses should already include the split column
+This function splits the survey's response data and the
+coded comments, then inserts the split coded comments into the split
+surveys.
 }
-

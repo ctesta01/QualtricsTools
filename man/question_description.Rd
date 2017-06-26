@@ -17,4 +17,3 @@ no results.
 \description{
 Create Question Description and Results Table Entry
 }
-

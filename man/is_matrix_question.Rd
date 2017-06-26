@@ -9,4 +9,3 @@ is_matrix_question(x)
 \description{
 Determine if a question is a matrix question
 }
-
