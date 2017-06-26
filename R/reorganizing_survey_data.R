@@ -558,7 +558,8 @@ create_question_dictionary <- function(blocks, flow) {
   entries <- list()
   e <- 0
   for (i in block_ordering) {
-    if (length(blocks[[i]][['BlockElements']]) != 0) {
+    if ('BlockElements' %in% names(blocks[[i]]) &&
+        length(blocks[[i]][['BlockElements']]) != 0) {
       for (j in 1:length(blocks[[i]][['BlockElements']])) {
         e <- e + 1
         entries[[e]] <- create_entry(i, j)
