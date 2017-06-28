@@ -160,8 +160,8 @@ app <- function() {
 #' dataframe from the global environment. If none are found, but
 #' already_loaded=TRUE was passed, then a sample survey is loaded.
 #'
-#' @param qsf_path is the string location of the survey as a .QSF (Qualtrics Survey File)
-#' @param csv_path is the string location of the survey's responses, downloaded from Qualtrics
+#' @param qsf_path The string location of the survey as a .QSF (Qualtrics Survey File)
+#' @param csv_path The string location of the survey's responses, downloaded from Qualtrics
 #' @param headerrows An optional parameter for specifying the number of
 #' headerrows in the response csv.
 #' @param already_loaded already_loaded=TRUE indicates that get_setup should
@@ -630,6 +630,78 @@ make_results_tables <-
     )
   }
 
+#' Load Survey Data into an Arbitrary Environment in R
+#'
+#' This function puts the survey, responses, questions, blocks
+#' original_first_rows, and flow into the environment specified in R.
+#' qsf_path, csv_path, and headerrows are optional. If qsf_path and
+#' csv_path are provided, then the function uses get_setup with return_data
+#' to process the survey data and then insert the returned data into the
+#' specified environment. If the qsf_path and csv_path are not specified,
+#' the function first checks the global scope to see if all output from
+#' get_setup exists, and if so, the function copies them into the specified
+#' environment. If the qsf_path and csv_path are not provided, and the
+#' output of get_setup is not in the global scope, then the function calls
+#' get_setup to interactively ask the user to select the qsf_path and csv_path.
+#' Headerrows is defaulted to 3 by the get_setup function if it is not provided.
+#'
+#' @param qsf_path The string location of the survey as a .QSF (Qualtrics Survey File)
+#' @param csv_path The string location of the survey's responses, downloaded from Qualtrics
+#' @param headerrows An optional parameter for specifying the number of
+#' headerrows in the response csv.
+#' @param environment An R environment to save each of the survey, responses, questions, blocks
+#' original_first_rows, and flow into.
+get_setup_in_environment <-
+  function(qsf_path,
+           csv_path,
+           headerrows,
+           environment) {
+    if (!any(c(missing(qsf_path), missing(csv_path)))) {
+    qt_vals = get_setup(
+      qsf_path = qsf_path,
+      csv_path = csv_path,
+      headerrows = headerrows,
+      return_data = TRUE
+    )
+  } else {
+    if (exists(
+      c(
+        'survey',
+        'responses',
+        'questions',
+        'blocks',
+        'original_first_rows',
+        'flow'
+      ),
+      envir = globalenv()
+    ))
+      qt_vals = list(
+        get('survey', envir = globalenv()),
+        get('responses', envir = globalenv()),
+        get('questions', envir = globalenv()),
+        get('blocks', envir = globalenv()),
+        get('original_first_rows', envir = globalenv()),
+        get('flow', envir = globalenv())
+      )
+    else qt_vals = get_setup(return_data=TRUE)
+  }
+  # We used return_data=TRUE, so the data came back as a single
+  # list which needs to be processed into individual variables.
+  varnames = c('survey',
+               'responses',
+               'questions',
+               'blocks',
+               'original_first_rows',
+               'flow')
+  for (i in 1:length(varnames)) {
+    assign(varnames[[i]], qt_vals[[i]])
+  }
+
+  original_first_rows = as.data.frame(original_first_rows)
+  responses = as.data.frame(responses)
+
+  for (name in varnames) environment[[name]] <- get(name, environment())
+}
 
 #' Export a file containing the text appendices
 #'
@@ -650,31 +722,12 @@ make_text_appendices <-
            output_dir,
            filename = 'Text Appendices.docx') {
     # Either use the passed parameters or interactively get setup with the survey data.
-    if (!any(c(missing(qsf_path), missing(csv_path)))) {
-      qt_vals = get_setup(
-        qsf_path = qsf_path,
-        csv_path = csv_path,
-        headerrows = headerrows,
-        return_data = TRUE
-      )
-    } else {
-      if (exists('survey', 'responses', envir=globalenv()))
-        qt_vals = get_setup(already_loaded=TRUE, return_data=TRUE)
-      else qt_vals = get_setup(return_data=TRUE)
-    }
-    # We used return_data=TRUE, so the data came back as a single
-    # list which needs to be processed into individual variables.
-    varnames = c('survey',
-                 'responses',
-                 'questions',
-                 'blocks',
-                 'original_first_rows',
-                 'flow')
-    for (i in 1:length(varnames)) {
-      assign(varnames[[i]], qt_vals[[i]])
-    }
-    original_first_rows = as.data.frame(original_first_rows)
-    responses = as.data.frame(responses)
+    get_setup_in_environment(
+      qsf_path = qsf_path,
+      csv_path = csv_path,
+      headerrows = headerrows,
+      environment = environment()
+    )
 
     # Now we render the HTML into a report.
     html_2_pandoc(
@@ -709,34 +762,13 @@ make_coded_comments <-
            filename = 'Text Appendices with Coded Comments.docx',
            n_threshold = 15
   ) {
-    # If any of the qsf_path or csv_path are missing, use
-    #
     # Either use the passed parameters or interactively get setup with the survey data.
-    if (!any(c(missing(qsf_path), missing(csv_path)))) {
-      qt_vals = get_setup(
-        qsf_path = qsf_path,
-        csv_path = csv_path,
-        headerrows = headerrows,
-        return_data = TRUE
-      )
-    } else {
-      if (exists('survey', 'responses', envir=globalenv()))
-        qt_vals = get_setup(already_loaded=TRUE, return_data=TRUE)
-      else qt_vals = get_setup(return_data=TRUE)
-    }
-    # We used return_data=TRUE, so the data came back as a single
-    # list which needs to be processed into individual variables.
-    varnames = c('survey',
-                 'responses',
-                 'questions',
-                 'blocks',
-                 'original_first_rows',
-                 'flow')
-    for (i in 1:length(varnames)) {
-      assign(varnames[[i]], qt_vals[[i]])
-    }
-    original_first_rows = as.data.frame(original_first_rows)
-    responses = as.data.frame(responses)
+    get_setup_in_environment(
+      qsf_path = qsf_path,
+      csv_path = csv_path,
+      headerrows = headerrows,
+      environment = environment()
+    )
 
     coded_sheets <- directory_get_coded_comment_sheets(sheets_dir)
 
@@ -791,31 +823,13 @@ make_split_results_tables <-
            output_dir,
            split_by,
            headerrows = 3) {
-    # Load the Survey Data
-    if (!any(c(missing(qsf_path), missing(csv_path)))) {
-      qt_vals = get_setup(
-        qsf_path = qsf_path,
-        csv_path = csv_path,
-        headerrows = headerrows,
-        return_data = TRUE
-      )
-    } else {
-      if (exists('survey', 'responses', envir=globalenv()))
-        qt_vals = get_setup(already_loaded=TRUE, return_data=TRUE)
-      else qt_vals = get_setup(already_loaded=FALSE, return_data=TRUE)
-    }
-
-    varnames = c('survey',
-                 'responses',
-                 'questions',
-                 'blocks',
-                 'original_first_rows',
-                 'flow')
-    for (i in 1:length(varnames)) {
-      assign(varnames[[i]], qt_vals[[i]])
-    }
-    original_first_rows = as.data.frame(original_first_rows)
-    responses = as.data.frame(responses)
+    # Either use the passed parameters or interactively get setup with the survey data.
+    get_setup_in_environment(
+      qsf_path = qsf_path,
+      csv_path = csv_path,
+      headerrows = headerrows,
+      environment = environment()
+    )
 
     # This turns the split_by list into a name for the column
     # which will contain the concatenation of the entries of responses
@@ -890,31 +904,13 @@ make_split_text_appendices <-
            split_by,
            n_threshold = 15,
            headerrows = 3) {
-    # Load the Survey Data
-    if (!any(c(missing(qsf_path), missing(csv_path)))) {
-      qt_vals = get_setup(
-        qsf_path = qsf_path,
-        csv_path = csv_path,
-        headerrows = headerrows,
-        return_data = TRUE
-      )
-    } else {
-      if (exists('survey', 'responses', envir=globalenv()))
-        qt_vals = get_setup(already_loaded=TRUE, return_data=TRUE)
-      else qt_vals = get_setup(already_loaded=FALSE, return_data=TRUE)
-    }
-
-    varnames = c('survey',
-                 'responses',
-                 'questions',
-                 'blocks',
-                 'original_first_rows',
-                 'flow')
-    for (i in 1:length(varnames)) {
-      assign(varnames[[i]], qt_vals[[i]])
-    }
-    original_first_rows = as.data.frame(original_first_rows)
-    responses = as.data.frame(responses)
+    # Either use the passed parameters or interactively get setup with the survey data.
+    get_setup_in_environment(
+      qsf_path = qsf_path,
+      csv_path = csv_path,
+      headerrows = headerrows,
+      environment = environment()
+    )
 
     # This turns the split_by list into a name for the column
     # which will contain the concatenation of the entries of responses
@@ -1006,31 +1002,13 @@ make_split_coded_comments <-
     split_string <- gsub(',', '', split_string)
     split_string <- substr(split_string, 1, nchar(split_string) - 1)
 
-    # Declares paths for the qsf and csv files
-    if (!any(c(missing(qsf_path), missing(csv_path)))) {
-      qt_vals = get_setup(
-        qsf_path = qsf_path,
-        csv_path = csv_path,
-        headerrows = headerrows,
-        return_data = TRUE
-      )
-    } else {
-      if (exists('survey', 'responses', envir=globalenv()))
-        qt_vals = get_setup(already_loaded=TRUE, return_data=TRUE)
-      else qt_vals = get_setup(return_data=TRUE)
-    }
-    varnames = c('survey',
-                 'responses',
-                 'questions',
-                 'blocks',
-                 'original_first_rows',
-                 'flow')
-    for (i in 1:length(varnames)) {
-      assign(varnames[[i]], qt_vals[[i]])
-    }
-    original_first_rows = as.data.frame(original_first_rows)
-    responses = as.data.frame(responses)
-
+    # Either use the passed parameters or interactively get setup with the survey data.
+    get_setup_in_environment(
+      qsf_path = qsf_path,
+      csv_path = csv_path,
+      headerrows = headerrows,
+      environment = environment()
+    )
 
     # Merges the selected columns into one name
     # In this case School, DegType, and Porgram merged into school-degtype-program
