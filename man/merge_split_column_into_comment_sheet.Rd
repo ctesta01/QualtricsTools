@@ -12,7 +12,14 @@ merge_split_column_into_comment_sheet(coded_comment_sheet, responses,
 file in the format as specified by the wiki.
 https://github.com/ctesta01/QualtricsTools/wiki/Comment-Coding}
 
-\item{split_column}{is the name of the column to merge in for splitting}
+\item{responses}{A dataframe of Qualtrics responses to a survey.
+Use ask_for_csv() to create such a dataframe from a CSV file.}
+
+\item{split_column}{The string name of the column to merge in for splitting}
+}
+\value{
+A dataframe similar to the input coded_comment_sheet, but with
+the additional column specified by split_column merged in.
 }
 \description{
 Run create_merged_response_column() before this to

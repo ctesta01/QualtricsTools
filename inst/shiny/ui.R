@@ -14,7 +14,7 @@ sidebar <- dashboardSidebar(
                        accept=c('text/csv', 'text/comma-separated-values', '.csv')
              ),
              div(class="sidebar-text",
-                 HTML("Was the CSV exported using the <a href='https://github.com/ctesta01/QualtricsTools/wiki/Usage-Requirements#legacy-and-insights-data'>Insights format</a>?")),
+                 HTML("Was the CSV exported using the <a href='https://github.com/ctesta01/QualtricsTools/wiki/Appendix-of-Qualtrics-Terms#legacy-and-insights-data'>Insights format</a>?")),
              checkboxInput("insights_or_not", "Insights?", value = TRUE, width = NULL)
              ),
              menuItem("Processed Results", tabName="report", icon=icon("leanpub")),
@@ -70,10 +70,12 @@ body <- dashboardBody(
   )),
   tabItem(tabName = "more_options",
           fluidPage(
-            # titlePanel('Downloads'),
             sidebarLayout(
               sidebarPanel(
                 h1('Downloads'),
+                # This is HTML for creating an invisible table for a clean layout
+                # of the download buttons for each of the frequency results tables,
+                # question dictionary, text appendices, and display logic.
                 HTML("<br><table style='width: 100%;'> <tr> <td>"),
                 selectInput("rt_format", "Format for Results Tables:",
                             choices = c("docx", "html", "md", "pdf", "xls"),
@@ -100,6 +102,7 @@ body <- dashboardBody(
                 downloadButton('downloadDisplayLogic', '', class="btn-primary"),
                 HTML("</td> </tr> </table>")
               ),
+
               sidebarPanel(width=8,
                 h1('Splitting Respondents'),
                 HTML("Select the columns for which you'd like to split the respondents
@@ -121,7 +124,7 @@ body <- dashboardBody(
 )
 
 dashboardPage(
-  dashboardHeader(title = "Qualtrics Tools"),
+  dashboardHeader(title = "QualtricsTools"),
   sidebar,
   body
 )

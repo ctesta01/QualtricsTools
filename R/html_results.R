@@ -1,25 +1,24 @@
 #' Create a List of HTML Versions of the Results Tables
 #'
-#' @param questions A list of questions with the relevant results tables
-#' stored as data frames under the questions[[i]][['Table']] element. Create
-#' such a list of questions by using generate_results function
+#' @param blocks A list of the survey blocks, with the questions included in them.
+#' @param flow A list of strings identifying the blocks in the order that they appear
+#' within the survey.
+#' @param include_block_headers A boolean (default: TRUE) parameter to indicate
+#' whether or not there should be <h5> html headers inserted before each block with the
+#' block's description.
 #'
 #' @return A list of HTML results tables for each question
-tabelize_blocks <- function(blocks, flow, include_block_headers) {
-  # include_block_headers lets you choose whether or not each block
-  # will get its own header in the output
-  if (missing(include_block_headers))
-    include_block_headers <- TRUE
+tabelize_blocks <- function(blocks, flow, include_block_headers = TRUE) {
 
-  # all the html tables will be saved into the tables list.
+  # All the html tables will be saved into the tables list.
   tables <- list()
   tables[[1]] <- "<br>"
   options(stringsAsFactors = FALSE)
 
-  # determine the order of the block indices that we will use to
+  # Determine the order of the block indices that we will use to
   # go through the blocks
   if (!missing(flow)) {
-    # if the survey flow was provided, then use it to figure out
+    # If the survey flow was provided, then use it to figure out
     # the block_ordering
     block_ordering <- list()
     for (h in flow) {
@@ -34,24 +33,36 @@ tabelize_blocks <- function(blocks, flow, include_block_headers) {
       }
     }
   } else {
-    # if no flow was provided, then just go in order through all the blocks
+    # If no flow was provided, then just go in order through all the blocks
     block_ordering <- 1:length(blocks)
   }
-
+  # Iterate over all non-empty blocks, insert headers if include_block_headers
+  # == TRUE is specified, and for each question which is neither a Descriptive
+  # Box nor marked with the qtSkip flag insert the question description rendered
+  # by the question_description function.
   for (i in block_ordering) {
+    # Check that the block isn't empty
     if ('BlockElements' %in% names(blocks[[i]])) {
+      # Insert header
       if (include_block_headers)
         tables <-
           c(tables, paste0("<h5>", blocks[[i]][['Description']], "</h5><br>"))
+      # Check that the BlockElement isn't empty
       if (length(blocks[[i]][['BlockElements']]) != 0) {
         for (j in 1:length(blocks[[i]][['BlockElements']])) {
-          # don't get any questions that are supposed to be skipped
-          if (!'qtSkip' %in% names(blocks[[i]][['BlockElements']][[j]]) ||
-              blocks[[i]][['BlockElements']][[j]][['qtSkip']] != TRUE) {
-            #if a question isn't a descriptive block, insert the question description for it
-            if (blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionType']] != "DB") {
-              tables <-
-                c(tables, question_description(blocks[[i]][['BlockElements']][[j]]))
+          question <- blocks[[i]][['BlockElements']][[j]]
+          # Check that the BlockElement is actually a question
+          # containing a payload and question type.
+          if ('Payload' %in% names(question) &&
+              'QuestionType' %in% names(question[['Payload']])) {
+            # Skip questions with question[['qtSkip']] == TRUE
+            if (!'qtSkip' %in% names(question) ||
+                question[['qtSkip']] != TRUE) {
+              # If a question isn't a descriptive block, insert the question description for it
+              if (question[['Payload']][['QuestionType']] != "DB") {
+                tables <-
+                  c(tables, question_description(question))
+              }
             }
           }
         }
@@ -235,13 +246,14 @@ text_appendices_table <-
            n_threshold = 15) {
     options(stringsAsFactors = FALSE)
 
-    # determine the order of the block indices that we will use to
-    # go through the blocks
+    # Determine the ordering of the block indices that we will use to
+    # iterate through the blocks.
     if (!missing(flow)) {
-      # if the survey flow was provided, then use it to figure out
-      # the block_ordering
+      # If flow was specified, use it to order the blocks and store the
+      # blocks' ordering in the block_ordering list of indices.
       block_ordering <- list()
       for (h in flow) {
+        # For each flow element, try and match it to a block.
         matched_block <- sapply(blocks, function(x) {
           if ('ID' %in% names(x)) {
             return(x[['ID']] == h)
@@ -253,38 +265,65 @@ text_appendices_table <-
         }
       }
     } else {
-      # if no flow was provided, then just go in order through all the blocks
+      # If no flow is provided, go in order through the blocks.
       block_ordering <- 1:length(blocks)
     }
 
-    # start with an empty list and an index at 0
-    # the index e is for creating the appendix names,
-    # by use of the above appendix_lettering function.
-    # tables is for storing the HTML for all of the
-    # text appendices tables.
+    # The tables list will store the HTML for the
+    # text appendices generated. The e integer indexes
+    # the appendices, and is incremented each time
+    # an appendix is added to the tables list.
     tables <- list()
     e <- 1
 
-    # loop through every response column that is EITHER
-    # 1) the only response column to a TextEntry question, or
-    # 2) a response column containing the string "TEXT".
+    # In the following block of several nested loops and conditionals,
+    # the most important iterators are: i, j, k, and e (described above).
+    # i iterates from 1 to the number of blocks, j iterates for
+    # each block from 1 to the number of block elements, and
+    # whenever the question is not a text entry question k iterates
+    # from 1 to the number of response columns.
+    #
+    # For each block, a block description is inserted as an <h5> header.
+    # For each question with coded comments, the coded comments are inserted
+    # if the number of comments is greater than the n_threshold parameter
+    # and the question was not flagged with question[['qtSkip']]=TRUE.
+    # If the question was not flagged with question[['verbatimSkip']]=TRUE,
+    # then determine the appropriate function of table_text_entry,
+    # table_no_respondents, and table_non_text_entry and use it to generate
+    # the text appendix(es) for that question.
+
+    # Loop over the blocks with i
     for (i in block_ordering) {
+      # Only continue inspecting a block if it contains BlockElements
       if ('BlockElements' %in% names(blocks[[i]])) {
+        # For each block with BlockElements, insert the block's
+        # description as a header.
         tables <-
           c(tables, paste0("<h5>", blocks[[i]][['Description']], "</h5><br>"))
+        # Loop over the BlockElements with j
         for (j in 1:length(blocks[[i]][['BlockElements']])) {
-          if (!"qtSkip" %in% names(blocks[[i]][['BlockElements']][[j]]) ||
-              blocks[[i]][['BlockElements']][[j]][['qtSkip']] != TRUE) {
+
+          question <- blocks[[i]][['BlockElements']][[j]]
+
+          # qtSkip is a flag that can be inserted into a question for skipping
+          # in text appendices and results tables reports. If it is absent or
+          # not true, continue.
+          if (!"qtSkip" %in% names(question) ||
+              question[['qtSkip']] != TRUE) {
+
             # Table Coded Comments
-            if ('CodedComments' %in% names(blocks[[i]][['BlockElements']][[j]])) {
-              for (k in 1:length(blocks[[i]][['BlockElements']][[j]][['CodedComments']])) {
-                nrow_comments = nrow(blocks[[i]][['BlockElements']][[j]][['CodedComments']][[k]][[2]])
-                n_responses = blocks[[i]][['BlockElements']][[j]][['CodedComments']][[k]][[2]][[nrow_comments, 2]]
+            # If the question contains the 'CodedComments' element, then determine
+            # how many comments were categorized by reading the entry in the
+            # [[nrow_comments, 2]] position of the CodedComments dataframe.
+            if ('CodedComments' %in% names(question)) {
+              for (k in 1:length(question[['CodedComments']])) {
+                nrow_comments = nrow(question[['CodedComments']][[k]][[2]])
+                n_responses = question[['CodedComments']][[k]][[2]][[nrow_comments, 2]]
                 n_responses = as.integer(n_responses)
                 if (n_responses > n_threshold) {
                   tables <- c(
                     tables,
-                    table_html_coded_comments(blocks[[i]][['BlockElements']][[j]],
+                    table_html_coded_comments(question,
                                               k,
                                               e,
                                               blocks,
@@ -294,142 +333,125 @@ text_appendices_table <-
               }
             }
 
-            # Skip verbatim comments for flagged questions
-            if (!"verbatimSkip" %in% names(blocks[[i]][['BlockElements']][[j]]) ||
-                blocks[[i]][['BlockElements']][[j]][['verbatimSkip']] != TRUE) {
-              # Make sure the question has responses
-              if ('Responses' %in% names(blocks[[i]][['BlockElements']][[j]]) &&
-                  ncol(blocks[[i]][['BlockElements']][[j]][['Responses']]) > 0) {
-                # which columns are text entry data?
-                text_columns <-
-                  which(sapply(colnames(blocks[[i]][['BlockElements']][[j]][['Responses']]),
-                               function(x)
-                                 grepl("TEXT", x)))
+            # Table Text Appendices
+            # If verbatimSkip=TRUE is in the question, do not create any text appendices
+            # for that question. If it is absent, continue.
+            # Questions are then processed as text entry type questions or non text entry questions.
+            if (
+              # Check that 'verbatimSkip' != TRUE
+              (!"verbatimSkip" %in% names(question) || question[['verbatimSkip']] != TRUE) &&
+              # Check that the question has responses
+              ('Responses' %in% names(question) && ncol(question[['Responses']]) > 0)) {
 
-                # If the question is a TextEntry question
-                if (blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionType']] == "TE") {
-                  # remove all the empty and -99 responses
-                  responses <-
-                    blocks[[i]][['BlockElements']][[j]][['Responses']]
+              # Store which columns are text entry response columns
+              text_columns <-
+                which(sapply(colnames(question[['Responses']]),
+                             function(x)
+                               grepl("TEXT", x)))
+
+              # Text Entry Text Appendices
+              if (question[['Payload']][['QuestionType']] == "TE") {
+
+                # Clean Responses. Remove any responses which are -99 or
+                # empty for an entire text entry question.
+                responses <-
+                  question[['Responses']]
+                responses <-
+                  as.data.frame(responses[!apply(responses, 1, function(x)
+                    all(x %in% c(-99, ""))), ])
+
+                # Ensure the response columns are named correctly after cleaning.
+                colnames(responses) <- colnames(question[['Responses']])
+
+                # If there are no responses, use the table_no_respondents
+                # function to create a standardized no respondents table.
+                if (nrow(responses) == 0) {
+                  tables <-
+                    c(tables, table_no_respondents(question, e))
+                  e <- e + 1
+                  # Skip the rest of the loop, and iterate j to move onto the
+                  # next question.
+                  next
+                }
+
+                # If there are valid responses, and the question type
+                # as checked before is "TE" for Text Entry, then use the
+                # table_text_entry function on the question to create its
+                # text appendix.
+                if (length(as.list(responses)) > 0) {
+                  tables <- c(tables,
+                              table_text_entry(question,
+                                               responses,
+                                               e,
+                                               blocks,
+                                               original_first_row))
+                  e <- e + 1
+                }
+
+              } else if (length(text_columns) > 0) {
+                for (k in 1:length(text_columns)) {
+
+                  # Clean Responses. Remove any responses which are -99 or
+                  # empty for an entire text entry question.
+                  responses <- question[['Responses']][text_columns[[k]]]
                   responses <-
                     as.data.frame(responses[!apply(responses, 1, function(x)
-                      all(x == "")), ])
-                  responses <-
-                    as.data.frame(responses[!apply(responses, 1, function(x)
-                      all(x == -99)), ])
+                      all(x %in% c(-99, ""))),])
+
+                  # Ensure the response columns are named correctly after cleaning.
                   colnames(responses) <-
-                    colnames(blocks[[i]][['BlockElements']][[j]][['Responses']])
+                    colnames(question[['Responses']][text_columns[[k]]])
 
-                  # Table No Respondents
+                  # If there are no responses, use the table_no_respondents
+                  # function to create a standardized no respondents table.
                   if (nrow(responses) == 0) {
                     tables <-
-                      c(tables, table_no_respondents(blocks[[i]][['BlockElements']][[j]], e))
+                      c(tables, table_no_respondents(question, e))
                     e <- e + 1
+                    # Skip the rest of the loop, and iterate j to move onto the
+                    # next question.
                     next
                   }
 
-                  # Table Text Entry Appendices
-                  if (length(as.list(responses)) > 0) {
-                    tables <- c(
-                      tables,
-                      table_text_entry(
-                        blocks[[i]][['BlockElements']][[j]],
-                        responses,
-                        e,
-                        blocks,
-                        original_first_row
-                      )
-                    )
-                    e <- e + 1
-                  }
-
-                } else if (length(text_columns) > 0) {
-                  for (k in 1:length(text_columns)) {
-                    # Write the choice text
-                    if (!missing(original_first_row)) {
-                      # if the original_first_row is available, use it to construct the question text
-                      # with the corresponding choice text appended.
-                      # otherwise, just use the question text.
-                      response_column <-
-                        names(blocks[[i]][['BlockElements']][[j]][['Responses']])[text_columns[[k]]]
-                      choice_text <-
-                        choice_text_from_response_column(response_column,
-                                                         original_first_row,
-                                                         blocks)
-                      if (choice_text != "") {
-                        question_text <-
-                          paste0(blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
-                                 "-",
-                                 choice_text)
-                      } else {
-                        question_text <-
-                          blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']]
+                  # Check if the number of Text Entry components to a multiple choice question
+                  # is greater than one.
+                  multiple_TE_components <- function(question) {
+                    # Calculate the number of text entry components to a multiple choice question.
+                    N_TE_components <- length(which(sapply(
+                      question[['Payload']][['Choices']],
+                      function(x) {
+                        # Multiple Choice questions define their text entry components by labeling their
+                        # choices as having the TextEntry property set to "true".
+                        'TextEntry' %in% names(x) && x[['TextEntry']] == "true"
                       }
-                    }
-
-                    # remove the empty and -99 responses
-                    responses <-
-                      blocks[[i]][['BlockElements']][[j]][['Responses']][text_columns[[k]]]
-                    responses <-
-                      as.data.frame(responses[!apply(responses, 1, function(x)
-                        all(x == "")), ])
-                    responses <-
-                      as.data.frame(responses[!apply(responses, 1, function(x)
-                        all(x == -99)), ])
-                    colnames(responses) <-
-                      colnames(blocks[[i]][['BlockElements']][[j]][['Responses']][text_columns[[k]]])
-
-                    # Table No Respondents Questions
-                    if (nrow(responses) == 0) {
-                      tables <-
-                        c(tables,
-                          table_no_respondents(blocks[[i]][['BlockElements']][[j]], e))
-                      e <- e + 1
-                      next
-                    }
-
-                    # Skip Single Answer questions with too many text entry components to table correctly
-                    if (is_mc_single_answer(blocks[[i]][['BlockElements']][[j]]) &&
-                        length(which(
-                          sapply(blocks[[i]][['BlockElements']][[j]][['Payload']][['Choices']], function(x)
-                            'TextEntry' %in% names(x) && x[['TextEntry']] == "true")
-                        )) > 1) {
-                      question_message <- list()
-                      question_message <-
-                        c(
-                          blocks[[i]][['BlockElements']][[j]][['Payload']][['QuestionTextClean']],
-                          "",
-                          "This question could not be processed automatically because the CSV data does not separate the responses for each text entry component of this question."
-                        )
-                      question_message <-
-                        as.data.frame(question_message)
-                      colnames(question_message)[1] <-
-                        paste0('Export Tag: ', blocks[[i]][['BlockElements']][[j]][['Payload']][['DataExportTag']])
-                      # tables <- list()
-                      tables <-
-                        c(tables, capture.output(
-                          print(
-                            xtable::xtable(question_message),
-                            type = "html",
-                            html.table.attributes =
-                              'class="text_appendices data table table-bordered table-condensed"',
-                            include.rownames =
-                              FALSE
-                          )
-                        ))
-                      tables <- c(tables, "<br>")
-                      next
-                    }
-
-                    # Table Non-Text Entry Questions
-                    tables <- c(tables,
-                                table_non_text_entry(blocks[[i]][['BlockElements']][[j]],
-                                                     responses,
-                                                     e,
-                                                     blocks,
-                                                     original_first_row))
-                    e <- e + 1
+                    )))
+                    return(N_TE_components > 1)
                   }
+
+                  # Skip Single Answer questions with too many text entry components to table correctly
+                  if (is_mc_single_answer(question) && multiple_TE_components(question)) {
+                    tables <- c(tables, table_mcsa_multitext(question))
+                    # Skip the rest of the loop, and iterate j to move onto the
+                    # next question.
+                    next
+                  }
+
+                  # Table Non-Text Entry Questions
+                  # The logic before this ensures that the question is not of text entry type and contains
+                  # valid responses. Now we use the generic table_non_text_entry question, meant for use on
+                  # any column of open ended text responses. Note that while the table_non_text_entry
+                  # function can table multiple columns of responses, we do not use this functionality here
+                  # and instead pass a single column at a time, tabling each of the response columns as its
+                  # own appendix.
+                  tables <- c(
+                    tables,
+                    table_non_text_entry(question,
+                                         responses,
+                                         e,
+                                         blocks,
+                                         original_first_row)
+                  )
+                  e <- e + 1
                 }
               }
             }
@@ -492,11 +514,35 @@ uncodeable_questions_message <- function(questions) {
 #'
 #' @return a list of html tables detailing the display logic for each question
 #' containing display logic.
-tabelize_display_logic <- function(blocks) {
+tabelize_display_logic <- function(blocks, flow) {
+  # Determine the ordering of the block indices that we will use to
+  # iterate through the blocks.
+  if (!missing(flow)) {
+    # If flow was specified, use it to order the blocks and store the
+    # blocks' ordering in the block_ordering list of indices.
+    block_ordering <- list()
+    for (h in flow) {
+      # For each flow element, try and match it to a block.
+      matched_block <- sapply(blocks, function(x) {
+        if ('ID' %in% names(x)) {
+          return(x[['ID']] == h)
+        } else
+          return(FALSE)
+      })
+      if (table(matched_block)['TRUE'] == 1) {
+        block_ordering <- c(block_ordering, which(matched_block))
+      }
+    }
+  } else {
+    # If no flow is provided, go in order through the blocks.
+    block_ordering <- 1:length(blocks)
+  }
+
+
   # all the html tables will be saved into the tables list.
   tables <- list()
   options(stringsAsFactors = FALSE)
-  for (i in 1:number_of_blocks(blocks)) {
+  for (i in block_ordering) {
     if ('BlockElements' %in% names(blocks[[i]])) {
       for (j in 1:length(blocks[[i]][['BlockElements']])) {
         # if the display logic isn't trivial, include it.
@@ -805,4 +851,31 @@ table_non_text_entry <- function(question,
     ))
   tables <- c(tables, "<br>")
   return(tables)
+}
+
+#' Create a message stating MCSA questions with Multiple Text Entry components
+#' can't be automatically processed for text appendices.
+table_mcsa_multitext <- function(question) {
+  question_message <-
+    c(
+      question[['Payload']][['QuestionTextClean']],
+      "",
+      "This question could not be automatically processed because the CSV response dataset
+      does not separate the responses for each text entry component of this question."
+    )
+  question_message <- as.data.frame(question_message)
+  colnames(question_message)[1] <-
+    paste0('Export Tag: ', question[['Payload']][['DataExportTag']])
+  output_html <- capture.output(
+      print(
+        xtable::xtable(question_message),
+        type = "html",
+        html.table.attributes =
+          'class="text_appendices data table table-bordered table-condensed"',
+        include.rownames =
+          FALSE
+      )
+    )
+  output_html = paste(output_html, "<br>")
+  return(output_html)
 }

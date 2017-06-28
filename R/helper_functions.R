@@ -709,7 +709,9 @@ make_coded_comments <-
            filename = 'Text Appendices with Coded Comments.docx',
            n_threshold = 15
   ) {
-    # Declares paths for the qsf and csv files
+    # If any of the qsf_path or csv_path are missing, use
+    #
+    # Either use the passed parameters or interactively get setup with the survey data.
     if (!any(c(missing(qsf_path), missing(csv_path)))) {
       qt_vals = get_setup(
         qsf_path = qsf_path,
@@ -717,18 +719,24 @@ make_coded_comments <-
         headerrows = headerrows,
         return_data = TRUE
       )
-      varnames = c('survey',
-                   'responses',
-                   'questions',
-                   'blocks',
-                   'original_first_rows',
-                   'flow')
-      for (i in 1:length(varnames)) {
-        assign(varnames[[i]], qt_vals[[i]])
-      }
-      original_first_rows = as.data.frame(original_first_rows)
-      responses = as.data.frame(responses)
+    } else {
+      if (exists('survey', 'responses', envir=globalenv()))
+        qt_vals = get_setup(already_loaded=TRUE, return_data=TRUE)
+      else qt_vals = get_setup(return_data=TRUE)
     }
+    # We used return_data=TRUE, so the data came back as a single
+    # list which needs to be processed into individual variables.
+    varnames = c('survey',
+                 'responses',
+                 'questions',
+                 'blocks',
+                 'original_first_rows',
+                 'flow')
+    for (i in 1:length(varnames)) {
+      assign(varnames[[i]], qt_vals[[i]])
+    }
+    original_first_rows = as.data.frame(original_first_rows)
+    responses = as.data.frame(responses)
 
     coded_sheets <- directory_get_coded_comment_sheets(sheets_dir)
 

@@ -2,8 +2,7 @@
 % Please edit documentation in R/comment_coding.R
 \name{format_coded_comment_sheets}
 \alias{format_coded_comment_sheets}
-\title{Turn a List of Unprocessed Coded Comment Sheets
-into a List of Coded Comments Tables}
+\title{Format Comment Coding Data into Frequency Tables}
 \usage{
 format_coded_comment_sheets(coded_comment_sheets)
 }
@@ -11,7 +10,15 @@ format_coded_comment_sheets(coded_comment_sheets)
 \item{coded_comment_sheets}{A list of dataframes for
 each sheet of coded comments.}
 }
+\value{
+A list of pairs (varname, coded_table) where varname corresponds
+to the response column name of the comments coded and coded_table
+summarizes the frequencies of the provided coded comments.
+}
 \description{
-Turn a List of Unprocessed Coded Comment Sheets
-into a List of Coded Comments Tables
+This function takes as an argument a list of dataframes
+which categorize the text responses to a free-response
+component of a survey and formats them into a standardized
+frequency table by applying format_coded_comments to each
+coded_comment_sheet.
 }

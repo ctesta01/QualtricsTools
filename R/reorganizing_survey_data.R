@@ -1,3 +1,5 @@
+requireNamespace('gdata')
+
 #' Get Restructured Questions (with inserted Responses)
 #' and Blocks (with inserted Questions) from data
 #' provided by Qualtrics.
@@ -502,7 +504,31 @@ human_readable_qtype <- function(questions) {
 #' the BlockElements. Create the list of blocks from a survey with blocks_from_survey(),
 #' and with questions on hand, insert them into the blocks with questions_into_blocks().
 #' @return A data frame with a row for each question describing the question's details.
-create_question_dictionary <- function(blocks) {
+create_question_dictionary <- function(blocks, flow) {
+
+  # Determine the ordering of the block indices that we will use to
+  # iterate through the blocks.
+  if (!missing(flow)) {
+    # If flow was specified, use it to order the blocks and store the
+    # blocks' ordering in the block_ordering list of indices.
+    block_ordering <- list()
+    for (h in flow) {
+      # For each flow element, try and match it to a block.
+      matched_block <- sapply(blocks, function(x) {
+        if ('ID' %in% names(x)) {
+          return(x[['ID']] == h)
+        } else
+          return(FALSE)
+      })
+      if (table(matched_block)['TRUE'] == 1) {
+        block_ordering <- c(block_ordering, which(matched_block))
+      }
+    }
+  } else {
+    # If no flow is provided, go in order through the blocks.
+    block_ordering <- 1:length(blocks)
+  }
+
   # create_entry creates the row for any individual
   # response with the following elements in it:
   # - The data export tag,
@@ -531,8 +557,9 @@ create_question_dictionary <- function(blocks) {
   # and create an entry using "create_entry"
   entries <- list()
   e <- 0
-  for (i in 1:number_of_blocks(blocks)) {
-    if (length(blocks[[i]][['BlockElements']]) != 0) {
+  for (i in block_ordering) {
+    if ('BlockElements' %in% names(blocks[[i]]) &&
+        length(blocks[[i]][['BlockElements']]) != 0) {
       for (j in 1:length(blocks[[i]][['BlockElements']])) {
         e <- e + 1
         entries[[e]] <- create_entry(i, j)
@@ -1145,7 +1172,7 @@ split_respondents <-
 #' automatically provided to you when you use get_setup() or in the shiny application.
 #' @return a dataframe detailing in each row the response columns and their description.
 create_response_column_dictionary <-
-  function(question_blocks, orig_first_row) {
+  function(question_blocks, flow, orig_first_row) {
     # get the blocks, responses, and original_first_row from the global environment
     if (missing(question_blocks)) {
       blocks <- get("blocks", envir = 1)
@@ -1156,6 +1183,29 @@ create_response_column_dictionary <-
       original_first_row <- get("original_first_row", envir = 1)
     } else {
       original_first_row <- orig_first_row
+    }
+
+    # Determine the ordering of the block indices that we will use to
+    # iterate through the blocks.
+    if (!missing(flow)) {
+      # If flow was specified, use it to order the blocks and store the
+      # blocks' ordering in the block_ordering list of indices.
+      block_ordering <- list()
+      for (h in flow) {
+        # For each flow element, try and match it to a block.
+        matched_block <- sapply(blocks, function(x) {
+          if ('ID' %in% names(x)) {
+            return(x[['ID']] == h)
+          } else
+            return(FALSE)
+        })
+        if (table(matched_block)['TRUE'] == 1) {
+          block_ordering <- c(block_ordering, which(matched_block))
+        }
+      }
+    } else {
+      # If no flow is provided, go in order through the blocks.
+      block_ordering <- 1:length(blocks)
     }
 
     # this create_entry function returns an entry (a row)
@@ -1204,7 +1254,7 @@ create_response_column_dictionary <-
     # TODO: does this fail well?
     dictionary <- list()
     e <- 0
-    for (b in 1:number_of_blocks(blocks)) {
+    for (b in block_ordering) {
       if ('BlockElements' %in% names(blocks[[b]])) {
         for (be in 1:length(blocks[[b]][['BlockElements']])) {
           if ("Responses" %in% names(blocks[[b]][['BlockElements']][[be]]) &&
