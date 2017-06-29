@@ -416,12 +416,10 @@ questions_into_blocks <- function(questions, blocks) {
 #' @return A list of questions which now include in their Payload a QuestionTextClean
 #' element, a copy of the QuestionText but cleaned of any HTML tags and HTML entities.
 clean_question_text <- function(questions) {
-  remove_css_style <- function(x)
-    gsub("<style.*style>", "", x)
 
   for (i in 1:length(questions)) {
     questions[[i]][['Payload']][['QuestionTextClean']] <-
-      clean_html(remove_css_style(questions[[i]][['Payload']][['QuestionText']]))
+      clean_html(questions[[i]][['Payload']][['QuestionText']])
   }
 
   return(questions)
@@ -443,18 +441,13 @@ clean_question_text <- function(questions) {
 #' @param text any text string that might contain HTML or whitespace that needs stripped.
 #' @return text without any html or extraneous whitespace.
 clean_html <- function(text) {
-  clean_html_tags <- function(x)
-    gsub("<.*?>", " ", x)
-  clean_html_entities <- function(x)
-    gsub("&[# a-z 0-9]*;", " ", x)
-  clean_extra_whitespace <- function(x)
-    gsub("\\s+", " ", x)
-  clean_leading_whitespace <-
-    function (x)
-      gsub("^\\s+|\\s+$", "", x)
-  return(clean_leading_whitespace(clean_extra_whitespace(
-    clean_html_entities(clean_html_tags(text))
-  )))
+  # Clean HTML Tags and HTML Entitie
+  text <- gsub("<.*?>|&[# a-z 0-9]*;", " ", text)
+  # Remove leading or trailing whitespace
+  text <- gsub("^\\s+|\\s+$", "", text)
+  # Remove extra whitespace
+  text <- gsub("\\s+", " ", text)
+  return(text)
 }
 
 
@@ -654,6 +647,63 @@ uncodeable_question_dictionary <- function(blocks) {
 }
 
 
+create_response_lookup_table <-
+  function(question) {
+    not_text_columns <- !(grepl("TEXT", colnames(question[['Responses']])))
+    relevant_responses <- question[['Responses']][, not_text_columns]
+    relevant_responses <- unlist(relevant_responses, use.names=FALSE)
+    unique_responses <- unique(relevant_responses)
+    # Remove -99 and "" from the list of unique responses
+    valid_responses <- as.logical(sapply(unique_responses, function(x) !(x %in% c("-99", ""))))
+    # cat(paste0(valid_responses))
+    unique_responses <- unique_responses[which(valid_responses)]
+    lookup_table <- list()
+    if (is_multiple_choice(question)) {
+      lookup_table[['0']] <- list()
+      lookup_table[['0']][['var']] <- ""
+      lookup_table[['0']][['text']] <- "Not Selected"
+      lookup_table[['1']] <- list()
+      lookup_table[['1']][['var']] <- "1"
+      lookup_table[['1']][['text']] <- "Selected"
+    } else if (is_mc_single_answer(question)) {
+      has_recode_values <- any("RecodeValues" == names(question[['Payload']]))
+      for (r in unique_responses) {
+        i <- length(lookup_table) + 1
+        lookup_table[[i]] <- list()
+        lookup_table[[i]][['var']] <- r
+        if (has_recode_values) {
+          recode_value_index <- which(question[['Payload']][['RecodeValues']] == r)
+          if (length(recode_value_index) != 0) {
+            recoded_value <- names(question[['Payload']][['RecodeValues']])[[as.integer(recode_value_index[[1]])]]
+            lookup_table[[i]][['recode_value']] <- recoded_value
+            r <- recoded_value
+          }
+        }
+        lookup_table[[i]][['text']] <- question[['Payload']][['Choices']][[r]][[1]]
+      }
+    } else if (is_matrix_single_answer(question)) {
+      has_recode_values <- any("RecodeValues" == names(question[['Payload']]))
+      for (r in unique_responses) {
+        i <- length(lookup_table) + 1
+        lookup_table[[i]] <- list()
+        lookup_table[[i]][['var']] <- r
+        if (has_recode_values) {
+          recode_value_index <- which(question[['Payload']][['RecodeValues']] == r)
+          if (length(recode_value_index) != 0) {
+            recoded_value <- names(question[['Payload']][['RecodeValues']])[[as.integer(recode_value_index[[1]])]]
+            lookup_table[[i]][['recode_value']] <- recoded_value
+            r <- recoded_value
+          }
+        }
+        lookup_table[[i]][['text']] <- question[['Payload']][['Answers']][[r]][[1]]
+      }
+    }
+    # Convert the lookup table from a list to a Dataframe
+    lookup_table <- data.frame(t(sapply(lookup_table, c)))
+    return(lookup_table)
+  }
+
+
 #' Create Long and Lean Response Dictionary
 #'
 #' lean_responses() creates a data frame where each row corresponds to
@@ -665,7 +715,9 @@ uncodeable_question_dictionary <- function(blocks) {
 #' BlockElements representing them.
 #' @param survey_responses The responses to the survey, as imported by ask_for_csv()
 #' @return a data frame with each row detailing an individual survey response.
-lean_responses <- function(question_blocks, survey_responses) {
+lean_responses <- function(question_blocks, survey_responses, include_text_entry = FALSE) {
+  requireNamespace("dplyr")
+  requireNamespace("plyr")
   # get the blocks, responses, and original_first_row from the global environment
   if (missing(question_blocks)) {
     blocks <- get("blocks", envir = 1)
@@ -691,63 +743,87 @@ lean_responses <- function(question_blocks, survey_responses) {
         # Question Response Column:
         names(question[['Responses']])[[response_column]],
         # Raw Response:
-        toString(question[['Responses']][[response_column]][[response_row]]),
+        toString(question[['Responses']][[response_column]][[response_row]])
         # Coded Response:
-        choice_text_from_question(question, question[['Responses']][[response_column]][[response_row]])
+        # choice_text_from_question(question, question[['Responses']][[response_column]][[response_row]])
+        # choice_text_from_lookup_table(lookup_table, question[['Responses']][[response_column]][[response_row]])
       ))
     }
+
+
 
   # create a dictionary as a list to store row-entries in.
   # for each block element, try to create an entry and add it
   # to the dictionary.
   # TODO: does this fail well?
-  dictionary <- list()
+  dictionary_list <- list()
   e <- 0
   for (b in 1:number_of_blocks(blocks)) {
     if ('BlockElements' %in% names(blocks[[b]])) {
       for (be in 1:length(blocks[[b]][['BlockElements']])) {
-        if ("Responses" %in% names(blocks[[b]][['BlockElements']][[be]])) {
-          coln <- ncol(blocks[[b]][['BlockElements']][[be]][['Responses']])
-          rown <-
-            nrow(blocks[[b]][['BlockElements']][[be]][['Responses']])
-          if (coln > 0) {
-            for (c in 1:coln) {
-              if (rown > 0) {
-                for (r in 1:rown) {
-                  # if a block element has responses,
-                  # for each response increment the dictionary index e once,
-                  # and try to add to the dictionary the entry for that
-                  # question. If creating the entry fails, return to the
-                  # console a message saying
-                  e <- e + 1
-                  dictionary[[e]] <-
-                    tryCatch(
-                      create_entry(
-                        question = blocks[[b]][['BlockElements']][[be]],
-                        responses = responses,
-                        response_column = c,
-                        response_row = r
-                      ),
-                      error = function(e) {
-                        cat(
-                          paste0(
-                            "\nCreating an entry for the following question failed. \nDataExportTag: "
-                            ,
-                            blocks[[b]][['BlockElements']][[be]][['Payload']][['DataExportTag']]
-                            ,
-                            "\nResponse Column: "
-                            ,
-                            c
-                            ,
-                            "\nResponse Row: "
-                            ,
-                            r
+        question <- blocks[[b]][['BlockElements']][[be]]
+        if ((! is_text_entry(question) || include_text_entry) &&
+            question[['Payload']][['QuestionType']] != "DB") {
+          if ("Responses" %in% names(question)) {
+            coln <- ncol(question[['Responses']])
+            rown <-
+              nrow(question[['Responses']])
+            if (coln > 0 && rown > 0) {
+              dictionary <- list()
+              f <- 0
+              for (c in 1:coln) {
+                if (!grepl("TEXT", colnames(question[['Responses']])[[c]])) {
+                  for (r in 1:rown) {
+                    f <- f+1
+                    # if a block element has responses,
+                    # for each response increment the dictionary index e once,
+                    # and try to add to the dictionary the entry for that
+                    # question. If creating the entry fails, return to the
+                    # console a message saying
+
+                    dictionary[[f]] <-
+                      tryCatch(
+                        create_entry(
+                          question = question,
+                          responses = responses,
+                          response_column = c,
+                          response_row = r
+                        ),
+                        error = function(e) {
+                          cat(
+                            paste0(
+                              "\nCreating an entry for the following question failed. \nDataExportTag: ",
+                              question[['Payload']][['DataExportTag']],
+                              "\nResponse Column: ",
+                              c,
+                              "\nResponse Row: ",
+                              r
+                            )
                           )
-                        )
-                        return(NULL)
-                      }
-                    )
+                          return(NULL)
+                        }
+                      )
+
+                  }
                 }
+              }
+              if (length(dictionary) != 0) {
+                e <- e + 1
+                df <- data.frame(t(sapply(dictionary, c)))
+                colnames(df) <- c("Respondent ID",
+                                  "Question Response Column",
+                                  "Raw Response")
+                df <- dplyr::filter(df, `Raw Response` != "")
+                response_lookup <-
+                  create_response_lookup_table(question)
+                if (length(response_lookup) != 0) {
+                  response_lookup <- dplyr::select(response_lookup, c("var", "text"))
+                  colnames(response_lookup)[2] <- "Coded Response"
+                  response_lookup[[1]] <- as.character(response_lookup[[1]])
+                  df[['Raw Response']] <- as.character(df[['Raw Response']])
+                  df <- dplyr::left_join(df, response_lookup, by=c("Raw Response" = "var"))
+                }
+                dictionary_list[[e]] <- df
               }
             }
           }
@@ -756,15 +832,15 @@ lean_responses <- function(question_blocks, survey_responses) {
     }
   }
 
-  # list_of_rows_to_df turns the rows into a data frame
-  dictionary <- do.call(rbind.data.frame, dictionary)
-  colnames(dictionary) <- c("Respondent ID",
-                            "Question Response Column",
-                            "Raw Response",
-                            "Coded Response")
-  return(dictionary)
+  df <- plyr::ldply(dictionary_list, data.frame)
+  colnames(df) <- c(
+    "Response ID",
+    "Question Response Column",
+    "Raw Response",
+    "Coded Response")
+  df[['Coded Response']] <- lapply(df[['Coded Response']], function(x) ifelse( is.null(x), "", x))
+  return(df)
 }
-
 
 #' Get the Survey Respondents Answers from a Specific Response Column
 #'

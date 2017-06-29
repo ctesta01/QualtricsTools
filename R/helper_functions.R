@@ -245,13 +245,11 @@ get_setup <- function(qsf_path,
         headerrows <- as.integer(headerrows)
     }
     if (missing(qsf_path)) {
-      cat("Use the dialogue box to specify the QSF file.\n")
       survey <- ask_for_qsf()
     } else {
       survey <- ask_for_qsf(qsf_path)
     }
     if (missing(csv_path)) {
-      cat("Use the dialogue box to specify the CSV file.\n")
       capture.output(
       responses <- ask_for_csv(headerrows = headerrows)
       )
