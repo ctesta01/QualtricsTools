@@ -114,8 +114,8 @@ is_matrix_bipolar <- function(question) {
 }
 
 
-#' Determine if a question is a multiple choice question
-is_multiple_choice <- function(x) {
+#' Determine if a question is a multiple answer question
+is_multiple_answer <- function(x) {
   return(is_mc_multiple_answer(x) || is_matrix_multiple_answer(x))
 }
 

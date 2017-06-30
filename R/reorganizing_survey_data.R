@@ -465,7 +465,7 @@ clean_html <- function(text) {
 human_readable_qtype <- function(questions) {
   create_qtype <- function(q) {
     qtype <- which(c(
-      is_multiple_choice(q),
+      is_multiple_answer(q),
       is_single_answer(q),
       is_rank_order(q),
       is_text_entry(q)
@@ -678,7 +678,7 @@ create_response_lookup_table <-
     # The lookup_table starts as a list, to which we will insert another list for each
     # variable response in the question.
     lookup_table <- list()
-    if (is_multiple_choice(question)) {
+    if (is_multiple_answer(question)) {
       # If the question is multiple answer, then set "1" and "" to correspond to
       # Selected and Not Selected.
       lookup_table[['0']] <- list()
