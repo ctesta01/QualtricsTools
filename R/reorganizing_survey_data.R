@@ -647,18 +647,40 @@ uncodeable_question_dictionary <- function(blocks) {
 }
 
 
+#' Create a Lookup Table for Response Variables
+#'
+#' For each variable response in the responses to a question,
+#' this function creates a row which contains the variable,
+#' its recode value if the question uses recode values, and the
+#' corresponding text for the given variable response. The exact
+#' format of the output lookup table (dataframe) is dictated
+#' by the question type depending on whether it is a
+#' multiple answer question, a multiple choice single answer question,
+#' or a matrix single answer question. Note that this function
+#' only creates a lookup table for each response which appears in the responses.
+#'
+#' @param question A list of questions extracted from a Qualtrics QSF file with
+#' responses inserted into them.
+#' @return A dataframe with columns "var", "recode_value", and "text", where each
+#' row corresponds to a unique variable response to the question.
 create_response_lookup_table <-
   function(question) {
+    # Get the list of unique non-text responses
     not_text_columns <- !(grepl("TEXT", colnames(question[['Responses']])))
     relevant_responses <- question[['Responses']][, not_text_columns]
     relevant_responses <- unlist(relevant_responses, use.names=FALSE)
     unique_responses <- unique(relevant_responses)
+
     # Remove -99 and "" from the list of unique responses
     valid_responses <- as.logical(sapply(unique_responses, function(x) !(x %in% c("-99", ""))))
-    # cat(paste0(valid_responses))
     unique_responses <- unique_responses[which(valid_responses)]
+
+    # The lookup_table starts as a list, to which we will insert another list for each
+    # variable response in the question.
     lookup_table <- list()
     if (is_multiple_choice(question)) {
+      # If the question is multiple answer, then set "1" and "" to correspond to
+      # Selected and Not Selected.
       lookup_table[['0']] <- list()
       lookup_table[['0']][['var']] <- ""
       lookup_table[['0']][['text']] <- "Not Selected"
@@ -666,11 +688,15 @@ create_response_lookup_table <-
       lookup_table[['1']][['var']] <- "1"
       lookup_table[['1']][['text']] <- "Selected"
     } else if (is_mc_single_answer(question)) {
+      # If the question is a multiple choice single answer question:
       has_recode_values <- any("RecodeValues" == names(question[['Payload']]))
       for (r in unique_responses) {
+        # Insert a new list for the given variable response r
         i <- length(lookup_table) + 1
         lookup_table[[i]] <- list()
         lookup_table[[i]][['var']] <- r
+        # If the question has recode values, lookup r as a recode value,
+        # include its recoded value, and replace r with its recoded_value
         if (has_recode_values) {
           recode_value_index <- which(question[['Payload']][['RecodeValues']] == r)
           if (length(recode_value_index) != 0) {
@@ -679,15 +705,19 @@ create_response_lookup_table <-
             r <- recoded_value
           }
         }
+        # Insert the choice text that corresponds to r
         lookup_table[[i]][['text']] <- question[['Payload']][['Choices']][[r]][[1]]
       }
     } else if (is_matrix_single_answer(question)) {
       has_recode_values <- any("RecodeValues" == names(question[['Payload']]))
       for (r in unique_responses) {
+        # Insert a new list for the given variable response r
         i <- length(lookup_table) + 1
         lookup_table[[i]] <- list()
         lookup_table[[i]][['var']] <- r
         if (has_recode_values) {
+          # If the question has recode values, lookup r as a recode value,
+          # include its recoded value, and replace r with its recoded_value
           recode_value_index <- which(question[['Payload']][['RecodeValues']] == r)
           if (length(recode_value_index) != 0) {
             recoded_value <- names(question[['Payload']][['RecodeValues']])[[as.integer(recode_value_index[[1]])]]
@@ -695,10 +725,14 @@ create_response_lookup_table <-
             r <- recoded_value
           }
         }
+        # Matrix questions use "Answers" instead of "Choices" -- look up the text corresponding
+        # to r and insert it as r's corresponding "text".
         lookup_table[[i]][['text']] <- question[['Payload']][['Answers']][[r]][[1]]
       }
     }
-    # Convert the lookup table from a list to a Dataframe
+    # Convert the lookup table from a list to a Dataframe:
+    # sapply(lookup_table, c) creates a dataframe with the rows
+    # as "var", "recode_value", and "text" which needs to be transposed.
     lookup_table <- data.frame(t(sapply(lookup_table, c)))
     return(lookup_table)
   }
@@ -714,6 +748,8 @@ create_response_lookup_table <-
 #' @param question_blocks A list of blocks, with questions inserted in place of the
 #' BlockElements representing them.
 #' @param survey_responses The responses to the survey, as imported by ask_for_csv()
+#' @param include_text_entry A parameter which defaults to FALSE indicating whether or not
+#' open ended text responses should be included in the dictionary of lean responses.
 #' @return a data frame with each row detailing an individual survey response.
 lean_responses <- function(question_blocks, survey_responses, include_text_entry = FALSE) {
   requireNamespace("dplyr")
@@ -730,8 +766,9 @@ lean_responses <- function(question_blocks, survey_responses, include_text_entry
     responses <- survey_responses
   }
 
-  # this create_entry function returns an entry (a row)
-  # to be used in the lean_responses output.
+  # This creates an individual entry corresponding to a
+  # variable response: it is a list with the respondent ID,
+  # question response column name, and the raw variable response.
   create_entry <-
     function(question,
              responses,
@@ -744,24 +781,20 @@ lean_responses <- function(question_blocks, survey_responses, include_text_entry
         names(question[['Responses']])[[response_column]],
         # Raw Response:
         toString(question[['Responses']][[response_column]][[response_row]])
-        # Coded Response:
-        # choice_text_from_question(question, question[['Responses']][[response_column]][[response_row]])
-        # choice_text_from_lookup_table(lookup_table, question[['Responses']][[response_column]][[response_row]])
       ))
     }
 
 
 
-  # create a dictionary as a list to store row-entries in.
-  # for each block element, try to create an entry and add it
-  # to the dictionary.
-  # TODO: does this fail well?
+  # Create a dictionary_list to store the dataframes for each question in.
   dictionary_list <- list()
   e <- 0
   for (b in 1:number_of_blocks(blocks)) {
     if ('BlockElements' %in% names(blocks[[b]])) {
       for (be in 1:length(blocks[[b]][['BlockElements']])) {
         question <- blocks[[b]][['BlockElements']][[be]]
+        # If the question is not text entry, or include_text_entry is set to true,
+        # and the question is not a descriptive box, proceed to check for its responses.
         if ((! is_text_entry(question) || include_text_entry) &&
             question[['Payload']][['QuestionType']] != "DB") {
           if ("Responses" %in% names(question)) {
@@ -769,6 +802,8 @@ lean_responses <- function(question_blocks, survey_responses, include_text_entry
             rown <-
               nrow(question[['Responses']])
             if (coln > 0 && rown > 0) {
+              # Dictionary will be first a list which contains entries for each
+              # variable response, each made by create_entry.
               dictionary <- list()
               f <- 0
               for (c in 1:coln) {
@@ -809,20 +844,32 @@ lean_responses <- function(question_blocks, survey_responses, include_text_entry
               }
               if (length(dictionary) != 0) {
                 e <- e + 1
+                # Turn dictionary into a dataframe and name its columns
                 df <- data.frame(t(sapply(dictionary, c)))
                 colnames(df) <- c("Respondent ID",
                                   "Question Response Column",
                                   "Raw Response")
+                # Use dplyr to filter out blank responses
                 df <- dplyr::filter(df, `Raw Response` != "")
+                # Create a response lookup table
                 response_lookup <-
                   create_response_lookup_table(question)
+                # Format and merge the response lookup table into the dictionary
                 if (length(response_lookup) != 0) {
+                  # Select only the "var" and "text" columns from the response_lookup dataframe
                   response_lookup <- dplyr::select(response_lookup, c("var", "text"))
+                  # Rename the "text" column to "Coded Responses" so that it appears next to
+                  # "Raw Response" with the correct name in the dataframe for this question
                   colnames(response_lookup)[2] <- "Coded Response"
+                  # Make sure that the columns which we're trying to merge based on are of the
+                  # same structure, otherwise dplyr will complain.
                   response_lookup[[1]] <- as.character(response_lookup[[1]])
                   df[['Raw Response']] <- as.character(df[['Raw Response']])
+                  # Left join, so that we keep anything from df and we insert columns from
+                  # response_lookup on the right.
                   df <- dplyr::left_join(df, response_lookup, by=c("Raw Response" = "var"))
                 }
+                # Save this dataframe with the others
                 dictionary_list[[e]] <- df
               }
             }
@@ -832,12 +879,16 @@ lean_responses <- function(question_blocks, survey_responses, include_text_entry
     }
   }
 
+  # plyr's (NOT DPLYR) ldply function splits a list, applies the given function,
+  # and then returns the results in a dataframe.
   df <- plyr::ldply(dictionary_list, data.frame)
+  # Rename the columns again, because ldply turns "Raw Response" -> "Raw.Response"
   colnames(df) <- c(
     "Response ID",
     "Question Response Column",
     "Raw Response",
     "Coded Response")
+  # Remove all NULL values in the "Coded Response" column.
   df[['Coded Response']] <- lapply(df[['Coded Response']], function(x) ifelse( is.null(x), "", x))
   return(df)
 }
