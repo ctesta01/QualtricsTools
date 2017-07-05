@@ -310,7 +310,8 @@ insert_coded_comments <-
     # Create a response column dictionary, for use in looking up the
     # questions associated to each response column name.
     r_col_dictionary <-
-      create_response_column_dictionary(blocks, original_first_rows[1, ])
+      create_response_column_dictionary(question_blocks = blocks,
+                                        orig_first_row = original_first_rows[1, ])
     # Copy the questions from the blocks
     questions <- questions_from_blocks(blocks)
 

@@ -1307,7 +1307,7 @@ create_response_column_dictionary <-
       blocks <- question_blocks
     }
     if (missing(orig_first_row)) {
-      original_first_row <- get("original_first_row", envir = 1)
+      original_first_row <- get("original_first_rows", envir = 1)
     } else {
       original_first_row <- orig_first_row
     }
