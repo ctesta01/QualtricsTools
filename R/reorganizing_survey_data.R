@@ -789,7 +789,7 @@ lean_responses <- function(question_blocks, survey_responses, include_text_entry
   # Create a dictionary_list to store the dataframes for each question in.
   dictionary_list <- list()
   e <- 0
-  for (b in 1:number_of_blocks(blocks)) {
+  for (b in 1:length(blocks)) {
     if ('BlockElements' %in% names(blocks[[b]])) {
       for (be in 1:length(blocks[[b]][['BlockElements']])) {
         question <- blocks[[b]][['BlockElements']][[be]]
@@ -857,7 +857,7 @@ lean_responses <- function(question_blocks, survey_responses, include_text_entry
                 # Format and merge the response lookup table into the dictionary
                 if (length(response_lookup) != 0) {
                   # Select only the "var" and "text" columns from the response_lookup dataframe
-                  response_lookup <- dplyr::select(response_lookup, c("var", "text"))
+                  response_lookup <- response_lookup[, c("var", "text")]
                   # Rename the "text" column to "Coded Responses" so that it appears next to
                   # "Raw Response" with the correct name in the dataframe for this question
                   colnames(response_lookup)[2] <- "Coded Response"

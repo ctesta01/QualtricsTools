@@ -8,11 +8,13 @@ Description: This package is for automating the processing of Qualtrics surveys.
 License: BSD
 LazyData: true
 Imports:
+    dplyr,
     gdata,
     gtools,
     htmltools,
     httpuv,
     magrittr,
+    plyr,
     reshape,
     readxl,
     rjson,
@@ -20,7 +22,8 @@ Imports:
     shiny,
     shinydashboard,
     tidyr,
-    xtable
+    xtable,
+    XML
 Remotes: talgalili/installr
 RoxygenNote: 6.0.1
 Suggests: testthat
