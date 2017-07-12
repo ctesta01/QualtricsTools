@@ -496,6 +496,8 @@ human_readable_qtype <- function(questions) {
 #' @param blocks The blocks provided to this function must include questions inserted into
 #' the BlockElements. Create the list of blocks from a survey with blocks_from_survey(),
 #' and with questions on hand, insert them into the blocks with questions_into_blocks().
+#' @param flow A list of strings identifying the blocks in the order that they appear
+#' within the survey.
 #' @return A data frame with a row for each question describing the question's details.
 create_question_dictionary <- function(blocks, flow) {
 
