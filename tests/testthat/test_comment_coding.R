@@ -62,10 +62,15 @@ test_that("Test that make_coded_comments includes the categories defined in the 
     html = output_html
   )
 
+  # Ensure that files are being output.
   expect_true(file.exists(output_file))
   html_tables <- XML::readHTMLTable(output_html)
+  # Ensure that there is contents being output into the file.
   expect_true(length(html_tables) > 0)
-  expect_true("Appendix Z" %in% unlist(html_tables))
-
+  times_appendix_A_appears <-
+    which(as.logical(lapply(unlist(html_tables), function(x) x == "Appendix A")))
+  # Since these are coded comments, make sure that there are multiple
+  # Appendix A entries when unlisting the contents of the HTML.
+  expect_true(times_appendix_A_appears >= 2)
 })
 

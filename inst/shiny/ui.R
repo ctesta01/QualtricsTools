@@ -14,19 +14,19 @@ sidebar <- dashboardSidebar(
                        accept=c('text/csv', 'text/comma-separated-values', '.csv')
              ),
              div(class="sidebar-text",
-                 HTML("Was the CSV exported using the <a href='https://github.com/ctesta01/QualtricsTools/wiki/Appendix-of-Qualtrics-Terms#legacy-and-insights-data'>Insights format</a>?")),
+                 HTML("Was the CSV exported using the <a href='https://github.com/ctesta01/QualtricsTools/wiki/Appendix-of-Qualtrics-Terms#legacy-and-insights-data', target='_blank'>Insights format</a>?")),
              checkboxInput("insights_or_not", "Insights?", value = TRUE, width = NULL)
              ),
-             menuItem("Processed Results", tabName="report", icon=icon("leanpub")),
-             menuItem("Include/Exclude Responses", tabName="include_exclude", icon=icon("toggle-on")),
-             menuItem("More Options", tabName="more_options", icon=icon("dashboard")),
+    menuItem("Processed Results", tabName="report", icon=icon("leanpub")),
+    menuItem("Include/Exclude Responses", tabName="include_exclude", icon=icon("toggle-on")),
+    menuItem("More Options", tabName="more_options", icon=icon("dashboard")),
 
-             # empty h5 headers below are for spacing
-             h5(""),
-             downloadButton('downloadZip', 'Download Zip', class="btn-primary"),
-             h5(""),
-             actionButton("quit", "Stop App")
-             )
+    # empty h5 headers below are for spacing
+    h5(""),
+    downloadButton('downloadZip', 'Download Zip', class="btn-primary"),
+    h5(""),
+    actionButton("quit", "Stop App")
+  )
 )
 
 body <- dashboardBody(

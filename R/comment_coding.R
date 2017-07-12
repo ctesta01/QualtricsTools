@@ -17,12 +17,17 @@ directory_get_coded_comment_sheets <- function(directory) {
 
   # we only want to look at Excel or CSV files in the given directory
   files_list <- list.files(path = directory, full.names = TRUE)
+  # Filter for only xlsx, xls, and csv files
   files_list <-
     files_list[lapply(files_list, function(x)
       grepl("*.xlsx$|*.xls$|*.csv$", x)) == TRUE]
+  # Exclude any temporary files
   files_list <-
     files_list[lapply(files_list, function(x)
       grepl("^~", basename(x))) == FALSE]
+  if (length(files_list) == 0) {
+    stop("The specified directory did not contain any xlsx, xls, or csv files.")
+  }
 
 
   # If there are warnings in reading in the Excel sheets,
