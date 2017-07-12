@@ -706,7 +706,7 @@ create_response_lookup_table <-
           }
         }
         # Insert the choice text that corresponds to r
-        lookup_table[[i]][['text']] <- question[['Payload']][['Choices']][[r]][[1]]
+        lookup_table[[i]][['text']] <- clean_html(question[['Payload']][['Choices']][[r]][[1]])
       }
     } else if (is_matrix_single_answer(question)) {
       has_recode_values <- any("RecodeValues" == names(question[['Payload']]))
@@ -727,7 +727,7 @@ create_response_lookup_table <-
         }
         # Matrix questions use "Answers" instead of "Choices" -- look up the text corresponding
         # to r and insert it as r's corresponding "text".
-        lookup_table[[i]][['text']] <- question[['Payload']][['Answers']][[r]][[1]]
+        lookup_table[[i]][['text']] <- clean_html(question[['Payload']][['Answers']][[r]][[1]])
       }
     }
     # Convert the lookup table from a list to a Dataframe:
