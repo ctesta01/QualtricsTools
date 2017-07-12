@@ -10,7 +10,7 @@ test_that("Test that generate_results_tables creates a file when run on the Bett
   csv = file.path(survey_dir, "Better_Sample_Survey.csv")
   results_output_file = make_text_appendices(headerrows=3, qsf_path = qsf, csv_path = csv)
   status = file.exists(results_output_file)
-  expect_equal(status, TRUE)
+  expect_true(status)
 })
 
 test_that("Test that generate_results_tables creates a file when run on the Long Exhaustive Sample Survey", {
@@ -19,7 +19,7 @@ test_that("Test that generate_results_tables creates a file when run on the Long
   csv = file.path(survey_dir, "Long_Exhaustive_Sample_Survey.csv")
   results_output_file = make_text_appendices(headerrows=3, qsf_path = qsf, csv_path = csv)
   status = file.exists(results_output_file)
-  expect_equal(status, TRUE)
+  expect_true(status)
 })
 
 test_that("Test that generate_results_tables creates a file when run on the No Basis for Evaluation Survey", {
@@ -28,7 +28,7 @@ test_that("Test that generate_results_tables creates a file when run on the No B
   csv = file.path(survey_dir, "No_Basis_for_Evaluation (Insights).csv")
   results_output_file = make_text_appendices(headerrows=3, qsf_path = qsf, csv_path = csv)
   status = file.exists(results_output_file)
-  expect_equal(status, TRUE)
+  expect_true(status)
 })
 
 test_that("Test that generate_results_tables creates a file when run on the Survey Logic Survey", {
@@ -37,7 +37,7 @@ test_that("Test that generate_results_tables creates a file when run on the Surv
   csv = file.path(survey_dir, "Survey_Logic_EVERYWHERE.csv")
   results_output_file = make_text_appendices(headerrows=3, qsf_path = qsf, csv_path = csv)
   status = file.exists(results_output_file)
-  expect_equal(status, TRUE)
+  expect_true(status)
 })
 
 test_that("Test that generate_results_tables creates a file when run on the User Notes Survey", {
@@ -46,5 +46,5 @@ test_that("Test that generate_results_tables creates a file when run on the User
   csv = file.path(survey_dir, "Notes_Survey.csv")
   results_output_file = make_text_appendices(headerrows=3, qsf_path = qsf, csv_path = csv)
   status = file.exists(results_output_file)
-  expect_equal(status, TRUE)
+  expect_true(status)
 })

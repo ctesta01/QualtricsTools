@@ -416,12 +416,10 @@ questions_into_blocks <- function(questions, blocks) {
 #' @return A list of questions which now include in their Payload a QuestionTextClean
 #' element, a copy of the QuestionText but cleaned of any HTML tags and HTML entities.
 clean_question_text <- function(questions) {
-  remove_css_style <- function(x)
-    gsub("<style.*style>", "", x)
 
   for (i in 1:length(questions)) {
     questions[[i]][['Payload']][['QuestionTextClean']] <-
-      clean_html(remove_css_style(questions[[i]][['Payload']][['QuestionText']]))
+      clean_html(questions[[i]][['Payload']][['QuestionText']])
   }
 
   return(questions)
@@ -443,18 +441,13 @@ clean_question_text <- function(questions) {
 #' @param text any text string that might contain HTML or whitespace that needs stripped.
 #' @return text without any html or extraneous whitespace.
 clean_html <- function(text) {
-  clean_html_tags <- function(x)
-    gsub("<.*?>", " ", x)
-  clean_html_entities <- function(x)
-    gsub("&[# a-z 0-9]*;", " ", x)
-  clean_extra_whitespace <- function(x)
-    gsub("\\s+", " ", x)
-  clean_leading_whitespace <-
-    function (x)
-      gsub("^\\s+|\\s+$", "", x)
-  return(clean_leading_whitespace(clean_extra_whitespace(
-    clean_html_entities(clean_html_tags(text))
-  )))
+  # Clean HTML Tags and HTML Entitie
+  text <- gsub("<.*?>|&[# a-z 0-9]*;", " ", text)
+  # Remove leading or trailing whitespace
+  text <- gsub("^\\s+|\\s+$", "", text)
+  # Remove extra whitespace
+  text <- gsub("\\s+", " ", text)
+  return(text)
 }
 
 
@@ -472,7 +465,7 @@ clean_html <- function(text) {
 human_readable_qtype <- function(questions) {
   create_qtype <- function(q) {
     qtype <- which(c(
-      is_multiple_choice(q),
+      is_multiple_answer(q),
       is_single_answer(q),
       is_rank_order(q),
       is_text_entry(q)
@@ -654,6 +647,97 @@ uncodeable_question_dictionary <- function(blocks) {
 }
 
 
+#' Create a Lookup Table for Response Variables
+#'
+#' For each variable response in the responses to a question,
+#' this function creates a row which contains the variable,
+#' its recode value if the question uses recode values, and the
+#' corresponding text for the given variable response. The exact
+#' format of the output lookup table (dataframe) is dictated
+#' by the question type depending on whether it is a
+#' multiple answer question, a multiple choice single answer question,
+#' or a matrix single answer question. Note that this function
+#' only creates a lookup table for each response which appears in the responses.
+#'
+#' @param question A list of questions extracted from a Qualtrics QSF file with
+#' responses inserted into them.
+#' @return A dataframe with columns "var", "recode_value", and "text", where each
+#' row corresponds to a unique variable response to the question.
+create_response_lookup_table <-
+  function(question) {
+    # Get the list of unique non-text responses
+    not_text_columns <- !(grepl("TEXT", colnames(question[['Responses']])))
+    relevant_responses <- question[['Responses']][, not_text_columns]
+    relevant_responses <- unlist(relevant_responses, use.names=FALSE)
+    unique_responses <- unique(relevant_responses)
+
+    # Remove -99 and "" from the list of unique responses
+    valid_responses <- as.logical(sapply(unique_responses, function(x) !(x %in% c("-99", ""))))
+    unique_responses <- unique_responses[which(valid_responses)]
+
+    # The lookup_table starts as a list, to which we will insert another list for each
+    # variable response in the question.
+    lookup_table <- list()
+    if (is_multiple_answer(question)) {
+      # If the question is multiple answer, then set "1" and "" to correspond to
+      # Selected and Not Selected.
+      lookup_table[['0']] <- list()
+      lookup_table[['0']][['var']] <- ""
+      lookup_table[['0']][['text']] <- "Not Selected"
+      lookup_table[['1']] <- list()
+      lookup_table[['1']][['var']] <- "1"
+      lookup_table[['1']][['text']] <- "Selected"
+    } else if (is_mc_single_answer(question)) {
+      # If the question is a multiple choice single answer question:
+      has_recode_values <- any("RecodeValues" == names(question[['Payload']]))
+      for (r in unique_responses) {
+        # Insert a new list for the given variable response r
+        i <- length(lookup_table) + 1
+        lookup_table[[i]] <- list()
+        lookup_table[[i]][['var']] <- r
+        # If the question has recode values, lookup r as a recode value,
+        # include its recoded value, and replace r with its recoded_value
+        if (has_recode_values) {
+          recode_value_index <- which(question[['Payload']][['RecodeValues']] == r)
+          if (length(recode_value_index) != 0) {
+            recoded_value <- names(question[['Payload']][['RecodeValues']])[[as.integer(recode_value_index[[1]])]]
+            lookup_table[[i]][['recode_value']] <- recoded_value
+            r <- recoded_value
+          }
+        }
+        # Insert the choice text that corresponds to r
+        lookup_table[[i]][['text']] <- question[['Payload']][['Choices']][[r]][[1]]
+      }
+    } else if (is_matrix_single_answer(question)) {
+      has_recode_values <- any("RecodeValues" == names(question[['Payload']]))
+      for (r in unique_responses) {
+        # Insert a new list for the given variable response r
+        i <- length(lookup_table) + 1
+        lookup_table[[i]] <- list()
+        lookup_table[[i]][['var']] <- r
+        if (has_recode_values) {
+          # If the question has recode values, lookup r as a recode value,
+          # include its recoded value, and replace r with its recoded_value
+          recode_value_index <- which(question[['Payload']][['RecodeValues']] == r)
+          if (length(recode_value_index) != 0) {
+            recoded_value <- names(question[['Payload']][['RecodeValues']])[[as.integer(recode_value_index[[1]])]]
+            lookup_table[[i]][['recode_value']] <- recoded_value
+            r <- recoded_value
+          }
+        }
+        # Matrix questions use "Answers" instead of "Choices" -- look up the text corresponding
+        # to r and insert it as r's corresponding "text".
+        lookup_table[[i]][['text']] <- question[['Payload']][['Answers']][[r]][[1]]
+      }
+    }
+    # Convert the lookup table from a list to a Dataframe:
+    # sapply(lookup_table, c) creates a dataframe with the rows
+    # as "var", "recode_value", and "text" which needs to be transposed.
+    lookup_table <- data.frame(t(sapply(lookup_table, c)))
+    return(lookup_table)
+  }
+
+
 #' Create Long and Lean Response Dictionary
 #'
 #' lean_responses() creates a data frame where each row corresponds to
@@ -664,8 +748,12 @@ uncodeable_question_dictionary <- function(blocks) {
 #' @param question_blocks A list of blocks, with questions inserted in place of the
 #' BlockElements representing them.
 #' @param survey_responses The responses to the survey, as imported by ask_for_csv()
+#' @param include_text_entry A parameter which defaults to FALSE indicating whether or not
+#' open ended text responses should be included in the dictionary of lean responses.
 #' @return a data frame with each row detailing an individual survey response.
-lean_responses <- function(question_blocks, survey_responses) {
+lean_responses <- function(question_blocks, survey_responses, include_text_entry = FALSE) {
+  requireNamespace("dplyr")
+  requireNamespace("plyr")
   # get the blocks, responses, and original_first_row from the global environment
   if (missing(question_blocks)) {
     blocks <- get("blocks", envir = 1)
@@ -678,8 +766,9 @@ lean_responses <- function(question_blocks, survey_responses) {
     responses <- survey_responses
   }
 
-  # this create_entry function returns an entry (a row)
-  # to be used in the lean_responses output.
+  # This creates an individual entry corresponding to a
+  # variable response: it is a list with the respondent ID,
+  # question response column name, and the raw variable response.
   create_entry <-
     function(question,
              responses,
@@ -691,63 +780,97 @@ lean_responses <- function(question_blocks, survey_responses) {
         # Question Response Column:
         names(question[['Responses']])[[response_column]],
         # Raw Response:
-        toString(question[['Responses']][[response_column]][[response_row]]),
-        # Coded Response:
-        choice_text_from_question(question, question[['Responses']][[response_column]][[response_row]])
+        toString(question[['Responses']][[response_column]][[response_row]])
       ))
     }
 
-  # create a dictionary as a list to store row-entries in.
-  # for each block element, try to create an entry and add it
-  # to the dictionary.
-  # TODO: does this fail well?
-  dictionary <- list()
+
+
+  # Create a dictionary_list to store the dataframes for each question in.
+  dictionary_list <- list()
   e <- 0
-  for (b in 1:number_of_blocks(blocks)) {
+  for (b in 1:length(blocks)) {
     if ('BlockElements' %in% names(blocks[[b]])) {
       for (be in 1:length(blocks[[b]][['BlockElements']])) {
-        if ("Responses" %in% names(blocks[[b]][['BlockElements']][[be]])) {
-          coln <- ncol(blocks[[b]][['BlockElements']][[be]][['Responses']])
-          rown <-
-            nrow(blocks[[b]][['BlockElements']][[be]][['Responses']])
-          if (coln > 0) {
-            for (c in 1:coln) {
-              if (rown > 0) {
-                for (r in 1:rown) {
-                  # if a block element has responses,
-                  # for each response increment the dictionary index e once,
-                  # and try to add to the dictionary the entry for that
-                  # question. If creating the entry fails, return to the
-                  # console a message saying
-                  e <- e + 1
-                  dictionary[[e]] <-
-                    tryCatch(
-                      create_entry(
-                        question = blocks[[b]][['BlockElements']][[be]],
-                        responses = responses,
-                        response_column = c,
-                        response_row = r
-                      ),
-                      error = function(e) {
-                        cat(
-                          paste0(
-                            "\nCreating an entry for the following question failed. \nDataExportTag: "
-                            ,
-                            blocks[[b]][['BlockElements']][[be]][['Payload']][['DataExportTag']]
-                            ,
-                            "\nResponse Column: "
-                            ,
-                            c
-                            ,
-                            "\nResponse Row: "
-                            ,
-                            r
+        question <- blocks[[b]][['BlockElements']][[be]]
+        # If the question is not text entry, or include_text_entry is set to true,
+        # and the question is not a descriptive box, proceed to check for its responses.
+        if ((! is_text_entry(question) || include_text_entry) &&
+            question[['Payload']][['QuestionType']] != "DB") {
+          if ("Responses" %in% names(question)) {
+            coln <- ncol(question[['Responses']])
+            rown <-
+              nrow(question[['Responses']])
+            if (coln > 0 && rown > 0) {
+              # Dictionary will be first a list which contains entries for each
+              # variable response, each made by create_entry.
+              dictionary <- list()
+              f <- 0
+              for (c in 1:coln) {
+                if (!grepl("TEXT", colnames(question[['Responses']])[[c]])) {
+                  for (r in 1:rown) {
+                    f <- f+1
+                    # if a block element has responses,
+                    # for each response increment the dictionary index e once,
+                    # and try to add to the dictionary the entry for that
+                    # question. If creating the entry fails, return to the
+                    # console a message saying
+
+                    dictionary[[f]] <-
+                      tryCatch(
+                        create_entry(
+                          question = question,
+                          responses = responses,
+                          response_column = c,
+                          response_row = r
+                        ),
+                        error = function(e) {
+                          cat(
+                            paste0(
+                              "\nCreating an entry for the following question failed. \nDataExportTag: ",
+                              question[['Payload']][['DataExportTag']],
+                              "\nResponse Column: ",
+                              c,
+                              "\nResponse Row: ",
+                              r
+                            )
                           )
-                        )
-                        return(NULL)
-                      }
-                    )
+                          return(NULL)
+                        }
+                      )
+
+                  }
                 }
+              }
+              if (length(dictionary) != 0) {
+                e <- e + 1
+                # Turn dictionary into a dataframe and name its columns
+                df <- data.frame(t(sapply(dictionary, c)))
+                colnames(df) <- c("Respondent ID",
+                                  "Question Response Column",
+                                  "Raw Response")
+                # Use dplyr to filter out blank responses
+                df <- dplyr::filter(df, `Raw Response` != "")
+                # Create a response lookup table
+                response_lookup <-
+                  create_response_lookup_table(question)
+                # Format and merge the response lookup table into the dictionary
+                if (length(response_lookup) != 0) {
+                  # Select only the "var" and "text" columns from the response_lookup dataframe
+                  response_lookup <- response_lookup[, c("var", "text")]
+                  # Rename the "text" column to "Coded Responses" so that it appears next to
+                  # "Raw Response" with the correct name in the dataframe for this question
+                  colnames(response_lookup)[2] <- "Coded Response"
+                  # Make sure that the columns which we're trying to merge based on are of the
+                  # same structure, otherwise dplyr will complain.
+                  response_lookup[[1]] <- as.character(response_lookup[[1]])
+                  df[['Raw Response']] <- as.character(df[['Raw Response']])
+                  # Left join, so that we keep anything from df and we insert columns from
+                  # response_lookup on the right.
+                  df <- dplyr::left_join(df, response_lookup, by=c("Raw Response" = "var"))
+                }
+                # Save this dataframe with the others
+                dictionary_list[[e]] <- df
               }
             }
           }
@@ -756,15 +879,19 @@ lean_responses <- function(question_blocks, survey_responses) {
     }
   }
 
-  # list_of_rows_to_df turns the rows into a data frame
-  dictionary <- do.call(rbind.data.frame, dictionary)
-  colnames(dictionary) <- c("Respondent ID",
-                            "Question Response Column",
-                            "Raw Response",
-                            "Coded Response")
-  return(dictionary)
+  # plyr's (NOT DPLYR) ldply function splits a list, applies the given function,
+  # and then returns the results in a dataframe.
+  df <- plyr::ldply(dictionary_list, data.frame)
+  # Rename the columns again, because ldply turns "Raw Response" -> "Raw.Response"
+  colnames(df) <- c(
+    "Response ID",
+    "Question Response Column",
+    "Raw Response",
+    "Coded Response")
+  # Remove all NULL values in the "Coded Response" column.
+  df[['Coded Response']] <- lapply(df[['Coded Response']], function(x) ifelse( is.null(x), "", x))
+  return(df)
 }
-
 
 #' Get the Survey Respondents Answers from a Specific Response Column
 #'
@@ -1180,7 +1307,7 @@ create_response_column_dictionary <-
       blocks <- question_blocks
     }
     if (missing(orig_first_row)) {
-      original_first_row <- get("original_first_row", envir = 1)
+      original_first_row <- get("original_first_rows", envir = 1)
     } else {
       original_first_row <- orig_first_row
     }
