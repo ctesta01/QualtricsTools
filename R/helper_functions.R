@@ -64,7 +64,7 @@ choice_text_from_question <- function(question, choice) {
   # then the answers are boolean valued -- either they
   # checked it or they didn't. Return TRUE, FALSE, or
   # "Seen, but Unanswered" depending.
-  if (is_multiple_choice(question)) {
+  if (is_multiple_answer(question)) {
     if (choice %in% c(1, "1")) {
       choice <- "Selected"
     } else {
