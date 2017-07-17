@@ -20,7 +20,8 @@ https://github.com/ctesta01/QualtricsTools/wiki/Comment-Coding}
 
 \item{split_by}{is a list which specifies which columns should be used to split the respondents.}
 
-\item{n_threshold}{is the number of verbatim comments which will appear before being truncated.}
+\item{n_threshold}{is the number of verbatim comments which must appear before an appendix of
+coded comments will be included.}
 
 \item{headerrows}{(optional) specifies the number of header rows in the CSV data.}
 }

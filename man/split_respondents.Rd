@@ -17,10 +17,11 @@ the results processed and inserted into each BlockElement.
 }
 \details{
 @param response_column The response column that will be used to split the respondents
- @param headerrows the number of rows in the response csv before the response data starts
  @param already_loaded This can be set to TRUE to indicate that the survey and responses
  should be sourced from the global scope; in other words that the survey and its responses
  have are "already loaded."
+ @inheritParams get_coded_questions_and_blocks
+ @inheritParams create_question_dictionary
 
 @return A list of a list of blocks. The same question, but with different respondent groups,
  might look something like split_blocks[[1]][[1]][['BlockElements']][[1]] and

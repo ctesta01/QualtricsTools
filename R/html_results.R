@@ -469,7 +469,7 @@ text_appendices_table <-
 #' automatically coded. This may be changed later to be more informative, or
 #' to include this information elsewhere.
 #'
-#' @inheritParams tabelize_blocks
+#' @param questions A list of questions from a survey with results inserted into them.
 #' @return A message stating for which questions could not have
 #' results automatically generated.
 uncodeable_questions_message <- function(questions) {
@@ -510,8 +510,7 @@ uncodeable_questions_message <- function(questions) {
 #' If it has display logic, it's inserted into the tables returned by
 #' this function.
 #'
-#' @param blocks Survey blocks with questions substituted for the blockelements
-#'
+#' @inheritParams tabelize_blocks
 #' @return a list of html tables detailing the display logic for each question
 #' containing display logic.
 tabelize_display_logic <- function(blocks, flow) {
@@ -797,6 +796,7 @@ table_text_entry <-
 #' @param question is the question for which the text appendix is being created.
 #' @param responses is a data frame of text responses to the question given.
 #' @param appendix_e is the number of the appendix in the text appendices report.
+#' @inheritParams text_appendices_table
 table_non_text_entry <- function(question,
                                  responses,
                                  appendix_e,
@@ -855,6 +855,7 @@ table_non_text_entry <- function(question,
 
 #' Create a message stating MCSA questions with Multiple Text Entry components
 #' can't be automatically processed for text appendices.
+#' @inhertiParam question_description
 table_mcsa_multitext <- function(question) {
   question_message <-
     c(

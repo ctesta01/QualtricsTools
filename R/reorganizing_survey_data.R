@@ -111,7 +111,7 @@ blocks_from_survey <- function(survey) {
 #'
 #' @inheritParams get_coded_questions_and_blocks
 #'
-#' @return This returns a list of blocks
+#' @return This returns a list of blocks with element type "NT"
 notes_from_survey <- function(survey) {
   blocks <-
     Filter(function(x)
@@ -120,6 +120,8 @@ notes_from_survey <- function(survey) {
 }
 
 #' Insert the Notes for a question into its qtNotes
+#' @inheritParams link_responses_to_questions
+#' @param notes A list of blocks with type element "NT"
 insert_notes_into_questions <- function(questions, notes) {
   for (note in notes) {
     # Find and set up the corresponding question to insert
@@ -1157,10 +1159,11 @@ display_logic_from_question <- function(question) {
 #' the results processed and inserted into each BlockElement.
 #'
 #'  @param response_column The response column that will be used to split the respondents
-#'  @param headerrows the number of rows in the response csv before the response data starts
 #'  @param already_loaded This can be set to TRUE to indicate that the survey and responses
 #'  should be sourced from the global scope; in other words that the survey and its responses
 #'  have are "already loaded."
+#'  @inheritParams get_coded_questions_and_blocks
+#'  @inheritParams create_question_dictionary
 #'
 #'  @return A list of a list of blocks. The same question, but with different respondent groups,
 #'  might look something like split_blocks[[1]][[1]][['BlockElements']][[1]] and
@@ -1299,6 +1302,7 @@ split_respondents <-
 #' the survey's questions inserted appropriately into them.
 #' @param orig_first_row this is the first row of the response data CSV, it is
 #' automatically provided to you when you use get_setup() or in the shiny application.
+#' @inheritParams create_question_dictionary
 #' @return a dataframe detailing in each row the response columns and their description.
 create_response_column_dictionary <-
   function(question_blocks, flow, orig_first_row) {

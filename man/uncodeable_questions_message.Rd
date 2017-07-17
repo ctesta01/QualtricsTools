@@ -7,9 +7,7 @@
 uncodeable_questions_message(questions)
 }
 \arguments{
-\item{questions}{A list of questions with the relevant results tables
-stored as data frames under the questions[[i]][['Table']] element. Create
-such a list of questions by using generate_results function}
+\item{questions}{A list of questions from a survey with results inserted into them.}
 }
 \value{
 A message stating for which questions could not have

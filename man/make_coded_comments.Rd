@@ -22,7 +22,8 @@ https://github.com/ctesta01/QualtricsTools/wiki/Comment-Coding}
 
 \item{filename}{specifies the name of the output file.}
 
-\item{n_threshold}{is the number of verbatim comments which will appear before being truncated.}
+\item{n_threshold}{is the number of verbatim comments which must appear before an appendix of
+coded comments will be included.}
 }
 \description{
 Using `get_setup`, `directory_get_coded_comment_sheets`, `format_coded_comment_sheets`,

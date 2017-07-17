@@ -6,6 +6,18 @@
 \usage{
 insert_coded_comments(blocks, original_first_rows, coded_comments)
 }
+\arguments{
+\item{blocks}{A list of the survey blocks, with the questions included in them.}
+
+\item{original_first_rows}{A dataframe contianing the header information
+for each column of response data. This dataframe should include a row for the DataExportTag based
+response column names, another for the Question Text stem and choice text (although
+truncated), and a row with QID based column names.}
+
+\item{coded_comments}{A list of pairs (varname, coded_table) where varname corresponds
+to the response column name of the comments coded and coded_table
+summarizes the frequencies of the provided coded comments.}
+}
 \description{
 This takes a list of pairs of question IDs and coded comments tables
 and finds their corresponding question based on the question ID in a list

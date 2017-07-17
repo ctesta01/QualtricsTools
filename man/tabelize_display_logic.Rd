@@ -4,10 +4,13 @@
 \alias{tabelize_display_logic}
 \title{Generate Tables for Each Question with Display Logic}
 \usage{
-tabelize_display_logic(blocks)
+tabelize_display_logic(blocks, flow)
 }
 \arguments{
-\item{blocks}{Survey blocks with questions substituted for the blockelements}
+\item{blocks}{A list of the survey blocks, with the questions included in them.}
+
+\item{flow}{A list of strings identifying the blocks in the order that they appear
+within the survey.}
 }
 \value{
 a list of html tables detailing the display logic for each question

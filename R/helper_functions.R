@@ -750,7 +750,8 @@ make_text_appendices <-
 #' @param sheets_dir is the string path location of the directory which contains Excel documents
 #' with a "Coded" sheet formatted as specified on the wiki:
 #' https://github.com/ctesta01/QualtricsTools/wiki/Comment-Coding
-#' @param n_threshold is the number of verbatim comments which will appear before being truncated.
+#' @param n_threshold is the number of verbatim comments which must appear before an appendix of
+#' coded comments will be included.
 make_coded_comments <-
   function(qsf_path,
            csv_path,
@@ -895,6 +896,7 @@ make_split_results_tables <-
 #' level, this function is about running get_setup, create_merged_response_column,
 #' split_respondents, and html_2_pandoc in the right way to produce split reports.
 #' @inheritParams make_split_results_tables
+#' @inheritParams make_coded_comments
 make_split_text_appendices <-
   function(qsf_path,
            csv_path,

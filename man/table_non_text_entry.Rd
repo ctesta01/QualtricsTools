@@ -13,6 +13,13 @@ table_non_text_entry(question, responses, appendix_e, blocks,
 \item{responses}{is a data frame of text responses to the question given.}
 
 \item{appendix_e}{is the number of the appendix in the text appendices report.}
+
+\item{blocks}{A list of blocks with block elements replaced
+by the question with its paired responses.}
+
+\item{original_first_row}{This is the original first row of the
+response set. If you have the original_first_rows, you can
+pass original_first_rows[1,] to}
 }
 \description{
 This function creates text appendices, with a description table and

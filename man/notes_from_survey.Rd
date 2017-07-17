@@ -12,7 +12,7 @@ uploaded from a Qualtrics Survey File (QSF). Use
 ask_for_qsf() to create such a survey list object from a QSF file.}
 }
 \value{
-This returns a list of blocks
+This returns a list of blocks with element type "NT"
 }
 \description{
 Generate a List of Notes Blocks

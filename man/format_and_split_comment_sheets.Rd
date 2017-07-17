@@ -7,6 +7,12 @@
 format_and_split_comment_sheets(coded_comment_sheets, responses, split_column)
 }
 \arguments{
+\item{coded_comment_sheets}{A list of dataframes for
+each sheet of coded comments.}
+
+\item{responses}{A dataframe of Qualtrics responses to a survey.
+Use ask_for_csv() to create such a dataframe from a CSV file.}
+
 \item{split_column}{The string name of the column across which the coded comments
 should be split.}
 }

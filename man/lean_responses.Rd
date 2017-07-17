@@ -4,13 +4,16 @@
 \alias{lean_responses}
 \title{Create Long and Lean Response Dictionary}
 \usage{
-lean_responses(question_blocks, survey_responses)
+lean_responses(question_blocks, survey_responses, include_text_entry = FALSE)
 }
 \arguments{
 \item{question_blocks}{A list of blocks, with questions inserted in place of the
 BlockElements representing them.}
 
 \item{survey_responses}{The responses to the survey, as imported by ask_for_csv()}
+
+\item{include_text_entry}{A parameter which defaults to FALSE indicating whether or not
+open ended text responses should be included in the dictionary of lean responses.}
 }
 \value{
 a data frame with each row detailing an individual survey response.

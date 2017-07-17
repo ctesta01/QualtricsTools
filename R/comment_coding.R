@@ -254,7 +254,8 @@ merge_split_column_into_comment_sheet <-
 #' The first list is a list for each split group, and each list within those is a
 #' list of pairs of question IDs and their coded comments tables.
 #'
-#' @inheritParams format_coded_comments
+#' @inheritParams format_coded_comment_sheets
+#' @inheritParams merge_split_column_into_comment_sheet
 #' @param split_column The string name of the column across which the coded comments
 #' should be split.
 #' @return A list of lists, for each split group, and for the pairs of question IDs with
@@ -308,6 +309,15 @@ format_and_split_comment_sheets <-
 #' of blocks and then inserts the coded comments table into the question.
 #' The returned list is a list of blocks where the questions have had their
 #' coded comments inserted.
+#'
+#' @param blocks A list of the survey blocks, with the questions included in them.
+#' @param original_first_rows A dataframe contianing the header information
+#' for each column of response data. This dataframe should include a row for the DataExportTag based
+#' response column names, another for the Question Text stem and choice text (although
+#' truncated), and a row with QID based column names.
+#' @param coded_comments A list of pairs (varname, coded_table) where varname corresponds
+#' to the response column name of the comments coded and coded_table
+#' summarizes the frequencies of the provided coded comments.
 insert_coded_comments <-
   function(blocks,
            original_first_rows,

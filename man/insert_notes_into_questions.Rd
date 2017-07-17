@@ -6,6 +6,11 @@
 \usage{
 insert_notes_into_questions(questions, notes)
 }
+\arguments{
+\item{questions}{A list of questions selected from a Qualtrics survey}
+
+\item{notes}{A list of blocks with type element "NT"}
+}
 \description{
 Insert the Notes for a question into its qtNotes
 }
