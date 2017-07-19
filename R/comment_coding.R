@@ -106,15 +106,20 @@ get_coded_comment_sheet <- function(codedfile) {
   sheetindex <-
     which(tolower(readxl::excel_sheets(codedfile)) == "coded")
   if (length(sheetindex) == 0) {
-    cat(paste0(codedfile, " did not have a Coded tab\n"))
+    warning(paste0(codedfile, " did not have a Coded tab\n"))
     return(NA)
   }
 
   # Load the Coded Comments as a Data Frame
   coded_orig <- readxl::read_excel(codedfile, sheet = sheetindex)
 
-  # Strip out the Blank Rows
-  blank_rows <- which(is.na(coded_orig[1]) | nchar(coded_orig[1]) < 5)
+  # Error if the first column isn't the "ResponseID" column.
+  if (names(coded_orig)[[1]] != "ResponseID") {
+    stop("The first column of the coded comments is not the ResponseID column.")
+  }
+
+  # Strip out the Blank and NA Rows
+  blank_rows <- which(is.na(coded_orig[[1]]) | grepl("^\\s*$", coded_orig[[1]]))
   if (length(blank_rows) == 0) {
     coded_use <- coded_orig
   }
@@ -170,22 +175,20 @@ format_coded_comments <- function(coded_comment_sheet) {
   # remove zeroes
   coded_table <- coded_table[coded_table['N'] != 0,]
 
-  # sort by reverse numerically twice
-  # sorting the first time gives reverse numerically reverse alphabetically
-  # sorting the second time reverses the reverse alphabetic to forward alphabetic,
-  # while keeping the descending numerical sort
-  coded_table <- coded_table[rev(order(unlist(coded_table[, 'N']))), ]
-  coded_table <- coded_table[rev(order(unlist(coded_table[, 'N']))), ]
-
+  # First sort in an ascending alphabetic sort, and then sort descending numerically.
+  # The first sort is so that two rows with the same "N" values but with different
+  # responses are sorted alphabetically.
+  coded_table <- coded_table[order(unlist(coded_table[, "Response"]), decreasing=FALSE), ]
+  coded_table <- coded_table[order(unlist(coded_table[, "N"]), decreasing=TRUE), ]
 
   # add "Total" and the total N to the list of coded comments and Ns
-  n_comments <-
+  n_responses <-
     length(unique(as.data.frame(coded_comment_sheet)[, 1]))
-  coded_table <- rbind(coded_table, c("Total", n_comments))
+  coded_table <- rbind(coded_table, c("Total", n_responses))
 
 
   # we return a pair, the varname and the coded table.
-  return(list(varname, coded_table))
+  return(list('varname'=varname, 'coded_table'=coded_table))
 
 }
 
@@ -229,20 +232,20 @@ merge_split_column_into_comment_sheet <-
            responses,
            split_column) {
     # Which column is the split_column
-    split_index <- which(colnames(responses) == split_column)
-    if (split_index == 0) {
+    responses_split_index <- which(colnames(responses) == split_column)
+    if (responses_split_index == 0) {
       # Error if the split_column isn't present
       stop("No column in responses with name ", split_column)
     }
     # Get the response IDs and the split_column into a 2-column data frame
-    relevant_columns <- responses[, c(1, split_index)]
+    relevant_columns <- responses[, c(1, responses_split_index)]
     colnames(relevant_columns)[[1]] <- colnames(responses)[[1]]
 
     coded_comment_sheet <-
       merge(x = coded_comment_sheet, y = relevant_columns, by = 1)
-    split_index <-
+    comments_split_index <-
       which(colnames(coded_comment_sheet) == split_column)
-    re_ordering <- c(1, split_index, 2:(split_index - 1))
+    re_ordering <- c(1, comments_split_index, 2:(comments_split_index - 1))
     coded_comment_sheet <- coded_comment_sheet[, re_ordering]
     return(coded_comment_sheet)
   }
@@ -316,7 +319,7 @@ insert_coded_comments <-
     # questions associated to each response column name.
     r_col_dictionary <-
       create_response_column_dictionary(question_blocks = blocks,
-                                        orig_first_row = original_first_rows[1, ])
+                                        original_first_row = original_first_rows[1, ])
     # Copy the questions from the blocks
     questions <- questions_from_blocks(blocks)
 
