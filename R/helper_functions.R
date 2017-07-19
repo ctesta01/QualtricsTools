@@ -251,11 +251,11 @@ get_setup <- function(qsf_path,
     }
     if (missing(csv_path)) {
       capture.output(
-      responses <- ask_for_csv(headerrows = headerrows)
+        responses <- ask_for_csv(headerrows = headerrows)
       )
     } else {
       capture.output(
-      responses <- ask_for_csv(csv_path, headerrows = headerrows)
+        responses <- ask_for_csv(csv_path, headerrows = headerrows)
       )
     }
     original_first_rows <- as.data.frame(responses[[2]])
@@ -334,8 +334,8 @@ sample_survey=TRUE parameter."
         and flow have now been made global objects.\n"
       )
     }
-    }
   }
+}
 
 #' Find Question from DataExportTag
 #'
@@ -655,51 +655,51 @@ get_setup_in_environment <-
            headerrows,
            environment) {
     if (!any(c(missing(qsf_path), missing(csv_path)))) {
-    qt_vals = get_setup(
-      qsf_path = qsf_path,
-      csv_path = csv_path,
-      headerrows = headerrows,
-      return_data = TRUE
-    )
-  } else {
-    if (exists(
-      c(
-        'survey',
-        'responses',
-        'questions',
-        'blocks',
-        'original_first_rows',
-        'flow'
-      ),
-      envir = globalenv()
-    ))
-      qt_vals = list(
-        get('survey', envir = globalenv()),
-        get('responses', envir = globalenv()),
-        get('questions', envir = globalenv()),
-        get('blocks', envir = globalenv()),
-        get('original_first_rows', envir = globalenv()),
-        get('flow', envir = globalenv())
+      qt_vals = get_setup(
+        qsf_path = qsf_path,
+        csv_path = csv_path,
+        headerrows = headerrows,
+        return_data = TRUE
       )
-    else qt_vals = get_setup(return_data=TRUE)
-  }
-  # We used return_data=TRUE, so the data came back as a single
-  # list which needs to be processed into individual variables.
-  varnames = c('survey',
-               'responses',
-               'questions',
-               'blocks',
-               'original_first_rows',
-               'flow')
-  for (i in 1:length(varnames)) {
-    assign(varnames[[i]], qt_vals[[i]])
-  }
+    } else {
+      if (exists(
+        c(
+          'survey',
+          'responses',
+          'questions',
+          'blocks',
+          'original_first_rows',
+          'flow'
+        ),
+        envir = globalenv()
+      ))
+        qt_vals = list(
+          get('survey', envir = globalenv()),
+          get('responses', envir = globalenv()),
+          get('questions', envir = globalenv()),
+          get('blocks', envir = globalenv()),
+          get('original_first_rows', envir = globalenv()),
+          get('flow', envir = globalenv())
+        )
+      else qt_vals = get_setup(return_data=TRUE)
+    }
+    # We used return_data=TRUE, so the data came back as a single
+    # list which needs to be processed into individual variables.
+    varnames = c('survey',
+                 'responses',
+                 'questions',
+                 'blocks',
+                 'original_first_rows',
+                 'flow')
+    for (i in 1:length(varnames)) {
+      assign(varnames[[i]], qt_vals[[i]])
+    }
 
-  original_first_rows = as.data.frame(original_first_rows)
-  responses = as.data.frame(responses)
+    original_first_rows = as.data.frame(original_first_rows)
+    responses = as.data.frame(responses)
 
-  for (name in varnames) environment[[name]] <- get(name, environment())
-}
+    for (name in varnames) environment[[name]] <- get(name, environment())
+  }
 
 #' Export a file containing the text appendices
 #'

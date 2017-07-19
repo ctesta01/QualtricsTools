@@ -39,7 +39,8 @@ test_that(
     Q9_results_table <- as.data.frame(Q9_results_table)
 
     # Check that the previously computed results and new results match.
-    expect_true(all(Q9[['Table']] == Q9_results_table) &&
+    expect_true(all(Q9[['Table']][["N"]] == Q9_results_table[["N"]]) &&
+                  all(Q9[['Table']][["Percent"]] == Q9_results_table[["Percent"]]) &&
     all(names(Q9[['Table']]) == names(Q9_results_table)))
   }
 )
@@ -71,7 +72,8 @@ test_that(
     Q21_results_table <- as.data.frame(Q21_results_table)
 
     # Check that the previously computed results and new results match.
-    expect_true(all(Q21[['Table']] == Q21_results_table) &&
+    expect_true(all(Q21[['Table']][["N"]] == Q21_results_table[["N"]]) &&
+                  all(Q21[['Table']][["Percent"]] == Q21_results_table[["Percent"]]) &&
                   all(names(Q21[['Table']]) == names(Q21_results_table)))
   }
 )
@@ -103,7 +105,8 @@ test_that(
     q13_family_food_results_table <- as.data.frame(q13_family_food_results_table)
 
     # Check that the previously computed results and new results match.
-    expect_true(all(q13_family_food[['Table']] == q13_family_food_results_table) &&
+    expect_true(all(q13_family_food[['Table']][["N"]] == q13_family_food_results_table[["N"]]) &&
+                  all(q13_family_food[['Table']][["Percent"]] == q13_family_food_results_table[["Percent"]]) &&
                   all(names(q13_family_food[['Table']]) == names(q13_family_food_results_table)))
   }
 )
@@ -135,7 +138,8 @@ test_that(
     Q14_results_table <- as.data.frame(Q14_results_table)
 
     # Check that the previously computed results and new results match.
-    expect_true(all(Q14[['Table']] == Q14_results_table) &&
+    expect_true(all(Q14[['Table']][['N']] == Q14_results_table[["N"]]) &&
+                  all(Q14[['Table']][['Percent']] == Q14_results_table[["Percent"]]) &&
                   all(names(Q14[['Table']]) == names(Q14_results_table)))
   }
 )
@@ -167,7 +171,8 @@ test_that(
     Q15_results_table <- as.data.frame(Q15_results_table)
 
     # Check that the previously computed results and new results match.
-    expect_true(all(Q15[['Table']] == Q15_results_table) &&
+    expect_true(all(Q15[['Table']][["N"]] == Q15_results_table[["N"]]) &&
+                  all(Q15[['Table']][["Percent"]] == Q15_results_table[["Percent"]]) &&
                   all(names(Q15[['Table']]) == names(Q15_results_table)))
   }
 )
@@ -200,7 +205,8 @@ test_that(
     Q16_results_table <- as.data.frame(Q16_results_table)
 
     # Check that the previously computed results and new results match.
-    expect_true(all(Q16[['Table']] == Q16_results_table) &&
+    expect_true(all(Q16[['Table']][['N']] == Q16_results_table[['N']]) &&
+                  all(Q16[['Table']][['Percent']] == Q16_results_table[['Percent']]) &&
                   all(names(Q16[['Table']]) == names(Q16_results_table)))
   }
 )
@@ -233,7 +239,8 @@ test_that(
     Q12_results_table <- as.data.frame(Q12_results_table)
 
     # Check that the previously computed results and new results match.
-    expect_true(all(Q12[['Table']] == Q12_results_table) &&
+    expect_true(all(Q12[['Table']][['N']] == Q12_results_table[['N']]) &&
+                  all(Q12[['Table']][['Percent']] == Q12_results_table[['Percent']]) &&
                   all(names(Q12[['Table']]) == names(Q12_results_table)))
   }
 )
