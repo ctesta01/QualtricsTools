@@ -4,12 +4,17 @@
 \alias{tabelize_blocks}
 \title{Create a List of HTML Versions of the Results Tables}
 \usage{
-tabelize_blocks(blocks, flow, include_block_headers)
+tabelize_blocks(blocks, flow, include_block_headers = TRUE)
 }
 \arguments{
-\item{questions}{A list of questions with the relevant results tables
-stored as data frames under the questions[[i]][['Table']] element. Create
-such a list of questions by using generate_results function}
+\item{blocks}{A list of the survey blocks, with the questions included in them.}
+
+\item{flow}{A list of strings identifying the blocks in the order that they appear
+within the survey.}
+
+\item{include_block_headers}{A boolean (default: TRUE) parameter to indicate
+whether or not there should be <h5> html headers inserted before each block with the
+block's description.}
 }
 \value{
 A list of HTML results tables for each question

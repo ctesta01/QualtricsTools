@@ -24,6 +24,10 @@ Imports:
     tidyr,
     xtable,
     XML
+Suggests: 
+    testthat,
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
 Remotes: talgalili/installr
 RoxygenNote: 6.0.1
-Suggests: testthat

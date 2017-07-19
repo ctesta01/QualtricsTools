@@ -25,6 +25,11 @@ for each column of response data. This dataframe should include a row for the Da
 response column names, another for the Question Text stem and choice text (although
 truncated), and a row with QID based column names.}
 }
+\value{
+Lists of lists, where the outer lists correspond to groups of respondents, and the inner
+lists are lists of blocks with questions inserted which contain coded comments for that question
+and respondent group.
+}
 \description{
 This function splits the survey's response data and the
 coded comments, then inserts the split coded comments into the split

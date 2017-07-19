@@ -8,9 +8,9 @@ get_setup(qsf_path, csv_path, headerrows, already_loaded, return_data = FALSE,
   sample_data = FALSE)
 }
 \arguments{
-\item{qsf_path}{is the string location of the survey as a .QSF (Qualtrics Survey File)}
+\item{qsf_path}{The string location of the survey as a .QSF (Qualtrics Survey File)}
 
-\item{csv_path}{is the string location of the survey's responses, downloaded from Qualtrics}
+\item{csv_path}{The string location of the survey's responses, downloaded from Qualtrics}
 
 \item{headerrows}{An optional parameter for specifying the number of
 headerrows in the response csv.}

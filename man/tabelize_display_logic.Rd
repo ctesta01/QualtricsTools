@@ -4,7 +4,7 @@
 \alias{tabelize_display_logic}
 \title{Generate Tables for Each Question with Display Logic}
 \usage{
-tabelize_display_logic(blocks)
+tabelize_display_logic(blocks, flow)
 }
 \arguments{
 \item{blocks}{Survey blocks with questions substituted for the blockelements}
