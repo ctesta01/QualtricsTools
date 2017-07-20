@@ -23,6 +23,19 @@ percent0 <- function(x,
   paste0(formatC(round2(100 * x, 1), format = format, digits = digits, ...), "%")
 }
 
+
+#' Find out Which Choices Have Text Entry Components
+#'
+#' @name which_choices_have_text_entry
+#' @description Given a single question, this function
+#' determines which of the question[['Payload']][['Choices']]
+#' elements have a TextEntry which is enabled for free response
+#' input. The returned value is a list of integers representing
+#' the indices of which choices have text entry components.
+#' @param question This is a list object representing an individual question
+#' from a Qualtrics Survey File. A question must have the 'Choices' list
+#' inside its 'Payload' in order to be accepted by this function.
+#' @return A list of the indices for the choices which have a text entry component.
 which_choices_have_text_entry <- function(question) {
 
   # Error if question[['Payload']][['Choices']] doesn't exist.
@@ -43,6 +56,26 @@ which_choices_have_text_entry <- function(question) {
 }
 
 #' Convert the Variable Response into its Corresponding Text
+#'
+#' @name question_variable_to_choice_text
+#' @description This function looks up a choice's corresponding text
+#' by using the question[['Payload']][['Choice']] list, and if applicable,
+#' the question[['Payload']][['RecodeValues']] list as an intermediary lookup.
+#' Moreover, if a choice has a corresponding text entry component, this function
+#' attempts to identify which column corresponds to the text entry responses
+#' and modifies the returned choice text to include "See Appendix [Column DataExportTag]"
+#' where the [Column DataExportTag] is replaced by the column name of the corresponding
+#' text entry response column.
+#' @param question This is a list object representing an individual question
+#' from a Qualtrics Survey File. A question must have the 'Choices' list
+#' inside its 'Payload' in order to be accepted by this function. Furthermore,
+#' the choice provided must appear in the Choices list (or if use_recode_values is
+#' TRUE then the choice argument provided must appear among the RecodeValues list).
+#' @param choice A choice response to a question, given as a string or number.
+#' @param use_recode_values A logical boolean value indicating whether or not the
+#' RecodeValues list needs to be used as an intermediary step in looking up the
+#' text corresponding to the passed choice argument.
+#' @return The text corresponding to the variable choice indicated for the given question.
 question_variable_to_choice_text <- function(question, choice, use_recode_values) {
 
   # Error if question[['Payload']][['Choices']] doesn't exist.

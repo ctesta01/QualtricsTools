@@ -4,17 +4,17 @@
 \alias{create_response_column_dictionary}
 \title{Create a Response Column Dictionary}
 \usage{
-create_response_column_dictionary(question_blocks, flow, orig_first_row)
+create_response_column_dictionary(question_blocks, original_first_row, flow)
 }
 \arguments{
 \item{question_blocks}{use questions_into_blocks() to create a list of blocks with
 the survey's questions inserted appropriately into them.}
 
+\item{original_first_row}{this is the first row of the response data CSV, it is
+automatically provided to you when you use get_setup() or in the shiny application.}
+
 \item{flow}{A list of strings identifying the blocks in the order that they appear
 within the survey.}
-
-\item{orig_first_row}{this is the first row of the response data CSV, it is
-automatically provided to you when you use get_setup() or in the shiny application.}
 }
 \value{
 a dataframe detailing in each row the response columns and their description.
