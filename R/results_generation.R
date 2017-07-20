@@ -76,8 +76,10 @@ question_variable_to_choice_text <- function(question, choice, use_recode_values
       stop("The choice ", choice, " provided does not match any RecodeValue",
            "in the question",  question[['Payload']][['DataExportTag']])
     }
+    choice_index <- names(question[['Payload']][['RecodeValues']])[[choice_index]]
+    choice_index <- which(names(question[['Payload']][['Choices']]) == choice_index)
   } else if (choice %in% names(question[['Payload']][['Choices']])) {
-    choice_index <- choice
+    choice_index <- which(names(question[['Payload']][['Choices']]) == choice)
   } else {
     stop("The choice ", choice, " does not match any choice in the question ",
          question[['Payload']][['DataExportTag']])
@@ -330,6 +332,7 @@ mc_multiple_answer_results <-
 
     # Since we've already translated converted the choices from recode values to choice
     # variables, in the following call we set use_recode_values = FALSE.
+    cat(names(N))
     choices <-
       lapply(names(N), function(choice)
         question_variable_to_choice_text(question, choice, use_recode_values = FALSE))
