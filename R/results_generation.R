@@ -23,6 +23,120 @@ percent0 <- function(x,
   paste0(formatC(round2(100 * x, 1), format = format, digits = digits, ...), "%")
 }
 
+which_choices_have_text_entry <- function(question) {
+
+  # Error if question[['Payload']][['Choices']] doesn't exist.
+  if (! 'Payload' %in% names(question) ||
+      ! 'Choices' %in% names(question[['Payload']])) {
+    stop("The passed question must contain a Payload with Choices.")
+  }
+
+  # For those choices with a "TextEntry" field,
+  # return which of those have TextEntry as "true"
+  text_entry_choices <-
+    which(as.logical(lapply(question[['Payload']][['Choices']],
+                            function(x) {
+                              'TextEntry' %in% names(x) &&
+                                x[['TextEntry']] == "true"
+                            })))
+  return(text_entry_choices)
+}
+
+#' Convert the Variable Response into its Corresponding Text
+question_variable_to_choice_text <- function(question, choice, use_recode_values) {
+
+  # Error if question[['Payload']][['Choices']] doesn't exist.
+  if (! 'Payload' %in% names(question) ||
+      ! 'Choices' %in% names(question[['Payload']])) {
+    stop("The passed question must contain a Payload with Choices.")
+  }
+
+  if (missing(use_recode_values)) {
+    if ("RecodeValues" %in% names(question[['Payload']]) &&
+        length(question[['Payload']][['RecodeValues']]) > 0) {
+      use_recode_values <- TRUE
+    } else use_recode_values <- FALSE
+  }
+
+  # Error if use_recode_values is true, but there are no recode values in the question.
+  if (use_recode_values == TRUE &&
+      ! "RecodeValues" %in% names(question[['Payload']])) {
+    stop(
+      "The passed question does not have a RecodeValues ",
+      "field in its payload, but the question_variable_to_choice_text function ",
+      "was called with the parameter use_recode_values = TRUE.")
+  }
+
+  # Use recode values to reindex the variable if necessary. If a question
+  # does not use recode values, then the choice as a variable response already
+  # corresponds with the name of the corresponding choice in the QSF data.
+  if (use_recode_values) {
+    choice_index <- which(question[['Payload']][['RecodeValues']] == choice)
+    if (length(choice_index) == 0) {
+      stop("The choice ", choice, " provided does not match any RecodeValue",
+           "in the question",  question[['Payload']][['DataExportTag']])
+    }
+    choice_index <- names(question[['Payload']][['RecodeValues']])[[choice_index]]
+    choice_index <- which(names(question[['Payload']][['Choices']]) == choice_index)
+  } else if (choice %in% names(question[['Payload']][['Choices']])) {
+    choice_index <- which(names(question[['Payload']][['Choices']]) == choice)
+  } else {
+    stop("The choice ", choice, " does not match any choice in the question ",
+         question[['Payload']][['DataExportTag']])
+  }
+
+  # Determine which elements of the question[['Payload']][['Choices']] list
+  # have text entry components. Later this is used to insert "See Appendix ..."
+  # for those choices.
+  te_components <- which_choices_have_text_entry(question)
+
+  # After reindexing if necessary, get the choice text corresponding to the
+  # corresponding choice's index.
+  choice_text <- question[['Payload']][['Choices']][[choice_index]][[1]]
+
+  # If the choice is one with text entry components, insert
+  # "See Appendix [Column DataExportTag]"
+  # so that the corresponding text appendix may be easily found.
+  if (choice_index %in% te_components) {
+
+    # Get the response column names which have "TEXT" in them.
+    text_entry_column_names <-
+      which(grepl("TEXT", colnames(question[['Responses']])))
+    text_entry_column_names <-
+      colnames(question[['Responses']])[text_entry_column_names]
+
+    # If there is only one response column name which has "TEXT"
+    # in it, then use that as the corresponding export tag for any
+    # question choice which has an associated text entry component.
+    # If there are multiple, check if "*_[choice]_TEXT" matches any
+    # of the response column names exactly. Finally, if neither of
+    # the previous steps succeed in finding the column data export tag
+    # which corresponds to the given question choice, just use the question's
+    # data export tag.
+    if (length(text_entry_column_names) == 1) {
+      corresponding_export_tag <- text_entry_column_names[[1]]
+    } else {
+      choice_and_TEXT <- paste0("_", choice, "_", "TEXT")
+      matching_text_entry_colnames <-
+        which(grepl(choice_and_TEXT, text_entry_column_names))
+      if (length(matching_text_entry_colnames) == 1) {
+        corresponding_export_tag <-
+          text_entry_column_names[[matching_text_entry_colnames[[1]]]]
+      } else {
+        corresponding_export_tag <- question[['Payload']][['DataExportTag']]
+      }
+    }
+
+    # Clean the choice text of HTML entities.
+    choice_text <- clean_html(choice_text)
+
+    # Insert the corresponding export tag into the question choice.
+    choice_text <- paste0(choice_text,
+                          " See Appendix ",
+                          corresponding_export_tag)
+  }
+  return(choice_text)
+}
 
 #' Create the Results Table for a Multiple Choice Single Answer Question
 #'
@@ -88,24 +202,7 @@ mc_single_answer_results <-
     # which are then used to recover the original choice text from the Choices list,
     # and then the choices are flattened to a cleaner list.
     # if the choice variables are not recoded, then they can be retrieved directly from the responses_table
-    if ("RecodeValues" %in% names(question[['Payload']]) &&
-        length(question[['Payload']][['RecodeValues']]) > 0) {
-      choices_recoded <- responses_tabled[, 1]
-      choices_uncoded <-
-        sapply(choices_recoded, function(x)
-          which(question[['Payload']][['RecodeValues']] == x))
-      choices <-
-        sapply(choices_uncoded, function(x)
-          question[['Payload']][['Choices']][[x]][[1]])
-    } else {
-      choices_uncoded <- responses_tabled[, 1]
-      choices <-
-        sapply(choices_uncoded, function(x)
-          question[['Payload']][['Choices']][[x]][[1]])
-    }
-    choices <- unlist(choices, use.names = FALSE)
-    choices <- sapply(choices, clean_html)
-
+    choices <- sapply(responses_tabled[, 1], function(choice) question_variable_to_choice_text(question, choice))
 
     # construct the results table with a column for N, Percent, and choices,
     # but make sure that the choices column doesn't have a header when it prints.
@@ -233,11 +330,11 @@ mc_multiple_answer_results <-
       }
     })
 
-    # get the choice text for each column, and then clean the HTML out of it
+    # Since we've already translated converted the choices from recode values to choice
+    # variables, in the following call we set use_recode_values = FALSE.
     choices <-
-      lapply(names(N), function(x)
-        question[['Payload']][['Choices']][[x]][[1]])
-    choices <- clean_html(choices)
+      lapply(names(N), function(choice)
+        question_variable_to_choice_text(question, choice, use_recode_values = FALSE))
 
     # make sure that these are flat lists
     choices <- unlist(choices, use.names = FALSE)

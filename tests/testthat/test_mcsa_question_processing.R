@@ -39,7 +39,8 @@ test_that(
     q2_favorite_results_table <- as.data.frame(q2_favorite_results_table)
 
     # Check that the previously computed results and new results match.
-    expect_true(all(q2_favorite[['Table']] == q2_favorite_results_table))
+    expect_true(all(q2_favorite[['Table']][["N"]] == q2_favorite_results_table[["N"]]) &&
+                  all(q2_favorite[['Table']][['Percent']] == q2_favorite_results_table[['Percent']]))
 
   }
 )
@@ -82,7 +83,8 @@ test_that(
     Q2_results_table <- as.data.frame(Q2_results_table)
 
     # Check that the previously computed results and new results match.
-    expect_true(all(Q2[['Table']] == Q2_results_table))
+    expect_true(all(Q2[['Table']][['N']] == Q2_results_table[['N']]) &&
+                all(Q2[['Table']][['Percent']] == Q2_results_table[['Percent']]))
   }
 )
 
@@ -115,7 +117,8 @@ test_that(
     Q10_results_table <- as.data.frame(Q10_results_table)
 
     # Check that the previously computed results and new results match.
-    expect_true(all(Q10[['Table']] == Q10_results_table))
+    expect_true(all(Q10[['Table']][['N']] == Q10_results_table[['N']]) &&
+                  all(Q10[['Table']][['Percent']] == Q10_results_table[['Percent']]))
 
   }
 )
@@ -148,7 +151,8 @@ test_that(
       )
 
     # Check that the previously computed results and new results match.
-    expect_true(all(Q11[['Table']] == Q11_results_table))
+    expect_true(all(Q11[['Table']][['N']] == Q11_results_table[['N']]) &&
+                  all(Q11[['Table']][['Percent']] == Q11_results_table[['Percent']]))
   }
 )
 
@@ -179,7 +183,8 @@ test_that("Test that mc_single_answer_results is correct for Q3 in the Long Exha
   Q3_results_table <- as.data.frame(Q3_results_table)
 
   # Check that the previously computed results and new results match.
-  expect_true(all(Q3[['Table']] == Q3_results_table))
+  expect_true(all(Q3[['Table']][['N']] == Q3_results_table[['N']]) &&
+                all(Q3[['Table']][['Percent']] == Q3_results_table[['Percent']]))
 })
 
 
@@ -215,7 +220,8 @@ test_that("Test that mc_single_answer_results is correct for q4_colored_fruit in
   # print(options()[['stringsAsFactors']])
 
   # Check that the previously computed results and new results match.
-  expect_true(all(q4_colored_fruit[['Table']] == q4_colored_fruit_results_table) &&
+  expect_true(all(q4_colored_fruit[['Table']][['N']] == q4_colored_fruit_results_table[['N']]) &&
+                all(q4_colored_fruit[['Table']][['Percent']] == q4_colored_fruit_results_table[['Percent']]) &&
                 all(
                   names(q4_colored_fruit[['Table']]) == names(q4_colored_fruit_results_table)
                 ))
@@ -254,7 +260,8 @@ test_that("Test that mc_single_answer_results is correct for Q5 in the Long Exha
   # print(options()[['stringsAsFactors']])
 
   # Check that the previously computed results and new results match.
-  expect_true(all(Q5[['Table']] == Q5_results_table) &&
+  expect_true(all(Q5[['Table']][['N']] == Q5_results_table[["N"]]) &&
+                all(Q5[['Table']][['Percent']] == Q5_results_table[["Percent"]]) &&
                 all(names(Q5[['Table']]) == names(Q5_results_table)))
 })
 
@@ -291,7 +298,8 @@ test_that("Test that mc_single_answer_results is correct for Q6 in the Long Exha
   # print(options()[['stringsAsFactors']])
 
   # Check that the previously computed results and new results match.
-  expect_true(all(Q6[['Table']] == Q6_results_table) &&
+  expect_true(all(Q6[['Table']][['N']] == Q6_results_table[['N']]) &&
+                all(Q6[['Table']][['Percent']] == Q6_results_table[['Percent']]) &&
                 all(names(Q6[['Table']]) == names(Q6_results_table)))
 })
 
@@ -328,7 +336,8 @@ test_that("Test that mc_single_answer_results is correct for Q7 in the Long Exha
   # print(options()[['stringsAsFactors']])
 
   # Check that the previously computed results and new results match.
-  expect_true(all(Q7[['Table']] == Q7_results_table) &&
+  expect_true(all(Q7[['Table']][['N']] == Q7_results_table[['N']]) &&
+                all(Q7[['Table']][['Percent']] == Q7_results_table[['Percent']]) &&
                 all(names(Q7[['Table']]) == names(Q7_results_table)))
 })
 

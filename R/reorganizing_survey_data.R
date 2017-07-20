@@ -1300,22 +1300,20 @@ split_respondents <-
 #'
 #' @param question_blocks use questions_into_blocks() to create a list of blocks with
 #' the survey's questions inserted appropriately into them.
-#' @param orig_first_row this is the first row of the response data CSV, it is
+#' @param original_first_row this is the first row of the response data CSV, it is
 #' automatically provided to you when you use get_setup() or in the shiny application.
 #' @inheritParams create_question_dictionary
 #' @return a dataframe detailing in each row the response columns and their description.
 create_response_column_dictionary <-
-  function(question_blocks, flow, orig_first_row) {
+  function(question_blocks, original_first_row, flow) {
     # get the blocks, responses, and original_first_row from the global environment
     if (missing(question_blocks)) {
       blocks <- get("blocks", envir = 1)
     } else {
       blocks <- question_blocks
     }
-    if (missing(orig_first_row)) {
+    if (missing(original_first_row)) {
       original_first_row <- get("original_first_rows", envir = 1)
-    } else {
-      original_first_row <- orig_first_row
     }
 
     # Determine the ordering of the block indices that we will use to
@@ -1582,13 +1580,13 @@ create_merged_response_column <- function(response_columns,
   to_be_merged <- list()
   for (i in 1:length(response_columns)) {
     merge_col_name <- response_columns[[i]]
-    question <-
+    question_indices <-
       question_from_response_column(blocks, merge_col_name)
-    response_col <- responses[[merge_col_name]]
+    response_col <- as.vector(responses[[merge_col_name]])
 
     if (!is.null(question)) {
       question <-
-        blocks[[question[[1]]]][['BlockElements']][[question[[2]]]]
+        blocks[[question_indices[[1]]]][['BlockElements']][[question_indices[[2]]]]
       should_convert <- !is_text_entry(question)
       converted <-
         lapply(response_col, function(x)
@@ -1599,8 +1597,6 @@ create_merged_response_column <- function(response_columns,
 
 
     if (should_convert) {
-      question <-
-        blocks[[question[[1]]]][['BlockElements']][[question[[2]]]]
       to_be_merged[[i]] <- converted
     } else {
       to_be_merged[[i]] <- response_col
