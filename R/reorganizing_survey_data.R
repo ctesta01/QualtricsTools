@@ -1584,7 +1584,7 @@ create_merged_response_column <- function(response_columns,
       question_from_response_column(blocks, merge_col_name)
     response_col <- as.vector(responses[[merge_col_name]])
 
-    if (!is.null(question)) {
+    if (!is.null(question_indices) {
       question <-
         blocks[[question_indices[[1]]]][['BlockElements']][[question_indices[[2]]]]
       should_convert <- !is_text_entry(question)
