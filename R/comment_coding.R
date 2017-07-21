@@ -413,9 +413,9 @@ insert_coded_comments <-
 #' response column names, another for the Question Text stem and choice text (although
 #' truncated), and a row with QID based column names.
 #'
-#' @return Lists of lists, where the outer lists correspond to groups of respondents, and the inner
-#' lists are lists of blocks with questions inserted which contain coded comments for that question
-#' and respondent group.
+#' @return The returned data is a list of lists of blocks. Each list of blocks has the coded comments
+#' for a specific respondent group inserted into them, and each of the immediate sub-lists in the
+#' output corresponds to a specific respondent group.
 insert_split_survey_comments <-
   function(split_blocks,
            split_coded_comment_sheets,
