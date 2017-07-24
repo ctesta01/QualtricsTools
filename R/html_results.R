@@ -855,7 +855,7 @@ table_non_text_entry <- function(question,
 
 #' Create a message stating MCSA questions with Multiple Text Entry components
 #' can't be automatically processed for text appendices.
-#' @inhertiParam question_description
+#' @inheritParams question_description
 table_mcsa_multitext <- function(question) {
   question_message <-
     c(

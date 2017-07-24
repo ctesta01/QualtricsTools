@@ -15,8 +15,6 @@ in the codedfile.
 }
 \description{
 This retrieves comment coding data as a dataframe
-from a Excel or CSV file. If the file is an Excel document,
-the coded comments are retrieved from the sheet named "Coded"
-(case does not matter), and if the file is a CSV it is directly
-read as a dataframe.
+from a Excel or CSV file. Coded comments are retrieved from the sheet named "Coded"
+(case does not matter).
 }

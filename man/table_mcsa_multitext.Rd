@@ -7,6 +7,9 @@ can't be automatically processed for text appendices.}
 \usage{
 table_mcsa_multitext(question)
 }
+\arguments{
+\item{question}{A qualtrics survey question}
+}
 \description{
 Create a message stating MCSA questions with Multiple Text Entry components
 can't be automatically processed for text appendices.
