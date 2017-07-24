@@ -8,7 +8,7 @@
 #' block's description.
 #'
 #' @return A list of HTML results tables for each question
-tabelize_blocks <- function(blocks, flow, include_block_headers = TRUE) {
+create_html_results_tables <- function(blocks, flow, include_block_headers = TRUE) {
 
   # All the html tables will be saved into the tables list.
   tables <- list()
@@ -510,7 +510,7 @@ uncodeable_questions_message <- function(questions) {
 #' If it has display logic, it's inserted into the tables returned by
 #' this function.
 #'
-#' @inheritParams tabelize_blocks
+#' @inheritParams create_html_results_tables
 #' @return a list of html tables detailing the display logic for each question
 #' containing display logic.
 tabelize_display_logic <- function(blocks, flow) {

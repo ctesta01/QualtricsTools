@@ -220,12 +220,12 @@ shinyServer(function(input, output) {
       if (input[['ignoreflow']] == FALSE) {
         return(c(
           blocks_header_to_html(blocks),
-          tabelize_blocks(blocks, flow)
+          create_html_results_tables(blocks, flow)
         ))
       } else {
         return(c(
           blocks_header_to_html(blocks),
-          tabelize_blocks(blocks)
+          create_html_results_tables(blocks)
         ))
       }
     }
@@ -595,7 +595,7 @@ shinyServer(function(input, output) {
             html_2_pandoc(
               html = c(
                 blocks_header_to_html(split_blocks[[i]]),
-                tabelize_blocks(split_blocks[[i]], flow)
+                create_html_results_tables(split_blocks[[i]], flow)
               ),
               file_name = paste0(
                 "results_tables_",

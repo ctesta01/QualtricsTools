@@ -543,7 +543,7 @@ questions_from_blocks <- function(blocks) {
 #' The 'Flow' is a list of Block IDs in the order that they are presented
 #' in the survey as it is taken by a respondent. The flow list that is returned
 #' from this function is used by functions like text_appendices_table and
-#' tabelize_blocks to get the ordering of the survey in the preview correct.
+#' create_html_results_tables to get the ordering of the survey in the preview correct.
 #' @param survey A qualtrics survey list object,
 #' uploaded from a Qualtrics Survey File (QSF). Use
 #' ask_for_qsf() to create such a survey list object from a QSF file.
@@ -566,67 +566,6 @@ flow_from_survey <- function(survey) {
   return(flow)
 }
 
-
-
-#' Export a file containing the results tables
-#'
-#' `make_results_tables` uses `get_setup` and `html_2_pandoc` to process a
-#' survey and then save its results into a file. If the `qsf_path,` and `csv_path`
-#' are included as parameters, then they will be passed to `get_setup` along with a
-#' `return_data=TRUE` parameter in order to return the survey, responses,
-#' questions, blocks, original_first_rows, and flow as variables local to the function
-#' scope. If they are not passed, they will be retrieved as needed from the global scope.
-#' The function then uses the blocks, original_first_rows, and flow with `html_2_pandoc`
-#' to produce the desired output file.
-#'
-#' @param qsf_path (optional) is the string path location of the .qsf file to be processed.
-#' @param csv_path (optional) is the string path location of the .csv file to be processed.
-#' @param headerrows (optional) specifies the number of header rows in the CSV data.
-#' @param output_dir specifies the path of the directory to save the output file in.
-#' @param filename specifies the name of the output file.
-make_results_tables <-
-  function(qsf_path,
-           csv_path,
-           headerrows,
-           output_dir,
-           filename = 'Results Tables.docx') {
-    # Either use the passed parameters or interactively get setup with the survey data.
-    if (!any(c(missing(qsf_path), missing(csv_path)))) {
-      qt_vals = get_setup(
-        qsf_path = qsf_path,
-        csv_path = csv_path,
-        headerrows = headerrows,
-        return_data = TRUE
-      )
-    } else {
-      if (exists('survey', 'responses', envir=globalenv()))
-        qt_vals = get_setup(already_loaded=TRUE, return_data=TRUE)
-      else qt_vals = get_setup(return_data=TRUE)
-    }
-    # We used return_data=TRUE, so the data came back as a single
-    # list which needs to be processed into individual variables.
-    varnames = c('survey',
-                 'responses',
-                 'questions',
-                 'blocks',
-                 'original_first_rows',
-                 'flow')
-    for (i in 1:length(varnames)) {
-      assign(varnames[[i]], qt_vals[[i]])
-    }
-    original_first_rows = as.data.frame(original_first_rows)
-    responses = as.data.frame(responses)
-
-    # Now we render the HTML into a report.
-    html_2_pandoc(
-      html = c(
-        blocks_header_to_html(blocks),
-        tabelize_blocks(blocks, flow)
-      ),
-      file_name = filename,
-      output_dir = output_dir
-    )
-  }
 
 #' Load Survey Data into an Arbitrary Environment in R
 #'
@@ -700,6 +639,70 @@ get_setup_in_environment <-
 
     for (name in varnames) environment[[name]] <- get(name, environment())
   }
+
+
+
+#' Export a file containing the results tables
+#'
+#' `make_results_tables` uses `get_setup` and `html_2_pandoc` to process a
+#' survey and then save its results into a file. If the `qsf_path,` and `csv_path`
+#' are included as parameters, then they will be passed to `get_setup` along with a
+#' `return_data=TRUE` parameter in order to return the survey, responses,
+#' questions, blocks, original_first_rows, and flow as variables local to the function
+#' scope. If they are not passed, they will be retrieved as needed from the global scope.
+#' The function then uses the blocks, original_first_rows, and flow with `html_2_pandoc`
+#' to produce the desired output file.
+#'
+#' @param qsf_path (optional) is the string path location of the .qsf file to be processed.
+#' @param csv_path (optional) is the string path location of the .csv file to be processed.
+#' @param headerrows (optional) specifies the number of header rows in the CSV data.
+#' @param output_dir specifies the path of the directory to save the output file in.
+#' @param filename specifies the name of the output file.
+make_results_tables <-
+  function(qsf_path,
+           csv_path,
+           headerrows,
+           output_dir,
+           filename = 'Results Tables.docx') {
+    # Either use the passed parameters or interactively get setup with the survey data.
+    if (!any(c(missing(qsf_path), missing(csv_path)))) {
+      qt_vals = get_setup(
+        qsf_path = qsf_path,
+        csv_path = csv_path,
+        headerrows = headerrows,
+        return_data = TRUE
+      )
+    } else {
+      if (exists('survey', 'responses', envir=globalenv()))
+        qt_vals = get_setup(already_loaded=TRUE, return_data=TRUE)
+      else qt_vals = get_setup(return_data=TRUE)
+    }
+    # We used return_data=TRUE, so the data came back as a single
+    # list which needs to be processed into individual variables.
+    varnames = c('survey',
+                 'responses',
+                 'questions',
+                 'blocks',
+                 'original_first_rows',
+                 'flow')
+    for (i in 1:length(varnames)) {
+      assign(varnames[[i]], qt_vals[[i]])
+    }
+    original_first_rows = as.data.frame(original_first_rows)
+    responses = as.data.frame(responses)
+
+    # Now we render the HTML into a report.
+    html_2_pandoc(
+      html = c(
+        blocks_header_to_html(blocks),
+        create_html_results_tables(blocks, flow)
+      ),
+      file_name = filename,
+      output_dir = output_dir
+    )
+  }
+
+
 
 #' Export a file containing the text appendices
 #'
@@ -872,7 +875,7 @@ make_split_results_tables <-
       outpath <- html_2_pandoc(
         html = c(
           blocks_header_to_html(split_blocks[[i]]),
-          tabelize_blocks(
+          create_html_results_tables(
             blocks = split_blocks[[i]],
             flow = flow
           )
