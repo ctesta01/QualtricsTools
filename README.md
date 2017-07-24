@@ -1,5 +1,7 @@
 # QualtricsTools 
 
+This is no longer the main repository for the QualtricsTools project. Check out the continued work on this project in the [emmamorgan-tufts/QualtricsTools](https://github.com/emmamorgan-tufts/QualtricsTools/) repository. 
+
 QualtricsTools is an [R](https://www.r-project.org/) package that automatically processes Qualtrics survey data into 
 reports breaking down the responses to each question. The package creates 
 reports that summarize the results of closed-ended questions, compiles appendices of open-ended text responses, and generates question dictionaries that describe the details of each survey question. It also can generate reports for subsets of respondents based on their response data. 
