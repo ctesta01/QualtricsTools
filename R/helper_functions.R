@@ -14,18 +14,71 @@ repath <- function() {
 #' Use this function to get the location of a question
 #' in the blocks list. Give it a response column name, and it will
 #' try to find the question it corresponds to. Otherwise, it will
-#' respond NULL. The blocks have two layers of indexing, one for the individual
+#' error. The blocks have two layers of indexing, one for the individual
 #' blocks, and then another for the BlockElements. This function will return a
 #' pair of indices, (i, j) where blocks[[i]][['BlockElements']][[j]] specifies the
 #' location of the question which has the response_name column among its linked responses.
+#'
+#' This function uses a primitive caching system to store a lookup table from the
+#' response column names to the pairs of block and block element indices in the
+#' package's environment, and recall it when the blocks have not changed between
+#' the construction of the lookup table and the current recent function call.
+#' The caching system uses a hash of the blocks, a string associated to
+#' the blocks such that if the blocks passed in are different, the hash of the
+#' blocks will be different, in order to tell when the blocks have changed.
+#' When the hash of the blocks passed as an argument match the hash stored in
+#' the cached lookup table, the cached lookup table is used. Otherwise, it is
+#' computed again and the lookup table in the environment is updated.
+#'
 #' @param blocks A list of the survey blocks, with the questions included in them.
 #' @param response_name The string name of a column from a Qualtrics response dataset.
 #' @return A pair, (i, j) which specifies a question as blocks[[i]][['BlockElements']][[j]].
 question_from_response_column <- function(blocks, response_name) {
+
+  # We're going to use digest::digest with the md5 hashing algorithm.
+  requireNamespace(digest)
+
+  # The hash of the current blocks is computed for two reasons:
+  # 1. To compare whether or not the previously computed lookup table was computed
+  #    with the same blocks.
+  # 2. To save with the lookup table if the lookup table needs to be computed again,
+  #    so that future computations may use the lookup table if their blocks' hash
+  #    match this computation's.
+  current_blocks_hash <- digest::digest(blocks, algo='md5')
+
+  # This is a function which returns TRUE/FALSE depending on whether or not
+  # the hash of the previously_computed_lookup_data in the QualtricsTools package's
+  # environment matches the hash of the blocks passed to this function as an argument.
+  compare_blocks_hash <- function() {
+    previously_computed_lookup_data <- get("response_column_to_block_index_lookup",
+                          envir = as.environment("package:QualtricsTools"))
+    if ('hash' %in% names(previously_computed_lookup_data)) {
+      return( previously_computed_lookup_data[['hash']] == current_blocks_hash )
+    } else return(FALSE)
+  }
+
+  # If the QualtricsTools package has a "response_column_to_block_index_lookup" object
+  # and the hash stored in it and the hash of the passed blocks match, go ahead and use
+  # the response_column_to_block_index_lookup as the previously_computed_lookup_data.
+  if (exists("response_column_to_block_index_lookup",
+             where = as.environment("package:QualtricsTools")) &&
+      compare_blocks_hash()) {
+    previously_computed_lookup_data <- get("response_column_to_block_index_lookup",
+                                           envir = as.environment("package:QualtricsTools"))
+    # Get the lookup_table.
+    previously_computed_lookup_table <- previously_computed_lookup_data[['table']]
+    # If the desired response column name appears in the lookup table, return its
+    # associated pair of block and blockelement indices.
+    if (response_name %in% names(previously_computed_lookup_table)) {
+      return(previously_computed_lookup_table[[response_name]])
+      # Otherwise error.
+    } else stop(paste0(response_name, " does not appear in any of the questions' associated response column names."))
+  } else {
+
   # construct a list, with keys as the response column names, and
   # values as pairs of block and blockelement indexes.
   responses_to_indexes <- list()
-  for (i in 1:number_of_blocks(blocks)) {
+  for (i in 1:length(blocks)) {
     if ('BlockElements' %in% names(blocks[[i]])) {
       for (j in 1:length(blocks[[i]][['BlockElements']])) {
         if ("Responses" %in% names(blocks[[i]][['BlockElements']][[j]])) {
@@ -36,7 +89,22 @@ question_from_response_column <- function(blocks, response_name) {
       }
     }
   }
-  return(responses_to_indexes[[response_name]])
+
+  # Store newly computed data into a list structure with a "table" and "hash" for
+  # insertion into the QualtricsTools package environment.
+  newly_computed_lookup_data <- list("table" = responses_to_indexes, "hash" = current_blocks_hash)
+  # Use assign to add the newly_computed_lookup_data as "response_column_to_block_index_lookup"
+  # to the QualtricsTools package environment.
+  assign(x = 'response_column_to_block_index_lookup', value = newly_computed_lookup_data, envir=as.environment('package:QualtricsTools'))
+
+  # If the desired response column name appears in the lookup table, return its
+  # associated pair of block and blockelement indices.
+  if (response_name %in% names(previously_computed_lookup_table)) {
+    return(responses_to_indexes[[response_name]])
+    # Otherwise error.
+  } else stop(paste0(response_name, " does not appear in any of the questions' associated response column names."))
+  }
+
 }
 
 
