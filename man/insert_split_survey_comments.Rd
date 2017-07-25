@@ -27,8 +27,10 @@ truncated), and a row with QID based column names.}
 }
 \value{
 The returned data is a list of lists of blocks. Each list of blocks has the coded comments
-for a specific respondent group inserted into them, and each of the immediate sub-lists in the
-output corresponds to a specific respondent group.
+for a specific respondent group inserted into them, and each of the lists of blocks in the
+output corresponds to a specific respondent group. The list of blocks is duplicated for each
+respondent group, and then that respondent group's coded comments are inserted into each
+list of blocks.
 }
 \description{
 This function splits the survey's response data and the
