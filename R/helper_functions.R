@@ -30,13 +30,16 @@ repath <- function() {
 #' the cached lookup table, the cached lookup table is used. Otherwise, it is
 #' computed again and the lookup table in the environment is updated.
 #'
-#' @param blocks A list of the survey blocks, with the questions included in them.
+#' @param blocks A list of the survey blocks, with the questions and responses inserted
+#' in place of the BlockElements. Structuring the blocks in this way is automatically
+#' handled by get_coded_questions_and_blocks, but can also be performed by (after
+#' inserting the responses into questions) using the questions_into_blocks method.
 #' @param response_name The string name of a column from a Qualtrics response dataset.
 #' @return A pair, (i, j) which specifies a question as blocks[[i]][['BlockElements']][[j]].
 question_from_response_column <- function(blocks, response_name) {
 
   # We're going to use digest::digest with the md5 hashing algorithm.
-  requireNamespace(digest)
+  requireNamespace("digest")
 
   # The hash of the current blocks is computed for two reasons:
   # 1. To compare whether or not the previously computed lookup table was computed
@@ -99,7 +102,7 @@ question_from_response_column <- function(blocks, response_name) {
 
   # If the desired response column name appears in the lookup table, return its
   # associated pair of block and blockelement indices.
-  if (response_name %in% names(previously_computed_lookup_table)) {
+  if (response_name %in% names(responses_to_indexes)) {
     return(responses_to_indexes[[response_name]])
     # Otherwise error.
   } else stop(paste0(response_name, " does not appear in any of the questions' associated response column names."))
@@ -122,7 +125,10 @@ question_from_response_column <- function(blocks, response_name) {
 #' under [['Responses']]. The insertion of the responses into questions is
 #' handled by link_responses_to_questions.
 #' @param choice A numeric value representing the choice made in a response
-#' to the question provided.
+#' to the question provided. This choice can be a choice in a cell in the
+#' response columns associated with the given question, but it can also be a
+#' choice which was not chosen by any respondents in the responses dataframe
+#' as long as it is a choice built into the question's construction.
 choice_text_from_question <- function(question, choice) {
   original <- choice
   choice <- as.character(choice)
@@ -197,7 +203,7 @@ choice_text_from_question <- function(question, choice) {
 
 #' A Shiny app to format Qualtrics survey data and generate reports
 #'
-#' This function launches the Shiny interface for the Qualtrics
+#' This function launches the Shiny interface for the QualtricsTools
 #' package from the files in the install or 'inst' directory.
 app <- function() {
   shiny::runApp(system.file('shiny', package = 'QualtricsTools'),
@@ -209,11 +215,11 @@ app <- function() {
 #' This function sets the user up with the survey, responses, questions,
 #' blocks, questions, original_first_rows, and flow. By default, these are
 #' returned to the global scope (referred to by .GlobalEnv or globalenv()).
-#' If return_data is passed as TRUE, then the data is returned from
+#' If return_data_as_list is passed as TRUE, then the data is returned from
 #' the function as a list. The blocks and questions are redundant as they
 #' are already included in the survey, but they are often useful to
 #' have already pulled out of the survey. Among the many processing steps this
-#' function (directly and as subsequent nested function calls), the question
+#' function (made both directly and as subsequent nested function calls), the question
 #' text is cleaned and stripped of HTML and any unwanted characters,
 #' the trash questions and blocks are removed, response columns are matched
 #' and inserted into the corresponding questions, and results tables detailing
@@ -225,22 +231,29 @@ app <- function() {
 #' your response data and two subsequent dialogue boxes asking the user
 #' to choose the corresponding QSF and CSV files. If already_loaded=TRUE is
 #' passed, then the get_setup function pulls the survey list and responses
-#' dataframe from the global environment. If none are found, but
-#' already_loaded=TRUE was passed, then a sample survey is loaded.
+#' dataframe from the global environment. If
+#' sample_data=TRUE is passed, then a sample survey is loaded.
 #'
 #' @param qsf_path The string location of the survey as a .QSF (Qualtrics Survey File)
 #' @param csv_path The string location of the survey's responses, downloaded from Qualtrics
 #' @param headerrows An optional parameter for specifying the number of
-#' headerrows in the response csv.
+#' headerrows in the response csv. While the headerrows parameter can functionally
+#' be set to any number, users predominantly should expect to use headerrows equal to
+#' 2 or 3 depending on whether or not their response data was downloaded from Qualtrics
+#' before or after the rollout of the new Qualtrics Insights platform. In the
+#' Qualtrics Insights platform, there are 3 headerrows, while before this update there
+#' were only 2.
 #' @param already_loaded already_loaded=TRUE indicates that get_setup should
 #' get the survey, responses, and original_first_rows from the global scope
 #' instead of asking the user for them. This parameter is optional and defaults to FALSE.
-#' @param return_data An optional boolean parameter which dictates whether the processed
-#' survey data should be returned to the global scope if return_data=FALSE or is missing,
+#' @param return_data_as_list An optional boolean parameter which dictates whether the processed
+#' survey data should be returned to the global scope if return_data_as_list=FALSE or is missing,
 #' or if the processed should be returned as a list in the order
-#' c(survey, responses, questions, blocks, original_first_rows, flow) if return_data=TRUE.
+#' c(survey, responses, questions, blocks, original_first_rows, flow) if return_data_as_list=TRUE.
 #' @param sample_data An optional boolean parameter which when true makes get_setup load the
-#' survey data included with the QualtricsTools package.
+#' sample survey data included with the QualtricsTools package. The sample data stored with
+#' the package is stored in the data/sample_*.rda files. The sample data stored there is
+#' Insights formatted data with 3 headerrows.
 #'
 #' @examples
 #' # An Interactive Example
@@ -264,13 +277,13 @@ app <- function() {
 #' survey, responses, questions, blocks, original_first_rows,
 #' and flow are now global variables.
 #'
-#' # An Example with return_data=TRUE
+#' # An Example with return_data_as_list=TRUE
 #'
 #' > qualtricstools_values = get_setup(
 #'     qsf_path = "C:/Example/Path/to/QSF/File.qsf",
 #'     csv_path = "C:/Example/Path/to/CSV/File.csv",
 #'     headerrows = 3,
-#'     return_data=TRUE)
+#'     return_data_as_list=TRUE)
 #'
 #' > varnames = c(
 #'     'survey', 'responses', 'questions', 'blocks',
@@ -293,7 +306,7 @@ get_setup <- function(qsf_path,
                       csv_path,
                       headerrows,
                       already_loaded,
-                      return_data = FALSE,
+                      return_data_as_list = FALSE,
                       sample_data = FALSE) {
   # default to already_loaded = FALSE
   if (missing(already_loaded)) {
@@ -367,14 +380,11 @@ sample_survey=TRUE parameter."
                                  survey[['SurveyEntry']][['SurveyName']]),
                           paste0("Number of Respondents: ",
                                  nrow(responses)))
-  survey <- survey
-  responses <- responses
-  questions <- questions
-  blocks <- blocks
-  original_first_rows <- original_first_rows
+
+  # Get the flow ordering from the survey.
   flow <- flow_from_survey(survey)
 
-  if (return_data) {
+  if (return_data_as_list) {
     return_vals = list(
       "survey" = survey,
       "responses" = responses,
@@ -640,7 +650,7 @@ flow_from_survey <- function(survey) {
 #' This function puts the survey, responses, questions, blocks
 #' original_first_rows, and flow into the environment specified in R.
 #' qsf_path, csv_path, and headerrows are optional. If qsf_path and
-#' csv_path are provided, then the function uses get_setup with return_data
+#' csv_path are provided, then the function uses get_setup with return_data_as_list
 #' to process the survey data and then insert the returned data into the
 #' specified environment. If the qsf_path and csv_path are not specified,
 #' the function first checks the global scope to see if all output from
@@ -666,7 +676,7 @@ get_setup_in_environment <-
         qsf_path = qsf_path,
         csv_path = csv_path,
         headerrows = headerrows,
-        return_data = TRUE
+        return_data_as_list = TRUE
       )
     } else {
       if (exists(
@@ -688,9 +698,9 @@ get_setup_in_environment <-
           get('original_first_rows', envir = globalenv()),
           get('flow', envir = globalenv())
         )
-      else qt_vals = get_setup(return_data=TRUE)
+      else qt_vals = get_setup(return_data_as_list=TRUE)
     }
-    # We used return_data=TRUE, so the data came back as a single
+    # We used return_data_as_list=TRUE, so the data came back as a single
     # list which needs to be processed into individual variables.
     varnames = c('survey',
                  'responses',
@@ -715,7 +725,7 @@ get_setup_in_environment <-
 #' `make_results_tables` uses `get_setup` and `html_2_pandoc` to process a
 #' survey and then save its results into a file. If the `qsf_path,` and `csv_path`
 #' are included as parameters, then they will be passed to `get_setup` along with a
-#' `return_data=TRUE` parameter in order to return the survey, responses,
+#' `return_data_as_list=TRUE` parameter in order to return the survey, responses,
 #' questions, blocks, original_first_rows, and flow as variables local to the function
 #' scope. If they are not passed, they will be retrieved as needed from the global scope.
 #' The function then uses the blocks, original_first_rows, and flow with `html_2_pandoc`
@@ -738,14 +748,14 @@ make_results_tables <-
         qsf_path = qsf_path,
         csv_path = csv_path,
         headerrows = headerrows,
-        return_data = TRUE
+        return_data_as_list = TRUE
       )
     } else {
       if (exists('survey', 'responses', envir=globalenv()))
-        qt_vals = get_setup(already_loaded=TRUE, return_data=TRUE)
-      else qt_vals = get_setup(return_data=TRUE)
+        qt_vals = get_setup(already_loaded=TRUE, return_data_as_list=TRUE)
+      else qt_vals = get_setup(return_data_as_list=TRUE)
     }
-    # We used return_data=TRUE, so the data came back as a single
+    # We used return_data_as_list=TRUE, so the data came back as a single
     # list which needs to be processed into individual variables.
     varnames = c('survey',
                  'responses',
@@ -777,7 +787,7 @@ make_results_tables <-
 #' make_text_appendices uses get_setup and html_2_pandoc to process a
 #' survey and then save its results into a file. If the qsf_path, and csv_path
 #' are included as parameters, then they will be passed to get_setup along with a
-#' return_data=TRUE parameter in order to return the survey, responses,
+#' return_data_as_list=TRUE parameter in order to return the survey, responses,
 #' questions, blocks, original_first_rows, and flow as variables local to the function
 #' scope. If they are not passed, they will be retrieved as needed from the global scope.
 #' The function then uses the blocks, original_first_rows, and flow with html_2_pandoc
