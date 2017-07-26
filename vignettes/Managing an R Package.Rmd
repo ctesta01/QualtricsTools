@@ -1,0 +1,98 @@
+---
+title: "Managing an R Package with a Shiny App"
+author: "Christian Testa"
+date: "July, 2017"
+output: html_document
+---
+
+Developing an R package like QualtricsTools requires many disjoint areas of expertise such as plain R programming, web server programming, testing, documentation, and package organization. 
+This document is intended to provide insight and resources that explain how each of these work in the context of QualtricsTools, as well as how to update each of these components of the package. 
+
+### General Reference Material
+
+Useful resources and guides for QualtricsTools development include:
+
+- [Hadley Wickham's book *R Packages*](http://r-pkgs.had.co.nz/)
+- [RStudio's website for Shiny](https://shiny.rstudio.com)
+- [The CRAN Manual: Writing R Extensions](https://cran.r-project.org/doc/manuals/r-release/R-exts.html)
+- [Introduction to Roxygen2](https://cran.r-project.org/web/packages/roxygen2/vignettes/roxygen2.html)
+- [R Cheat Sheets](https://www.rstudio.com/resources/cheatsheets/)
+
+Hadley Wickham's *R Packages* is a nearly exhaustive resource on what is needed to build packages in R that are robust, scalable, and effective. Of particular interest, the [Object Documentation](http://r-pkgs.had.co.nz/man.html) and [Testing](http://r-pkgs.had.co.nz/tests.html) chapters cover topics which will are incredibly critical to the continued development of any package. These explain the Roxygen2 inline-comment documentation system that is ubiquitous among R packages and the testthat framework for testing code functionality in the context of an R package. 
+
+RStudio has done a wonderful job in making Shiny. However, their documentation can be a little difficult to navigate. I dislike the video tutorials, and would always suggest using the articles or written tutorials over them because they are easier to quickly reference back to. The [articles](https://shiny.rstudio.com/articles/) and [gallery of examples](https://shiny.rstudio.com/gallery/) are what I find to be the most useful parts of the Shiny documentation.
+
+An additional supplemental resource that might be of interest is the [Writing R Extensions](https://cran.r-project.org/doc/manuals/r-release/R-exts.html) vignette written by the R-core team. This vignette is significantly more technical than Hadley Wickham's guide, not least because it does not use Hadley's `devtools` package which automates many parts of package development in R. However, its explanations often go into greater detail where Hadley's book does not. 
+
+The R Cheat Sheets are some of my favorite resources; often they quickly show off the best parts of software that are easy to miss and because their explanations are always short they don't inundate the reader with information they don't need. The cheat sheets for Shiny, Rstudio, Package Development, Base R, and Advanced R all contain information that is relevant to the QualtricsTools project.
+
+### Loading a Package vs. Opening a Project
+
+I want to make clear that there are two ways that a user can interact with the QualtricsTools project: either by using it as an installed package and loading it through `library(QualtricsTools)` or by opening the .Rproj project file in Rstudio and then loading the open project as a package using `devtools::load_all()`. Using `devtools::install_github("ctesta01/QualtricsTools")` installs QualtricsTools as a package that can be loaded using `library(QualtricsTools)`, but to load it as a project (in order to continue developing the project), download the project if necessary from GitHub and then use RStudio's Open Project to select the QualtricsTools.Rproj file among the project's files. 
+
+### Debugging Shiny Apps
+
+Debugging and handling errors in R is a subject in its own right ([see Exceptions and Debugging in Hadley's *Advanced-R*](http://adv-r.had.co.nz/Exceptions-Debugging.html)), but beyond this in order to maintain the QualtricsTools package the Shiny server will need debugging in its own unique way. Shiny is built, as every server is, on a request and response model. When the server receives a new request, it constructs a new response. However, Shiny is very unique in that it abstracts this away with a reactive architecture. RStudio has an [article on debugging Shiny servers](https://shiny.rstudio.com/articles/debugging.html) which is useful, but often I find that breakpoints, tracebacks, or setting `options(shiny.reactlog=TRUE)` only help me identify the code which is acting problematically and not necessarily the details of the problem (i.e. these tips often helps me identify the origin of the problem but not necessarily the reasons why I'm experiencing the symptoms of the problem). For better understanding how the code in a Shiny app works, I highly recommend setting `options(shiny.trace=TRUE)` before running the app so that as the app runs every new request or computed value appears on the screen. Often this is overkill with respect to how much information is needed when debugging, but it's a lifesaver when the problem is not straightforward and contained within the context of a Shiny app.
+
+### Using Foodwebs and Diagrams to Improve Code
+
+Inevitably slow or bad code needs to be refactored. Refactoring is hard most simply because it is difficult to see and understand all of the interdependencies of a codebase at once. One answer to how refactoring can be eased is to have comprehensive testing: every major usage of a function should be tested, and the edge cases where the function needs to perform correctly need to be made explicit both in the function and in tests. However, this simply makes it easier to update a function in place and not worry about whether or not it does the same thing as the previous function. There is more subtlty to refactoring code than this: sometimes you do not want to replace a function with another which does the exact same thing, but would rather subtly change its functionality. This can be very difficult, not least because it is difficult to see where other parts of the codebase depend on a given function. 
+
+My answer to the problem of understanding function dependencies is to use functions like [`mvbutils::foodweb`](https://blogisticreflections.wordpress.com/2010/09/21/r-function-of-the-day-foodweb/) and the [`datastorm-open/DependenciesGraph`](https://github.com/datastorm-open/DependenciesGraphs) project. I strongly prefer using the DependenciesGraph package over the mvbutils package because it clearly represents the direction of dependencies and graphs it creates using [visNetwork](http://datastorm-open.github.io/visNetwork/) are much more reader-friendly because their text is never obfuscated by the node's shape, the graph is draggable and zoomable, and using a combination of force-directed layout and directed edges makes function's dependencies literally easier to see. A note to keep in mind is that the DependenciesGraph represents a dependency of a function as an arrow pointed away from the dependent function to the dependency. 
+
+```{r}
+library(QualtricsTools)
+library(DependenciesGraphs)
+deps <- envirDependencies("package:QualtricsTools")
+plot(deps)
+```
+
+<!-- ![DependenciesGraph generated dependency plot of generate_split_coded_comments](http://i.imgur.com/90pSNM4.png) -->
+
+Often I have encountered the situation of having chosen a function's name somewhat poorly or unclearly and in the process of updating its name to something better I have needed to update everywhere it is called. There are ways that determining the other functions in a package which call a particular function (namely take a look at the underlying data, `deps`, that is being plotted by DependenciesGraphs or the data output by `deps <- mvbutils::foodweb(where = 'package:QualtricsTools')`), but this is often enough a much faster way to view and isolate the needed dependency information. 
+
+### Improving Speed and Optimizing
+
+Optimizing code for speed can often be a subtle task, but there are many packages and projects out there built to help with the process. First, I would recommend learning something about algorithms and computational complexity. Without understanding computational complexity, it will be very difficult to optimize code, because most fundamentally optimizing code is about decreasing the difficulty (equivalently computational complexity) of performing a given algorithm. One doesn't need a comprehensive knowledge of algorithms in order to understand computational complexity and to be able to speed up code, although I would recommend taking a look at the first couple of chapters in a standard reference algorithms textbooks like [Introduction to Algorithms, 3rd Edition by Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest, Clifford Stein](https://www.amazon.com/dp/0262033844/) if computational complexity is a totally foreign subject. 
+
+After acquainting yourself with the notions behind computational complexity and algorithm design, writing faster code becomes a matter of designing an algorithm which takes fewer steps to complete the same task. However, while spending the time to dream up algorithms and functions that are faster in theory is definitely an option, the real gains are to be had in creating code which is verifiably faster. To verify that code runs faster, I recommend using the package [microbenchmark](https://cran.r-project.org/web/packages/microbenchmark/index.html) which "provides infrastructure to accurately measure and compare the execution time of R expressions."
+People really love the microbenchmark package, and it is ubiquitous in the R-community. Check out [this R-bloggers post](https://www.r-bloggers.com/microbenchmarking-with-r/) for an easy example of usage. 
+
+It can also be the case that a function is running slow, but it is difficult to tell why. Of course, sitting down and thinking through the steps of the algorithms and thinking about how to make it faster is necessary, but sometimes just knowing what part of the code runs slowest is all the information needed to dramatically speed up a function. For this, check out code profiling tools which analyze the amount of space, memory, and computation a function and its contained function-calls require. In Hadley's [chapter on Optimization](http://adv-r.had.co.nz/Profiling.html) in his *Advanced-R* book he describes some general techinques on how to profile code in R. An important point that he covers in this chapter is how to ensure that the next iteration of an algorithm produces equivalent results to the previous iteration. His lineprof package described this chapter, while still useful, has been deprecated in favor of [profviz](https://rstudio.github.io/profvis/) developed by RStudio as a way of visualizing the profiling information that the RProf package creates. 
+
+### Object Orientedness and Functional Programming 
+
+[Object-Oriented Programming](https://en.wikipedia.org/wiki/Object-oriented_programming) and [Functional Programming](https://en.wikipedia.org/wiki/Object-oriented_programming) are two distinct programming styles and paradigms which are both present and popular within R programming. Object-Oriented Programming focuses on programming with members of classes which have associated data and methods as dictated by their class. On the other hand, Functional Programming focuses on using functions which are like mathematical expressions. Each of these programming paradigms have their own advantages: Object-Orientedness lends itself to handling the same kinds of objects frequently very well, while functional programming lends itself to having greater generality and modularity in the code base. To be more explicit about some of object-oriented programming and functional programming's advantages, often the generality and modularity of functional code reduces the verbosity of code while object oriented code creates clearer and more explicit data structures. R has multiple different class systems (S3, S4, Reference Classes, and newly [R6](https://github.com/wch/R6/)), as well as all many functional features built in such as generic functions and polymorphism, vectorization and the apply-family, closures
+
+References: 
+
+- [OO-Essentials in *Advanced-R* by Hadley Wickham](http://adv-r.had.co.nz/OO-essentials.html)
+- [Functional Programming in *Advanced-R*](http://adv-r.had.co.nz/Functional-programming.html)
+
+
+### Final Remarks on Package Maintenance
+
+Comment your code. Always. Further, it is a regular and recurring theme of software development that readable, 
+literate, well-documented code is more valuable than unreadable but effective code. If the code works, but is not readable, 
+inevitably it will need to be completely rewritten. If code is readable but doesn't quite work, it can often be fixed and modified easily to work.
+
+I would always recommend trying to stay within the base R functions and the most popular of the CRAN packages when developing a package because
+having a dependency change its syntax or functionality while developing a package is always a frustrating experience. 
+
+Use RMarkdown notes, Wikis, or similar documents frequently to create guides on how to use any package feature that's being developed, 
+because improving the accessibility and usability of a package is almost always more important than developing undocumented functionality 
+that nobody will know about until it becomes documented. 
+
+Write tests because otherwise it will be impossible to know if all of the code works 
+correctly and to specification after any changes. 
+
+Try to make every operation in a function simple and easy to understand, because inevitably the code
+will be read by somebody who does not know or remember the original context it was written in (who may very well may be the original writer of the code who 
+has forgotten why it was written a given way!). 
+
+Other than this generic software development advice, I can only offer one more suggestion: 
+study great programmer's projects. Read Hadley's books, study packages like dplyr, ggplot, and even base R, 
+not necessarily to learn all the neat subtlties of R (although that's a great perk of doing so), 
+but because it is the best way to learn a development and documentation style that yields successful package development. 
+
+Good luck and enjoy R.
