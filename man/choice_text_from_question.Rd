@@ -14,7 +14,10 @@ under [['Responses']]. The insertion of the responses into questions is
 handled by link_responses_to_questions.}
 
 \item{choice}{A numeric value representing the choice made in a response
-to the question provided.}
+to the question provided. This choice can be a choice in a cell in the
+response columns associated with the given question, but it can also be a
+choice which was not chosen by any respondents in the responses dataframe
+as long as it is a choice built into the question's construction.}
 }
 \description{
 Input a question and a variable corresponding to a choice,

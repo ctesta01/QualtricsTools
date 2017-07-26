@@ -7,6 +7,6 @@
 app()
 }
 \description{
-This function launches the Shiny interface for the Qualtrics
+This function launches the Shiny interface for the QualtricsTools
 package from the files in the install or 'inst' directory.
 }

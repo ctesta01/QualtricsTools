@@ -7,7 +7,10 @@
 questions_from_blocks(blocks)
 }
 \arguments{
-\item{blocks}{A list of the survey blocks, with the questions included in them.}
+\item{blocks}{A list of the survey blocks, with the questions and responses inserted
+in place of the BlockElements. Structuring the blocks in this way is automatically
+handled by get_coded_questions_and_blocks, but can also be performed by (after
+inserting the responses into questions) using the questions_into_blocks method.}
 }
 \description{
 This function iterates through the blocks and anything that has a DataExportTag
