@@ -1,0 +1,53 @@
+---
+title: "Sample Data included with QualtricsTools"
+---
+
+There are several distinct surveys with sample response data included
+in the QualtricsTools package repository. The easiest way to access a 
+set of sample data is to pass `sample_data=TRUE` to `get_setup`.
+```{r sample_data}
+library(QualtricsTools)
+get_setup(sample_data=TRUE)
+ls(envir=globalenv())
+```
+
+Under the covers, the `get_setup(sample_data=TRUE)` function 
+call is directly loading the sample data saved in Rda files inside
+the `/data/` directory. Don't worry about understanding the construction of the 
+`list.files.github` function that follows; it's just a tool I'm using 
+to list files from the GitHub repository to show off the data that's 
+included in the repository.
+```{r}
+library(httr)
+
+list.files.github <- function(username = 'emmamorgan-tufts', repository = "QualtricsTools") {
+    requireNamespace("httr")
+    url <- paste0("https://api.github.com/repos/", username, "/", repository, "/git/trees/master?recursive=1", collapse="")
+    req <- GET(url)
+    stop_for_status(req)
+    filelist <- unlist(lapply(content(req)$tree, "[", "path"), use.names = F)
+    return(filelist)
+}
+
+qualtricstools_files <- list.files.github()
+grep("^data/[^/]*$", qualtricstools_files, value = TRUE, perl = TRUE)
+```
+
+However, there is more data contained in the `/data` directory than just the rda files listed above. "Sample Surveys" listed above is a directory which contains 
+many more sample surveys and response datasets as QSF and CSV files. 
+
+```{r}
+# Let's get the directories inside the Sample Surveys folder:
+grep("^data/Sample Surveys/[^/]*$", qualtricstools_files, value = TRUE, perl = TRUE)
+```
+
+Each of these surveys and their corresponding response data can be downloaded from either the [GitHub repository](https://github.com/emmamorgan-tufts/QualtricsTools). Further, some surveys like the 
+"Comment Coding" survey include extra data or extra formatting which are meant to test some of the 
+more subtle features of QualtricsTools. If you clone the repository, then these files will also be
+available in the `/data` folder, but if `devtools::install_github('emmamorgan-tufts/QualtricsTools')`
+was used to install QualtricsTools, then these sample surveys will not be available in the 
+locally installed version. 
+
+```{r}
+list.files( file.path(path.package("QualtricsTools"), "data/"))
+```

@@ -1,6 +1,6 @@
 Package: QualtricsTools
 Type: Package
-Title: Automating Qualtrics Data Reshaping
+Title: Automating Qualtrics Survey Processing
 Version: 0.1.0
 Author: Christian Testa
 Maintainer: Christian Testa <christian.testa@tufts.edu>
