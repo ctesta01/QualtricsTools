@@ -9,7 +9,7 @@ questions_from_blocks(blocks)
 \arguments{
 \item{blocks}{A list of the survey blocks, with the questions and responses inserted
 in place of the BlockElements. Structuring the blocks in this way is automatically
-handled by get_coded_questions_and_blocks, but can also be performed by (after
+handled by get_reorganized_questions_and_blocks, but can also be performed by (after
 inserting the responses into questions) using the questions_into_blocks method.}
 }
 \description{

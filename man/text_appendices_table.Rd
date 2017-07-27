@@ -4,15 +4,15 @@
 \alias{text_appendices_table}
 \title{Create HTML Tables for the Text Entry Questions}
 \usage{
-text_appendices_table(blocks, original_first_row, flow, n_threshold = 15)
+text_appendices_table(blocks, original_first_rows, flow, n_threshold = 15)
 }
 \arguments{
 \item{blocks}{A list of blocks with block elements replaced
 by the question with its paired responses.}
 
-\item{original_first_row}{This is the original first row of the
-response set. If you have the original_first_rows, you can
-pass original_first_rows[1,] to}
+\item{original_first_rows}{This is the original first row of the
+response set. If you have the original_first_rowss, you can
+pass original_first_rowss[1,] to}
 
 \item{flow}{is a list of blockIDs which is used to order the questions
 in the output report.}
@@ -27,7 +27,7 @@ text appendix.
 }
 \description{
 This function creates an HTML string with tables
-for each of the text entry questions and their responses.
+for each of the text entry questions and their text_responses.
 The appendix_lettering function inside this function
 is to create lettering for the tables in the style
 of "A, B, ..., Z, AA, ..., ZZ" and so forth. The html
@@ -35,5 +35,5 @@ tables are created by looping through the blocks
 and their contained question block elements. For each
 question, if the question is a Text Entry question or
 any of the response columns contain "TEXT" then a table
-is created for those responses.
+is created for those text_responses.
 }
