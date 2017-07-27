@@ -32,7 +32,7 @@ repath <- function() {
 #'
 #' @param blocks A list of the survey blocks, with the questions and responses inserted
 #' in place of the BlockElements. Structuring the blocks in this way is automatically
-#' handled by get_coded_questions_and_blocks, but can also be performed by (after
+#' handled by get_reorganized_questions_and_blocks, but can also be performed by (after
 #' inserting the responses into questions) using the questions_into_blocks method.
 #' @param response_name The string name of a column from a Qualtrics response dataset.
 #' @return A pair, (i, j) which specifies a question as blocks[[i]][['BlockElements']][[j]].
@@ -371,7 +371,7 @@ sample_survey=TRUE parameter."
   }
 
   questions_and_blocks <-
-    get_coded_questions_and_blocks(survey, responses, original_first_rows)
+    get_reorganized_questions_and_blocks(survey, responses, original_first_rows)
   questions <- questions_and_blocks[[1]]
   blocks <- questions_and_blocks[[2]]
 
@@ -546,11 +546,11 @@ choice_text_from_response_column <-
 #' Block's Header to HTML
 #'
 #' Get an HTML Header for a list of survey blocks. The header
-#' is created by either get_coded_questions_and_blocks or
+#' is created by either get_reorganized_questions_and_blocks or
 #' by split_respondents.
 #'
 #' @param blocks A list of blocks with a 'header' inserted by either the
-#' get_coded_questions_and_blocks or split_respondents functions.
+#' get_reorganized_questions_and_blocks or split_respondents functions.
 #' @return An HTML string that can be added as a section header in survey reports.
 blocks_header_to_html <- function(blocks) {
   header <- c("<h4>",

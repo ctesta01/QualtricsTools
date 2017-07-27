@@ -30,7 +30,7 @@ requireNamespace('gdata')
 #' by their DataExportTag. However, this is inconvenient
 #' because it adds an additional lookup step, and so they are
 #' replaced by the real objects here.
-get_coded_questions_and_blocks <-
+get_reorganized_questions_and_blocks <-
   function(survey, responses, original_first_rows) {
     # select the block elements from the survey
     blocks <- blocks_from_survey(survey)
@@ -94,7 +94,7 @@ get_coded_questions_and_blocks <-
 #' Additionally, the block element can be further reduced to include
 #' only the payload of the survey blocks.
 #'
-#' @inheritParams get_coded_questions_and_blocks
+#' @inheritParams get_reorganized_questions_and_blocks
 #'
 #' @return The blocks element returned is a list of blocks containing for
 #' each a type, description, ID, and BlockElements (which contains the
@@ -109,7 +109,7 @@ blocks_from_survey <- function(survey) {
 
 #' Generate a List of Notes Blocks
 #'
-#' @inheritParams get_coded_questions_and_blocks
+#' @inheritParams get_reorganized_questions_and_blocks
 #'
 #' @return This returns a list of blocks with element type "NT"
 notes_from_survey <- function(survey) {
@@ -1162,7 +1162,7 @@ display_logic_from_question <- function(question) {
 #' @param already_loaded This can be set to TRUE to indicate that the survey and responses
 #' should be sourced from the global scope; in other words that the survey and its responses
 #' have are "already loaded."
-#' @inheritParams get_coded_questions_and_blocks
+#' @inheritParams get_reorganized_questions_and_blocks
 #' @inheritParams create_question_dictionary
 #'
 #' @return A list of a list of blocks. The same question, but with different respondent groups,
@@ -1330,8 +1330,10 @@ create_response_column_dictionary <-
           } else
             return(FALSE)
         })
+        if ('TRUE' %in% names(table(matched_block))) {
         if (table(matched_block)['TRUE'] == 1) {
           block_ordering <- c(block_ordering, which(matched_block))
+        }
         }
       }
     } else {
