@@ -728,17 +728,17 @@ table_no_respondents <- function(question, appendix_e) {
 #' @param original_first_row is the original header information from the CSV response data.
 table_text_entry <-
   function(question,
-           responses,
+           text_responses,
            appendix_e,
            blocks,
            original_first_row) {
-    response_n <- paste0("Responses: (", nrow(responses), ")")
+    response_n <- paste0("Responses: (", nrow(text_responses), ")")
 
     # generate the headers for each column
     text_appendix_header <- list()
-    for (l in 1:ncol(responses)) {
+    for (l in 1:ncol(text_responses)) {
       choice_text <-
-        choice_text_from_response_column(colnames(responses)[[l]], original_first_row, blocks)
+        choice_text_from_response_column(colnames(text_responses)[[l]], original_first_row, blocks)
       if (choice_text != "") {
         question_text <-
           paste0(question[['Payload']][['QuestionTextClean']],
@@ -760,12 +760,12 @@ table_text_entry <-
       do.call(cbind.data.frame, text_appendix_header)
 
     # bind the header and responses together to make the text appendix
-    colnames(text_appendix_header) <- colnames(responses)
-    text_appendix <- rbind(text_appendix_header, responses)
+    colnames(text_appendix_header) <- colnames(text_responses)
+    text_appendix <- rbind(text_appendix_header, text_responses)
 
     # set colnames as response column names
     colnames(text_appendix) <-
-      sapply(colnames(responses), function (x)
+      sapply(colnames(text_responses), function (x)
         paste0('Export Tag: ', x))
 
     tables <- list()
@@ -795,17 +795,17 @@ table_text_entry <-
 #' @param appendix_e is the number of the appendix in the text appendices report.
 #' @inheritParams text_appendices_table
 table_non_text_entry <- function(question,
-                                 responses,
+                                 text_responses,
                                  appendix_e,
                                  blocks,
                                  original_first_row) {
-  response_n <- paste0("Responses: (", nrow(responses), ")")
+  response_n <- paste0("Responses: (", nrow(text_responses), ")")
 
   # generate the header for the text appendix
   text_appendix_header <- list()
-  for (l in 1:ncol(responses)) {
+  for (l in 1:ncol(text_responses)) {
     choice_text <-
-      choice_text_from_response_column(colnames(responses)[[l]], original_first_row, blocks)
+      choice_text_from_response_column(colnames(text_responses)[[l]], original_first_row, blocks)
     if (choice_text != "") {
       question_text <-
         paste0(question[['Payload']][['QuestionTextClean']],
@@ -827,12 +827,12 @@ table_non_text_entry <- function(question,
     do.call(cbind.data.frame, text_appendix_header)
 
   # bind the header and responses together to make the text appendix
-  colnames(text_appendix_header) <- colnames(responses)
-  text_appendix <- rbind(text_appendix_header, responses)
+  colnames(text_appendix_header) <- colnames(text_responses)
+  text_appendix <- rbind(text_appendix_header, text_responses)
 
   # update the response columns names to have the "Export Tag: " prepended
   colnames(text_appendix) <-
-    sapply(colnames(responses), function(x)
+    sapply(colnames(text_responses), function(x)
       paste0('Export Tag: ', x))
 
   tables <- list()
