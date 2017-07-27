@@ -1,6 +1,5 @@
 ---
 title: "Sample Data included with QualtricsTools"
-# layout: default
 ---
 
 There are several distinct surveys with sample response data included
