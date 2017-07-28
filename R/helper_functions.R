@@ -1037,7 +1037,7 @@ make_split_text_appendices <-
           blocks_header_to_html(split_blocks[[i]]),
           text_appendices_table(
             blocks = split_blocks[[i]],
-            original_first_row = original_first_rows,
+            original_first_rows = original_first_rows,
             flow = flow,
             n_threshold = n_threshold
           )
