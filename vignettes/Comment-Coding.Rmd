@@ -61,7 +61,6 @@ output_filepath <- make_coded_comments(
   filename = "ExampleHTMLCodedComments.html"
 )
 
-library(shiny)
 # We use the includeHTML function from the shiny package to 
 # render the HTML output.
 shiny::includeHTML(output_filepath)
