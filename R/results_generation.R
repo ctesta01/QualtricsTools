@@ -1009,34 +1009,6 @@ matrix_multiple_answer_results <-
     return(question)
   }
 
-
-#' Create Results Tables and Pair Them to Questions
-#'
-#' The generate_results function takes a list of questions which have
-#' their responses paired to them, determines their question type,
-#' uses the results generation functions to create their results table,
-#' and saves the table to the question's [['Table']] element. The function
-#' returns the list of questions with their paired results tables.
-#'
-#' @param questions A list of questions from a Qualtrics Survey File containing
-#' response columns (inserted by link_responses_to_questions).
-#' @inheritParams mc_single_answer_results
-#'
-#' @return A list of questions with their results tables paired to them
-#' under the questions[[i]][['Table']]
-generate_results <- function(questions, original_first_rows) {
-  # loop through all the questions that have responses,
-  # and for each question that has responses, determine
-  # it's question type (among the ones which have question
-  # results generating functions), then generate the results for
-  # that question and save them to that question.
-  for (i in 1:length(questions)) {
-    questions[[i]] <-
-      process_question_results(questions[[i]], original_first_rows)
-  }
-  return(questions)
-}
-
 #' Append the Response Frequency Table to a Question
 #'
 #' This function uses the contents of a question to
@@ -1112,3 +1084,34 @@ process_question_results <-
     }
     return(question)
   }
+
+
+
+
+#' Create Results Tables and Pair Them to Questions
+#'
+#' The generate_results function takes a list of questions which have
+#' their responses paired to them, determines their question type,
+#' uses the results generation functions to create their results table,
+#' and saves the table to the question's [['Table']] element. The function
+#' returns the list of questions with their paired results tables.
+#'
+#' @param questions A list of questions from a Qualtrics Survey File containing
+#' response columns (inserted by link_responses_to_questions).
+#' @inheritParams mc_single_answer_results
+#'
+#' @return A list of questions with their results tables paired to them
+#' under the questions[[i]][['Table']]
+generate_results <- function(questions, original_first_rows) {
+  # loop through all the questions that have responses,
+  # and for each question that has responses, determine
+  # it's question type (among the ones which have question
+  # results generating functions), then generate the results for
+  # that question and save them to that question.
+  for (i in 1:length(questions)) {
+    questions[[i]] <-
+      process_question_results(questions[[i]], original_first_rows)
+  }
+  return(questions)
+}
+

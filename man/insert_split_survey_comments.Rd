@@ -26,9 +26,11 @@ response column names, another for the Question Text stem and choice text (altho
 truncated), and a row with QID based column names.}
 }
 \value{
-Lists of lists, where the outer lists correspond to groups of respondents, and the inner
-lists are lists of blocks with questions inserted which contain coded comments for that question
-and respondent group.
+The returned data is a list of lists of blocks. Each list of blocks has the coded comments
+for a specific respondent group inserted into them, and each of the lists of blocks in the
+output corresponds to a specific respondent group. The list of blocks is duplicated for each
+respondent group, and then that respondent group's coded comments are inserted into each
+list of blocks.
 }
 \description{
 This function splits the survey's response data and the

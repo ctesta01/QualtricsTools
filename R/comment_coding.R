@@ -89,9 +89,9 @@ directory_get_coded_comment_sheets <- function(directory) {
 #' Turn a Single Coded File into a Data Frame
 #'
 #' This retrieves comment coding data as a dataframe
-#' from a Excel or CSV file. Coded comments are retrieved from the sheet named "Coded"
+#' from a Excel file. Coded comments are retrieved from the sheet named "Coded"
 #' (case does not matter).
-#' @param codedfile The string path to a Excel or CSV file.
+#' @param codedfile The string path to a Excel file.
 #' @return A dataframe version of the contents of the coded comments
 #' in the codedfile.
 get_coded_comment_sheet <- function(codedfile) {
@@ -229,6 +229,11 @@ merge_split_column_into_comment_sheet <-
   function(coded_comment_sheet,
            responses,
            split_column) {
+    # We require in this function that the first column be the ResponseID.
+    if (! grepl("ResponseID", colnames(responses)[[1]], ignore.case = TRUE)) {
+      stop("The first column of the responses is not the ResponseID.")
+    }
+
     # Which column is the split_column
     responses_split_index <- which(colnames(responses) == split_column)
     if (responses_split_index == 0) {
@@ -413,9 +418,11 @@ insert_coded_comments <-
 #' response column names, another for the Question Text stem and choice text (although
 #' truncated), and a row with QID based column names.
 #'
-#' @return Lists of lists, where the outer lists correspond to groups of respondents, and the inner
-#' lists are lists of blocks with questions inserted which contain coded comments for that question
-#' and respondent group.
+#' @return The returned data is a list of lists of blocks. Each list of blocks has the coded comments
+#' for a specific respondent group inserted into them, and each of the lists of blocks in the
+#' output corresponds to a specific respondent group. The list of blocks is duplicated for each
+#' respondent group, and then that respondent group's coded comments are inserted into each
+#' list of blocks.
 insert_split_survey_comments <-
   function(split_blocks,
            split_coded_comment_sheets,

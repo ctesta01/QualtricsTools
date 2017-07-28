@@ -7,6 +7,35 @@
 split_respondents(response_column, responses, survey, blocks, questions,
   headerrows, already_loaded, original_first_rows)
 }
+\arguments{
+\item{response_column}{The response column that will be used to split the respondents}
+
+\item{responses}{A dataframe of Qualtrics responses to a survey.
+Use ask_for_csv() to create such a dataframe from a CSV file.}
+
+\item{survey}{A qualtrics survey list object,
+uploaded from a Qualtrics Survey File (QSF). Use
+ask_for_qsf() to create such a survey list object from a QSF file.}
+
+\item{blocks}{The blocks provided to this function must include questions inserted into
+the BlockElements. Create the list of blocks from a survey with blocks_from_survey(),
+and with questions on hand, insert them into the blocks with questions_into_blocks().}
+
+\item{already_loaded}{This can be set to TRUE to indicate that the survey and responses
+should be sourced from the global scope; in other words that the survey and its responses
+have are "already loaded."}
+
+\item{original_first_rows}{A dataframe contianing the header information
+for each column of response data. This dataframe includes a row for the DataExportTag based
+response column names, another for the Question Text stem and choice text (although
+truncated), and a row with QID based column names.}
+}
+\value{
+A list of a list of blocks. The same question, but with different respondent groups,
+might look something like split_blocks[[1]][[1]][['BlockElements']][[1]] and
+split_blocks[[2]][[1]][['BlockElements']][[1]]. These refer to the first and second respondent
+groups, the first block, and the first block element.
+}
 \description{
 This function splits the respondents into separate respondent groups
 based on the values in the specified response column. Then, for each
@@ -14,17 +43,4 @@ respondent group, the blocks with questions are duplicated. Each set of
 blocks has a different responent group inserted into its questions, and
 then each set of blocks is processed. The output is a list of blocks with
 the results processed and inserted into each BlockElement.
-}
-\details{
-@param response_column The response column that will be used to split the respondents
- @param already_loaded This can be set to TRUE to indicate that the survey and responses
- should be sourced from the global scope; in other words that the survey and its responses
- have are "already loaded."
- @inheritParams get_coded_questions_and_blocks
- @inheritParams create_question_dictionary
-
-@return A list of a list of blocks. The same question, but with different respondent groups,
- might look something like split_blocks[[1]][[1]][['BlockElements']][[1]] and
- split_blocks[[2]][[1]][['BlockElements']][[1]]. These refer to the first and second respondent
- groups, the first block, and the first block element.
 }

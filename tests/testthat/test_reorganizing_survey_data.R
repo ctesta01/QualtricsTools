@@ -20,8 +20,8 @@ test_that("Notes are inserted into questions by insert_notes_into_questions", {
   qsf_path <- file.path(surveysdir, "User Notes Survey/Notes_Survey.qsf")
   survey <- ask_for_qsf(qsf_path)
   blocks <- blocks_from_survey(survey)
-  # insert_notes_into_questions is performed by get_coded_questions_and_blocks
-  questions_and_blocks <- get_coded_questions_and_blocks(survey=survey, responses=data.frame(), original_first_rows=data.frame())
+  # insert_notes_into_questions is performed by get_reorganized_questions_and_blocks
+  questions_and_blocks <- get_reorganized_questions_and_blocks(survey=survey, responses=data.frame(), original_first_rows=data.frame())
   questions <- questions_and_blocks[[1]]
   # Test that there exist qtNotes with "User Note" inserted into them.
   user_notes_exist_in_questions <-

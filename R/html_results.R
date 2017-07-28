@@ -8,7 +8,7 @@
 #' block's description.
 #'
 #' @return A list of HTML results tables for each question
-tabelize_blocks <- function(blocks, flow, include_block_headers = TRUE) {
+create_html_results_tables <- function(blocks, flow, include_block_headers = TRUE) {
 
   # All the html tables will be saved into the tables list.
   tables <- list()
@@ -83,9 +83,6 @@ tabelize_blocks <- function(blocks, flow, include_block_headers = TRUE) {
 question_description <- function(question) {
   tables <- list()
 
-  # get display logic for the question
-  display_logic <- display_logic_from_question(question)
-
   # if the display logic is too long, write a note saying
   # that there is complex display logic, and to refer to the
   # Display Logic output.
@@ -111,7 +108,7 @@ question_description <- function(question) {
   if (has_display_logic(question)) {
     display_logic <-
       list("Refer to the Display Logic panel for this question's logic.")
-  }
+  } else display_logic <- list()
 
   # the question header is the data export tag, the question text (stripped of html),
   # and then display logic.
@@ -217,7 +214,7 @@ question_description <- function(question) {
 #' Create HTML Tables for the Text Entry Questions
 #'
 #' This function creates an HTML string with tables
-#' for each of the text entry questions and their responses.
+#' for each of the text entry questions and their text_responses.
 #' The appendix_lettering function inside this function
 #' is to create lettering for the tables in the style
 #' of "A, B, ..., Z, AA, ..., ZZ" and so forth. The html
@@ -225,13 +222,13 @@ question_description <- function(question) {
 #' and their contained question block elements. For each
 #' question, if the question is a Text Entry question or
 #' any of the response columns contain "TEXT" then a table
-#' is created for those responses.
+#' is created for those text_responses.
 #'
 #' @param blocks A list of blocks with block elements replaced
 #' by the question with its paired responses.
-#' @param original_first_row This is the original first row of the
-#' response set. If you have the original_first_rows, you can
-#' pass original_first_rows[1,] to
+#' @param original_first_rows This is the original first row of the
+#' response set. If you have the original_first_rowss, you can
+#' pass original_first_rowss[1,] to
 #' @param flow is a list of blockIDs which is used to order the questions
 #' in the output report.
 #' @param n_threshold is the number of comments which must be present in order
@@ -241,7 +238,7 @@ question_description <- function(question) {
 #' text appendix.
 text_appendices_table <-
   function(blocks,
-           original_first_row,
+           original_first_rows,
            flow,
            n_threshold = 15) {
     options(stringsAsFactors = FALSE)
@@ -327,7 +324,7 @@ text_appendices_table <-
                                               k,
                                               e,
                                               blocks,
-                                              original_first_row)
+                                              original_first_rows)
                   )
                 }
               }
@@ -354,18 +351,18 @@ text_appendices_table <-
 
                 # Clean Responses. Remove any responses which are -99 or
                 # empty for an entire text entry question.
-                responses <-
+                text_responses <-
                   question[['Responses']]
-                responses <-
-                  as.data.frame(responses[!apply(responses, 1, function(x)
+                text_responses <-
+                  as.data.frame(text_responses[!apply(text_responses, 1, function(x)
                     all(x %in% c(-99, ""))), ])
 
                 # Ensure the response columns are named correctly after cleaning.
-                colnames(responses) <- colnames(question[['Responses']])
+                colnames(text_responses) <- colnames(question[['Responses']])
 
                 # If there are no responses, use the table_no_respondents
                 # function to create a standardized no respondents table.
-                if (nrow(responses) == 0) {
+                if (nrow(text_responses) == 0) {
                   tables <-
                     c(tables, table_no_respondents(question, e))
                   e <- e + 1
@@ -378,13 +375,13 @@ text_appendices_table <-
                 # as checked before is "TE" for Text Entry, then use the
                 # table_text_entry function on the question to create its
                 # text appendix.
-                if (length(as.list(responses)) > 0) {
+                if (length(as.list(text_responses)) > 0) {
                   tables <- c(tables,
                               table_text_entry(question,
-                                               responses,
+                                               text_responses,
                                                e,
                                                blocks,
-                                               original_first_row))
+                                               original_first_rows))
                   e <- e + 1
                 }
 
@@ -393,18 +390,18 @@ text_appendices_table <-
 
                   # Clean Responses. Remove any responses which are -99 or
                   # empty for an entire text entry question.
-                  responses <- question[['Responses']][text_columns[[k]]]
-                  responses <-
-                    as.data.frame(responses[!apply(responses, 1, function(x)
+                  text_responses <- question[['Responses']][text_columns[[k]]]
+                  text_responses <-
+                    as.data.frame(text_responses[!apply(text_responses, 1, function(x)
                       all(x %in% c(-99, ""))),])
 
                   # Ensure the response columns are named correctly after cleaning.
-                  colnames(responses) <-
+                  colnames(text_responses) <-
                     colnames(question[['Responses']][text_columns[[k]]])
 
                   # If there are no responses, use the table_no_respondents
                   # function to create a standardized no respondents table.
-                  if (nrow(responses) == 0) {
+                  if (nrow(text_responses) == 0) {
                     tables <-
                       c(tables, table_no_respondents(question, e))
                     e <- e + 1
@@ -446,10 +443,10 @@ text_appendices_table <-
                   tables <- c(
                     tables,
                     table_non_text_entry(question,
-                                         responses,
+                                         text_responses,
                                          e,
                                          blocks,
-                                         original_first_row)
+                                         original_first_rows)
                   )
                   e <- e + 1
                 }
@@ -510,7 +507,7 @@ uncodeable_questions_message <- function(questions) {
 #' If it has display logic, it's inserted into the tables returned by
 #' this function.
 #'
-#' @inheritParams tabelize_blocks
+#' @inheritParams create_html_results_tables
 #' @return a list of html tables detailing the display logic for each question
 #' containing display logic.
 tabelize_display_logic <- function(blocks, flow) {
@@ -731,17 +728,17 @@ table_no_respondents <- function(question, appendix_e) {
 #' @param original_first_row is the original header information from the CSV response data.
 table_text_entry <-
   function(question,
-           responses,
+           text_responses,
            appendix_e,
            blocks,
            original_first_row) {
-    response_n <- paste0("Responses: (", nrow(responses), ")")
+    response_n <- paste0("Responses: (", nrow(text_responses), ")")
 
     # generate the headers for each column
     text_appendix_header <- list()
-    for (l in 1:ncol(responses)) {
+    for (l in 1:ncol(text_responses)) {
       choice_text <-
-        choice_text_from_response_column(colnames(responses)[[l]], original_first_row, blocks)
+        choice_text_from_response_column(colnames(text_responses)[[l]], original_first_row, blocks)
       if (choice_text != "") {
         question_text <-
           paste0(question[['Payload']][['QuestionTextClean']],
@@ -763,12 +760,12 @@ table_text_entry <-
       do.call(cbind.data.frame, text_appendix_header)
 
     # bind the header and responses together to make the text appendix
-    colnames(text_appendix_header) <- colnames(responses)
-    text_appendix <- rbind(text_appendix_header, responses)
+    colnames(text_appendix_header) <- colnames(text_responses)
+    text_appendix <- rbind(text_appendix_header, text_responses)
 
     # set colnames as response column names
     colnames(text_appendix) <-
-      sapply(colnames(responses), function (x)
+      sapply(colnames(text_responses), function (x)
         paste0('Export Tag: ', x))
 
     tables <- list()
@@ -798,17 +795,17 @@ table_text_entry <-
 #' @param appendix_e is the number of the appendix in the text appendices report.
 #' @inheritParams text_appendices_table
 table_non_text_entry <- function(question,
-                                 responses,
+                                 text_responses,
                                  appendix_e,
                                  blocks,
                                  original_first_row) {
-  response_n <- paste0("Responses: (", nrow(responses), ")")
+  response_n <- paste0("Responses: (", nrow(text_responses), ")")
 
   # generate the header for the text appendix
   text_appendix_header <- list()
-  for (l in 1:ncol(responses)) {
+  for (l in 1:ncol(text_responses)) {
     choice_text <-
-      choice_text_from_response_column(colnames(responses)[[l]], original_first_row, blocks)
+      choice_text_from_response_column(colnames(text_responses)[[l]], original_first_row, blocks)
     if (choice_text != "") {
       question_text <-
         paste0(question[['Payload']][['QuestionTextClean']],
@@ -830,12 +827,12 @@ table_non_text_entry <- function(question,
     do.call(cbind.data.frame, text_appendix_header)
 
   # bind the header and responses together to make the text appendix
-  colnames(text_appendix_header) <- colnames(responses)
-  text_appendix <- rbind(text_appendix_header, responses)
+  colnames(text_appendix_header) <- colnames(text_responses)
+  text_appendix <- rbind(text_appendix_header, text_responses)
 
   # update the response columns names to have the "Export Tag: " prepended
   colnames(text_appendix) <-
-    sapply(colnames(responses), function(x)
+    sapply(colnames(text_responses), function(x)
       paste0('Export Tag: ', x))
 
   tables <- list()
@@ -855,7 +852,7 @@ table_non_text_entry <- function(question,
 
 #' Create a message stating MCSA questions with Multiple Text Entry components
 #' can't be automatically processed for text appendices.
-#' @inhertiParam question_description
+#' @inheritParams question_description
 table_mcsa_multitext <- function(question) {
   question_message <-
     c(

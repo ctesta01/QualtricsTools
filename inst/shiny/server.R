@@ -71,8 +71,8 @@ shinyServer(function(input, output) {
     return(list_survey_and_responses)
   })
 
-  # This is a reactive block wrapped around the get_coded_questions_and_blocks
-  # function. The get_coded_questions_and_blocks function cleans up the questions and
+  # This is a reactive block wrapped around the get_reorganized_questions_and_blocks
+  # function. The get_reorganized_questions_and_blocks function cleans up the questions and
   # blocks from the QSF data, adds the response data into the questions, and the
   # questions into the blocks, as well as removing trash questions and adding a
   # human readable question type.
@@ -82,7 +82,7 @@ shinyServer(function(input, output) {
       responses <- survey_and_responses()[[2]]
       original_first_rows <- survey_and_responses()[[3]]
       questions_and_blocks <-
-        get_coded_questions_and_blocks(survey, responses, original_first_rows)
+        get_reorganized_questions_and_blocks(survey, responses, original_first_rows)
     }
   })
 
@@ -220,12 +220,12 @@ shinyServer(function(input, output) {
       if (input[['ignoreflow']] == FALSE) {
         return(c(
           blocks_header_to_html(blocks),
-          tabelize_blocks(blocks, flow)
+          create_html_results_tables(blocks, flow)
         ))
       } else {
         return(c(
           blocks_header_to_html(blocks),
-          tabelize_blocks(blocks)
+          create_html_results_tables(blocks)
         ))
       }
     }
@@ -253,7 +253,9 @@ shinyServer(function(input, output) {
       flow <- flow_from_survey(survey_and_responses()[[1]])
       original_first_row <- survey_and_responses()[[3]][1,]
       blocks <- processed_questions_and_blocks()[[2]]
-      return(create_response_column_dictionary(blocks, flow, original_first_row))
+      return(create_response_column_dictionary(question_blocks = blocks,
+                                               original_first_row = original_first_row,
+                                               flow = flow))
     }
   })
 
@@ -595,7 +597,7 @@ shinyServer(function(input, output) {
             html_2_pandoc(
               html = c(
                 blocks_header_to_html(split_blocks[[i]]),
-                tabelize_blocks(split_blocks[[i]], flow)
+                create_html_results_tables(split_blocks[[i]], flow)
               ),
               file_name = paste0(
                 "results_tables_",

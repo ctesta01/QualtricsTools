@@ -4,18 +4,19 @@
 \alias{table_text_entry}
 \title{Create Text Appendices for Text Entry Type Questions}
 \usage{
-table_text_entry(question, responses, appendix_e, blocks, original_first_row)
+table_text_entry(question, text_responses, appendix_e, blocks,
+  original_first_row)
 }
 \arguments{
 \item{question}{is the question for which the text appendix is being created.}
-
-\item{responses}{is a data frame of text responses to the question given.}
 
 \item{appendix_e}{is the number of the appendix in the text appendices report.}
 
 \item{blocks}{is the list of survey blocks.}
 
 \item{original_first_row}{is the original header information from the CSV response data.}
+
+\item{responses}{is a data frame of text responses to the question given.}
 }
 \description{
 The `table_text_entry` function creates a text appendix with as many
