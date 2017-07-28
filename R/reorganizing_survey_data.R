@@ -1436,16 +1436,18 @@ create_response_column_dictionary <-
     dictionary <- do.call(rbind.data.frame, dictionary)
 
     # rename the dictionary with the appropriate column names
-    names(dictionary) <- c(
-      "Question Data Export Tag",
-      "Question Response Column",
-      "Question Stem",
-      "Question Choice",
-      "Question Type 1",
-      "Question Type 2",
-      "Question Type 3",
-      "Response Type"
-    )
+    if (ncol(dictionary) == 8) {
+      names(dictionary) <- c(
+        "Question Data Export Tag",
+        "Question Response Column",
+        "Question Stem",
+        "Question Choice",
+        "Question Type 1",
+        "Question Type 2",
+        "Question Type 3",
+        "Response Type"
+      )
+    }
 
     return(dictionary)
   }
