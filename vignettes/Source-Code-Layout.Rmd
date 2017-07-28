@@ -1,0 +1,34 @@
+---
+title: The Functions in Each Source Code File
+---
+
+```{r}
+tryCatch(library("httr"), error = function(e) { install.packages("httr")}, finally = library("httr"))
+tryCatch(library("rlist"), error = function(e) { install.packages("rlist")}, finally = library("rlist"))
+
+username <- 'emmamorgan-tufts'
+repository <- 'QualtricsTools'
+
+url <- paste0("https://api.github.com/repos/", username, "/", repository, "/git/trees/master?recursive=1", collapse="")
+
+req <- GET(url)
+
+R_source_files <- list.filter(content(req)$tree, grepl("R/", path))
+
+list_of_functions_per_file <- list()
+
+for (file in R_source_files) {
+  tf <- tempfile()
+  filecontents <- getURL(file$url)
+  # Oh. The file needs to be decoded from base64 and sha.
+  # this won't work until that is done.
+  write(x = filecontents, file = tf)
+  temp.env <- new.env()
+  sys.source(tf, envir = temp.env)
+  functions <- lsf.str(envir=temp.env)
+  list_of_functions_per_file <- c(
+    list_of_functions_per_file,
+    list('file' = file$path,
+         'functions' = functions)
+  )
+}
