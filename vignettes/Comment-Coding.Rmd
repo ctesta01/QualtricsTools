@@ -1,9 +1,5 @@
 ---
 title: Inserting Coded Comments into Output Text Appendices
-vignette: >
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteIndexEntry{Comment-Coding}
-  %\usepackage[utf8]{inputenc}
 ---
 
 QualtricsTools not only makes it easy to create reports of text appendices, but 
