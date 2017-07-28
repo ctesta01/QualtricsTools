@@ -22,6 +22,7 @@ for a single text entry component.
 First, let's download the data into a directory. 
 
 ```{r}
+library(shiny)
 library(QualtricsTools)
 library(RCurl)
 
@@ -63,7 +64,7 @@ output_filepath <- make_coded_comments(
 
 # We use the includeHTML function from the shiny package to 
 # render the HTML output.
-shiny::includeHTML(output_filepath)
+includeHTML(output_filepath)
 ```
 
 
