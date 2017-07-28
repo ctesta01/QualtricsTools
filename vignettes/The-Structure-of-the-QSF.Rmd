@@ -1,4 +1,10 @@
-# Quickstart Guide to undertsanding the Qualtrics Survey File
+---
+title: A Quickstart Guide to Understanding the Qualtrics Survey File
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{The-QSF-Structure}
+  %\usepackage[utf8]{inputenc}
+---
 
 This information is likely to quickly become outdated when Qualtrics next changes the formatting of the QSF file. This guide was started February 2017. I hope that it is a useful introduction to understanding the contents of the QSF file that one can download from Qualtrics. 
 

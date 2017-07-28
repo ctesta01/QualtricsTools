@@ -1,5 +1,9 @@
 ---
 title: "Sample Data included with QualtricsTools"
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Sample-Surveys}
+  %\usepackage[utf8]{inputenc}
 ---
 
 There are several distinct surveys with sample response data included

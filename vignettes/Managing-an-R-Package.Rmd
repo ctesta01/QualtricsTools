@@ -3,6 +3,10 @@ title: "Managing an R Package with a Shiny App"
 author: "Christian Testa"
 date: "July, 2017"
 output: html_document
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Managing-an-R-package}
+  %\usepackage[utf8]{inputenc}
 ---
 
 Developing an R package like QualtricsTools requires many disjoint areas of expertise such as plain R programming, web server programming, testing, documentation, and package organization. 

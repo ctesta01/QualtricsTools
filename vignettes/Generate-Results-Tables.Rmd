@@ -1,5 +1,9 @@
 ---
 title: "Generating Results Tables"
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Generating-Results-Tables}
+  %\usepackage[utf8]{inputenc}
 ---
 
 The easiest way to create a report of frequency tables from a Qualtrics survey file and CSV response

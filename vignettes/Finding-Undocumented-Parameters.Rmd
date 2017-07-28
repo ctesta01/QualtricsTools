@@ -2,6 +2,10 @@
 title: Finding Undocumented Parameters
 author: Christian Testa
 date: July 2017
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Finding-Undocumented-Parameters}
+  %\usepackage[utf8]{inputenc}
 ---
 
 Let's try and find out what parameters are undocumented in my package QualtricsTools.

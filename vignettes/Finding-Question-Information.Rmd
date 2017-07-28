@@ -2,6 +2,10 @@
 title: "Finding Question Notes"
 output:
   html_document: default
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Finding-Question-Information}
+  %\usepackage[utf8]{inputenc}
 ---
 
 

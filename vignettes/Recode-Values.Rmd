@@ -1,5 +1,9 @@
 ---
 title: An Introduction to Recode Values in Qualtrics
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Recode-Values}
+  %\usepackage[utf8]{inputenc}
 ---
 
 # Using Recode Values in Qualtrics
