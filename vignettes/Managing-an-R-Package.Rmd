@@ -5,7 +5,7 @@ date: "July, 2017"
 output: html_document
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteIndexEntry{Managing-an-R-package}
+  %\VignetteIndexEntry{Managing an R package}
   %\usepackage[utf8]{inputenc}
 ---
 

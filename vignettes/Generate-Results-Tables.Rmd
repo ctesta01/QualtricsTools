@@ -2,7 +2,7 @@
 title: "Generating Results Tables"
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteIndexEntry{Generating-Results-Tables}
+  %\VignetteIndexEntry{Generating Results Tables}
   %\usepackage[utf8]{inputenc}
 ---
 

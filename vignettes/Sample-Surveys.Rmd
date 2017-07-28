@@ -2,7 +2,7 @@
 title: "Sample Data included with QualtricsTools"
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteIndexEntry{Sample-Surveys}
+  %\VignetteIndexEntry{Sample Surveys}
   %\usepackage[utf8]{inputenc}
 ---
 
