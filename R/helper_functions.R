@@ -54,7 +54,7 @@ question_from_response_column <- function(blocks, response_name) {
   # environment matches the hash of the blocks passed to this function as an argument.
   compare_blocks_hash <- function() {
     previously_computed_lookup_data <- get("response_column_to_block_index_lookup",
-                          envir = as.environment("package:QualtricsTools"))
+                          envir = globalenv())
     if ('hash' %in% names(previously_computed_lookup_data)) {
       return( previously_computed_lookup_data[['hash']] == current_blocks_hash )
     } else return(FALSE)
@@ -64,10 +64,10 @@ question_from_response_column <- function(blocks, response_name) {
   # and the hash stored in it and the hash of the passed blocks match, go ahead and use
   # the response_column_to_block_index_lookup as the previously_computed_lookup_data.
   if (exists("response_column_to_block_index_lookup",
-             where = as.environment("package:QualtricsTools")) &&
+             where = globalenv()) &&
       compare_blocks_hash()) {
     previously_computed_lookup_data <- get("response_column_to_block_index_lookup",
-                                           envir = as.environment("package:QualtricsTools"))
+                                           envir = globalenv())
     # Get the lookup_table.
     previously_computed_lookup_table <- previously_computed_lookup_data[['table']]
     # If the desired response column name appears in the lookup table, return its
@@ -98,7 +98,7 @@ question_from_response_column <- function(blocks, response_name) {
   newly_computed_lookup_data <- list("table" = responses_to_indexes, "hash" = current_blocks_hash)
   # Use assign to add the newly_computed_lookup_data as "response_column_to_block_index_lookup"
   # to the QualtricsTools package environment.
-  assign(x = 'response_column_to_block_index_lookup', value = newly_computed_lookup_data, envir=as.environment('package:QualtricsTools'))
+  assign(x = 'response_column_to_block_index_lookup', value = newly_computed_lookup_data, envir=globalenv())
 
   # If the desired response column name appears in the lookup table, return its
   # associated pair of block and blockelement indices.
