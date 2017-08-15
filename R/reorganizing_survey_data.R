@@ -1585,7 +1585,8 @@ create_merged_response_column <- function(response_columns,
   for (i in 1:length(response_columns)) {
     merge_col_name <- response_columns[[i]]
     question_indices <-
-      question_from_response_column(blocks, merge_col_name)
+      tryCatch(question_from_response_column(blocks, merge_col_name),
+               error = function(e) return(NULL))
     response_col <- as.vector(responses[[merge_col_name]])
 
     if (!is.null(question_indices)) {
