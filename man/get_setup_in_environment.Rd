@@ -21,7 +21,7 @@ original_first_rows, and flow into.}
 This function puts the survey, responses, questions, blocks
 original_first_rows, and flow into the environment specified in R.
 qsf_path, csv_path, and headerrows are optional. If qsf_path and
-csv_path are provided, then the function uses get_setup with return_data
+csv_path are provided, then the function uses get_setup with return_data_as_list
 to process the survey data and then insert the returned data into the
 specified environment. If the qsf_path and csv_path are not specified,
 the function first checks the global scope to see if all output from

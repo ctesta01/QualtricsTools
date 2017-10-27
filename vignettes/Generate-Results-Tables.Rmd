@@ -1,0 +1,62 @@
+---
+title: "Generating Results Tables"
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Generating Results Tables}
+  %\usepackage[utf8]{inputenc}
+---
+
+The easiest way to create a report of frequency tables from a Qualtrics survey file and CSV response
+dataset is to use QualtricsTools' `make_results_tables` function. 
+
+```{r}
+library(QualtricsTools)
+# Let's use get_setup to load a sample survey.
+get_setup(sample_data=TRUE)
+# Using make_results_tables without definining the qsf_path or csv_path 
+# parameters causes the function to retrieve the necessary survey data from 
+# the global scope if all necessary objects are present. 
+make_results_tables()
+```
+
+In this next example, I'm downloading a sample survey with responses as a 
+QSF and CSV from the GitHub repository and then passing them 
+as arguments to the make_results_tables function. 
+
+```{r}
+library(RCurl)
+
+# Grab the sample data from our repository.
+qsf <- getURL("https://raw.githubusercontent.com/emmamorgan-tufts/QualtricsTools/master/data/Sample%20Surveys/Better%20Sample%20Survey/Better_Sample_Survey.qsf")
+csv <- getURL("https://raw.githubusercontent.com/emmamorgan-tufts/QualtricsTools/master/data/Sample%20Surveys/Better%20Sample%20Survey/Better_Sample_Survey.csv")
+
+# Write the sample data to file.
+qsf_tempfile_path = tempfile()
+csv_tempfile_path = tempfile()
+write(x = qsf, file = qsf_tempfile_path)
+write(x = csv, file = csv_tempfile_path)
+
+make_results_tables(
+  qsf_path = qsf_tempfile_path,
+  csv_path = csv_tempfile_path, 
+  headerrows = 3
+)
+```
+
+Of course, `make_results_tables` still does more than this. It allows users to specify their chosen output directory and desired output filename. In fact, `make_results_tables` automatically uses the file 
+extension of the passed `filename` parameter to tell the `pandoc` program what format to convert the document into when rendering it. 
+
+
+```{r}
+output_filepath <- make_results_tables(
+  qsf_path = qsf_tempfile_path,
+  csv_path = csv_tempfile_path, 
+  headerrows = 3,
+  output_dir = tempdir(),
+  filename = "ExampleHTMLFile.html"
+)
+
+requireNamespace("htmltools")
+htmltools::includeHTML(output_filepath)
+```
+

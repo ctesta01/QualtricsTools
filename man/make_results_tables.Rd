@@ -22,7 +22,7 @@ make_results_tables(qsf_path, csv_path, headerrows, output_dir,
 `make_results_tables` uses `get_setup` and `html_2_pandoc` to process a
 survey and then save its results into a file. If the `qsf_path,` and `csv_path`
 are included as parameters, then they will be passed to `get_setup` along with a
-`return_data=TRUE` parameter in order to return the survey, responses,
+`return_data_as_list=TRUE` parameter in order to return the survey, responses,
 questions, blocks, original_first_rows, and flow as variables local to the function
 scope. If they are not passed, they will be retrieved as needed from the global scope.
 The function then uses the blocks, original_first_rows, and flow with `html_2_pandoc`

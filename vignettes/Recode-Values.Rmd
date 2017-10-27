@@ -1,0 +1,129 @@
+---
+title: An Introduction to Recode Values in Qualtrics
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Recode Values}
+  %\usepackage[utf8]{inputenc}
+---
+
+# Using Recode Values in Qualtrics
+
+Recode Values are used for different purposes depending on the question
+type in the Qualtrics platform. Below is a quick reference to what kinds
+of variables are available to be defined by the user in a given question
+type, and where they appear in the response set. The Recode Values are
+always numeric variables, and Question Export Tags can be set as
+strings. On the following pages are short explanations for each question
+type with some screenshots of the recode values menu in use and the
+output the example creates.
+
+This guide covers the usage of recode values in the following question types:
+- Multiple Choice Single Answer
+- Multiple Choice Multiple Answer
+- Matrix Single Answer
+- Matrix Multiple Answer
+
+The following table describes where the recode values appear in the 
+output responses datasets from Qualtrics depending on each question type.
+To make the below table a bit more tangible, following the table examples (with screenshots) are included of the recode values editor for 
+each question type and how they appear in the output responses datasets.
+
+
+```{r, echo=FALSE}
+html <- "
+<table border='1'>
+  <tr>
+    <th>Question Type</th>
+    <th>Variables Available for Use</th>
+    <th>Where they Appear</th>
+  </tr>
+  <tr>
+    <td>Multiple Choice Single Answer </td>
+    <td>Recode Values</td>
+    <td>Variable Responses</td>
+  </tr>
+  <tr>
+    <td>Multiple Choice Multiple Answer &nbsp;</td>
+    <td>Recode Values</td>
+    <td>Response Column Names</td>
+  </tr>
+  <tr>
+    <td>Matrix Single Answer</td>
+    <td>Recode Values</td>
+    <td>Variable Responses</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>Question Export Tags</td>
+    <td>Response Column Names</td>
+  </tr>
+  <tr>
+    <td>Matrix Multiple Answer</td>
+    <td>Recode Values</td>
+    <td>Response Column Names</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td>Question Export Tags</td>
+    <td>Response Column Names</td>
+  </tr>
+</table>
+"
+table_html_file <- tempfile()
+write(x = html, file = table_html_file)
+requireNamespace("shiny", quietly = TRUE)
+shiny::includeHTML(table_html_file)
+```
+
+
+
+
+### Multiple Choice Single Answer Questions (Radio Buttons)
+
+In MCSA questions, the Recode Values are numerical values that will be
+used to assign variable values to each answer choice.
+
+#### Qualtrics Recode Values Editor
+![](http://i.imgur.com/d1yYwCj.png)
+
+#### Recode Values' Appearance in Response Data
+![](http://i.imgur.com/Put08IR.png)
+
+### Multiple Choice Multiple Answer Questions (Check Boxes)
+
+In MCMA questions, the Recode Values are numerical values that will be
+appended to the data export tag (in this case "q3_volunteer") to label
+each response column.
+
+#### Qualtrics Recode Values Editor
+![](http://i.imgur.com/Q1AGzns.png)
+
+#### Recode Values' Appearance in Response Data
+![](http://i.imgur.com/kXx13oa.png)
+
+### Likert Matrix Single Answer Questions
+
+There are two useful sections under the Recode Values menu for matrix
+questions: the Recode Values and the Question Export Tags. The Recode
+Values in a single answer matrix question are used to code the responses
+and the Question Export Tags are used (by appending them to the data
+export tag, in this case "q4_rank") to label the response columns.
+
+#### Qualtrics Recode Values Editor
+![](http://i.imgur.com/FmVYnF9.png)
+
+#### Recode Values' Appearance in Response Data
+![](http://i.imgur.com/2jxHkan.png)
+
+
+### Likert Matrix Multiple Answer Questions
+
+In multiple answer matrix questions, both the Recode Values and the
+Question Export Tags (in combination with the data export tag) are used
+to label the response columns.
+
+#### Qualtrics Recode Values Editor
+![](http://i.imgur.com/7fwPDli.png)
+
+#### Recode Values' Appearance in Response Data
+![](http://i.imgur.com/HsrLRhe.png)

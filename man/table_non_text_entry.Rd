@@ -4,22 +4,18 @@
 \alias{table_non_text_entry}
 \title{Create Text Appendices for Non-Text Entry Type Questions}
 \usage{
-table_non_text_entry(question, responses, appendix_e, blocks,
+table_non_text_entry(question, text_responses, appendix_e, blocks,
   original_first_row)
 }
 \arguments{
 \item{question}{is the question for which the text appendix is being created.}
-
-\item{responses}{is a data frame of text responses to the question given.}
 
 \item{appendix_e}{is the number of the appendix in the text appendices report.}
 
 \item{blocks}{A list of blocks with block elements replaced
 by the question with its paired responses.}
 
-\item{original_first_row}{This is the original first row of the
-response set. If you have the original_first_rows, you can
-pass original_first_rows[1,] to}
+\item{responses}{is a data frame of text responses to the question given.}
 }
 \description{
 This function creates text appendices, with a description table and
